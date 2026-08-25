@@ -1,0 +1,27 @@
+---
+interface Props {
+  size?: number;
+  alt?: string;
+}
+
+const { size = 120, alt = '头像' } = Astro.props;
+---
+
+<img
+  class="avatar"
+  src="/avatar.svg"
+  alt={alt}
+  width={size}
+  height={size}
+  loading="lazy"
+/>
+
+<style>
+  .avatar {
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 0 6px var(--accent-soft);
+    background: var(--bg-soft);
+    flex-shrink: 0;
+  }
+</style>

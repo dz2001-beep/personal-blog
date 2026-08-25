@@ -1,0 +1,38 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="页面不存在">
+  <section class="notfound">
+    <h1 class="nf-code">404</h1>
+    <p class="nf-text">页面不存在,或者被移到别处了。</p>
+    <a class="btn btn-primary" href="/">← 回到首页</a>
+  </section>
+</BaseLayout>
+
+<style>
+  .notfound {
+    min-height: 55vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 20px;
+  }
+
+  .nf-code {
+    font-family: var(--font-mono);
+    font-size: 5rem;
+    margin: 0;
+    background: linear-gradient(120deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .nf-text {
+    color: var(--text-dim);
+    margin: 8px 0 24px;
+  }
+</style>

@@ -1,0 +1,97 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PostCard from '../../components/PostCard.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+// 收集所有标签
+const allTags = [...new Set(posts.flatMap((p) => p.data.tags))].sort();
+---
+
+<BaseLayout title="文章" description="技术文章列表">
+  <section class="container-wide">
+    <header class="page-head fade-up">
+      <h1>技术文章</h1>
+      <p>记录技术思考、踩坑经验与学习笔记。</p>
+    </header>
+
+    <!-- 标签筛选 -->
+    {
+      allTags.length > 0 && (
+        <div class="tag-filter">
+          <span class="tag filter-tag active">全部</span>
+          {
+            allTags.map((tag) => (
+              <a href={`/blog/tag/${encodeURIComponent(tag)}/`} class="tag filter-tag">
+                {tag}
+              </a>
+            ))
+          }
+        </div>
+      )
+    }
+
+    {
+      posts.length > 0 ? (
+        <div class="post-list">
+          {posts.map((post) => <PostCard post={post} />)}
+        </div>
+      ) : (
+        <p class="empty">还没有文章,在 <code>src/content/blog/</code> 里写第一篇吧!</p>
+      )
+    }
+  </section>
+</BaseLayout>
+
+<style>
+  .page-head {
+    padding: 48px 0 8px;
+  }
+
+  .page-head h1 {
+    margin: 0 0 6px;
+    font-size: 2.2rem;
+  }
+
+  .page-head p {
+    margin: 0;
+    color: var(--text-dim);
+  }
+
+  .tag-filter {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 22px 0 26px;
+  }
+
+  .filter-tag {
+    padding: 4px 14px;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+
+  .filter-tag:hover,
+  .filter-tag.active {
+    background: var(--accent);
+    color: #0d1117;
+    border-color: var(--accent);
+  }
+
+  .post-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 60px;
+  }
+
+  .empty {
+    color: var(--text-dim);
+    padding: 40px;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius);
+    text-align: center;
+  }
+</style>

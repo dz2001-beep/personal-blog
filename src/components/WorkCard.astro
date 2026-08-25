@@ -1,0 +1,128 @@
+---
+import { formatDate } from '../utils/format';
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  work: CollectionEntry<'works'>;
+}
+
+const { work } = Astro.props;
+const { title, description, pubDate, tech, demoUrl, repoUrl } = work.data;
+---
+
+<article class="work-card">
+  <a href={`/works/${work.id}/`} class="work-card-link">
+    <div class="work-head">
+      <span class="work-dots">
+        <i></i><i></i><i></i>
+      </span>
+      <span class="work-date">{formatDate(pubDate)}</span>
+    </div>
+    <h3 class="work-title">{title}</h3>
+    <p class="work-desc">{description}</p>
+    {
+      tech.length > 0 && (
+        <div class="work-tech">
+          {tech.map((t) => <span class="tag">{t}</span>)}
+        </div>
+      )
+    }
+  </a>
+  <div class="work-links">
+    {demoUrl && <a class="btn btn-primary" href={demoUrl} target="_blank" rel="noopener">在线演示</a>}
+    {repoUrl && <a class="btn" href={repoUrl} target="_blank" rel="noopener">源码</a>}
+  </div>
+</article>
+
+<style>
+  .work-card {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    transition: all 0.2s ease;
+  }
+
+  .work-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .work-card-link {
+    color: inherit;
+  }
+
+  .work-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  /* 仿代码编辑器窗口的三色点 */
+  .work-dots {
+    display: flex;
+    gap: 5px;
+  }
+
+  .work-dots i {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--red);
+    opacity: 0.9;
+  }
+
+  .work-dots i:nth-child(2) {
+    background: var(--yellow);
+  }
+
+  .work-dots i:nth-child(3) {
+    background: var(--green);
+  }
+
+  .work-date {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--text-faint);
+  }
+
+  .work-title {
+    margin: 0 0 8px;
+    font-size: 1.15rem;
+  }
+
+  .work-desc {
+    margin: 0 0 12px;
+    color: var(--text-dim);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    flex: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .work-tech {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 4px;
+  }
+
+  .work-links {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+
+  .work-links .btn {
+    padding: 6px 14px;
+    font-size: 0.82rem;
+  }
+</style>

@@ -1,0 +1,199 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Avatar from '../components/Avatar.astro';
+import PostCard from '../components/PostCard.astro';
+import WorkCard from '../components/WorkCard.astro';
+import { SITE, SOCIAL } from '../config';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 3);
+
+const works = (await getCollection('works'))
+  .filter((w) => w.data.featured)
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 3);
+
+const socialButtons = [
+  { href: SOCIAL.github, label: 'GitHub', show: !!SOCIAL.github },
+  { href: SOCIAL.juejin, label: '掘金', show: !!SOCIAL.juejin },
+  { href: SOCIAL.twitter, label: 'Twitter', show: !!SOCIAL.twitter },
+  { href: SOCIAL.email ? `mailto:${SOCIAL.email}` : '', label: 'Email', show: !!SOCIAL.email },
+].filter((s) => s.show);
+---
+
+<BaseLayout>
+  <!-- ============ Hero ============ -->
+  <section class="hero">
+    <div class="container hero-inner fade-up">
+      <Avatar size={132} alt={`${SITE.author} 的头像`} />
+      <div class="hero-text">
+        <h1 class="hero-title">{SITE.heroTitle}</h1>
+        <p class="hero-tagline">
+          <span class="hero-code">{'<'}dev{'>'}</span> {SITE.heroTagline}{' '}
+          <span class="hero-code">{'</'}dev{'>'}</span>
+        </p>
+        <p class="hero-desc">{SITE.description}</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="/blog">📝 阅读文章</a>
+          <a class="btn" href="/works">🚀 查看作品</a>
+        </div>
+        {
+          socialButtons.length > 0 && (
+            <div class="hero-social">
+              {
+                socialButtons.map((s) => (
+                  <a class="btn social-btn" href={s.href} target="_blank" rel="noopener">{s.label}</a>
+                ))
+              }
+            </div>
+          )
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 最近文章 ============ -->
+  <section class="section container">
+    <h2 class="section-title">最近文章</h2>
+    {
+      posts.length > 0 ? (
+        <div class="post-list">
+          {posts.map((post) => <PostCard post={post} />)}
+        </div>
+      ) : (
+        <p class="empty">还没有文章,在 <code>src/content/blog/</code> 里写第一篇吧!</p>
+      )
+    }
+    <div class="section-more">
+      <a class="btn" href="/blog">全部文章 →</a>
+    </div>
+  </section>
+
+  <!-- ============ 精选作品 ============ -->
+  <section class="section container-wide">
+    <h2 class="section-title">精选作品</h2>
+    {
+      works.length > 0 ? (
+        <div class="work-grid">
+          {works.map((work) => <WorkCard work={work} />)}
+        </div>
+      ) : (
+        <p class="empty">还没有作品,在 <code>src/content/works/</code> 里添加第一个作品吧!</p>
+      )
+    }
+    <div class="section-more">
+      <a class="btn" href="/works">全部作品 →</a>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .hero {
+    padding: 70px 0 50px;
+  }
+
+  .hero-inner {
+    display: flex;
+    align-items: center;
+    gap: 42px;
+  }
+
+  .hero-title {
+    font-size: 2.4rem;
+    margin: 0 0 8px;
+    background: linear-gradient(120deg, var(--accent), var(--accent-2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .hero-tagline {
+    margin: 0 0 10px;
+    font-size: 1.05rem;
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .hero-code {
+    font-family: var(--font-mono);
+    color: var(--accent);
+  }
+
+  .hero-desc {
+    margin: 0 0 22px;
+    color: var(--text-dim);
+    max-width: 560px;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .hero-social {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+
+  .social-btn {
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    padding: 5px 12px;
+    color: var(--text-dim);
+  }
+
+  .social-btn:hover {
+    color: var(--accent);
+  }
+
+  .section {
+    margin-top: 46px;
+  }
+
+  .post-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .work-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 18px;
+  }
+
+  .section-more {
+    margin-top: 20px;
+    text-align: center;
+  }
+
+  .empty {
+    color: var(--text-dim);
+    padding: 24px;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius);
+    text-align: center;
+  }
+
+  @media (max-width: 640px) {
+    .hero {
+      padding: 44px 0 30px;
+    }
+    .hero-inner {
+      flex-direction: column;
+      text-align: center;
+      gap: 26px;
+    }
+    .hero-actions, .hero-social {
+      justify-content: center;
+    }
+    .hero-title {
+      font-size: 1.8rem;
+    }
+  }
+</style>

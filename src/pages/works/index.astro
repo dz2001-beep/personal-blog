@@ -1,0 +1,58 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import WorkCard from '../../components/WorkCard.astro';
+import { getCollection } from 'astro:content';
+
+const works = (await getCollection('works'))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+---
+
+<BaseLayout title="作品" description="个人作品集">
+  <section class="container-wide">
+    <header class="page-head fade-up">
+      <h1>我的作品</h1>
+      <p>业余时间折腾的一些项目,欢迎 Star 和提 issue。</p>
+    </header>
+
+    {
+      works.length > 0 ? (
+        <div class="work-grid">
+          {works.map((work) => <WorkCard work={work} />)}
+        </div>
+      ) : (
+        <p class="empty">还没有作品,在 <code>src/content/works/</code> 里添加第一个作品吧!</p>
+      )
+    }
+  </section>
+</BaseLayout>
+
+<style>
+  .page-head {
+    padding: 48px 0 26px;
+  }
+
+  .page-head h1 {
+    margin: 0 0 6px;
+    font-size: 2.2rem;
+  }
+
+  .page-head p {
+    margin: 0;
+    color: var(--text-dim);
+  }
+
+  .work-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+    gap: 18px;
+    margin-bottom: 60px;
+  }
+
+  .empty {
+    color: var(--text-dim);
+    padding: 40px;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius);
+    text-align: center;
+  }
+</style>

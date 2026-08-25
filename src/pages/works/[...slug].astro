@@ -1,0 +1,95 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection, render } from 'astro:content';
+import { formatDate } from '../../utils/format';
+
+export async function getStaticPaths() {
+  const works = await getCollection('works');
+  return works.map((work) => ({
+    params: { slug: work.id },
+    props: { work },
+  }));
+}
+
+const { work } = Astro.props;
+const { Content } = await render(work);
+const { title, description, pubDate, tech, demoUrl, repoUrl } = work.data;
+---
+
+<BaseLayout title={title} description={description}>
+  <article class="container prose work-page">
+    <header class="work-head fade-up">
+      <h1>{title}</h1>
+      <p class="work-desc">{description}</p>
+      <div class="work-meta">
+        <time datetime={pubDate.toISOString()}>📅 {formatDate(pubDate)}</time>
+      </div>
+      {
+        tech.length > 0 && (
+          <div class="work-tech">
+            {tech.map((t) => <span class="tag">{t}</span>)}
+          </div>
+        )
+      }
+      <div class="work-actions">
+        {demoUrl && <a class="btn btn-primary" href={demoUrl} target="_blank" rel="noopener">🚀 在线演示</a>}
+        {repoUrl && <a class="btn" href={repoUrl} target="_blank" rel="noopener">💻 查看源码</a>}
+        <a class="btn" href="/works">← 返回作品列表</a>
+      </div>
+    </header>
+
+    <div class="work-body">
+      <Content />
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .work-page {
+    padding-top: 44px;
+    padding-bottom: 60px;
+  }
+
+  .work-head {
+    margin-bottom: 30px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .work-head h1 {
+    margin: 0 0 10px;
+    font-size: 2.1rem;
+  }
+
+  .work-desc {
+    margin: 0 0 12px;
+    color: var(--text-dim);
+    font-size: 1.02rem;
+  }
+
+  .work-meta {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--text-faint);
+    margin-bottom: 14px;
+  }
+
+  .work-tech {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+
+  .work-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 640px) {
+    .work-head h1 {
+      font-size: 1.7rem;
+    }
+  }
+</style>

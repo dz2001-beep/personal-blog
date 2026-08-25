@@ -1,0 +1,15 @@
+# build output
+dist/
+# generated types
+.astro/
+# dependencies
+node_modules/
+# logs
+npm-debug.log*
+# npm cache (local, used to work around global cache permission issues)
+.npm-cache/
+# environment variables
+.env
+.env.production
+# macOS
+.DS_Store

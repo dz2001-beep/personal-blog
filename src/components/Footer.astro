@@ -1,0 +1,78 @@
+---
+import { SITE, SOCIAL } from '../config';
+
+const year = new Date().getFullYear();
+
+const socialLinks = [
+  { href: SOCIAL.github, label: 'GitHub', icon: 'GitHub' },
+  { href: SOCIAL.juejin, label: '掘金', icon: '掘金' },
+  { href: SOCIAL.twitter, label: 'Twitter', icon: 'Twitter' },
+  { href: SOCIAL.rss, label: 'RSS', icon: 'RSS' },
+].filter((item) => item.href);
+---
+
+<footer class="footer">
+  <div class="container-wide">
+    <div class="footer-inner">
+      <p class="copyright">
+        © {year} {SITE.author} · Powered by{' '}
+        <a href="https://astro.build" target="_blank" rel="noopener">Astro</a>
+      </p>
+      <div class="links">
+        {
+          socialLinks.map((item) => (
+            <a
+              href={item.href}
+              target={item.href.startsWith('http') ? '_blank' : undefined}
+              rel={item.href.startsWith('http') ? 'noopener' : undefined}
+            >
+              {item.icon}
+            </a>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    margin-top: 80px;
+    border-top: 1px solid var(--border);
+    padding: 28px 0;
+    background: var(--bg-soft);
+  }
+
+  .footer-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .copyright {
+    margin: 0;
+    color: var(--text-faint);
+    font-size: 0.88rem;
+  }
+
+  .copyright a {
+    color: var(--text-dim);
+  }
+
+  .links {
+    display: flex;
+    gap: 14px;
+  }
+
+  .links a {
+    color: var(--text-dim);
+    font-size: 0.85rem;
+    font-family: var(--font-mono);
+  }
+
+  .links a:hover {
+    color: var(--accent);
+  }
+</style>

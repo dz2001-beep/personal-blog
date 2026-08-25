@@ -1,0 +1,220 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getCollection, render } from 'astro:content';
+import { formatDate, readingTime } from '../../utils/format';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props;
+const { Content, headings } = await render(post);
+const { title, description, pubDate, updatedDate, tags } = post.data;
+
+// 上一篇 / 下一篇(按时间排序)
+const allPosts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
+);
+const idx = allPosts.findIndex((p) => p.id === post.id);
+const prevPost = idx > 0 ? allPosts[idx - 1] : undefined;
+const nextPost = idx < allPosts.length - 1 ? allPosts[idx + 1] : undefined;
+---
+
+<BaseLayout title={title} description={description}>
+  <article class="container prose post-page">
+    <!-- 文章头 -->
+    <header class="post-head fade-up">
+      <h1>{title}</h1>
+      <div class="post-meta">
+        <time datetime={pubDate.toISOString()}>📅 {formatDate(pubDate)}</time>
+        <span>⏱ 阅读约 {readingTime(post.body)} 分钟</span>
+        {updatedDate && <span>✏️ 更新于 {formatDate(updatedDate)}</span>}
+      </div>
+      {
+        tags.length > 0 && (
+          <div class="post-tags">
+            {tags.map((tag) => <a class="tag" href={`/blog/tag/${encodeURIComponent(tag)}/`}>{tag}</a>)}
+          </div>
+        )
+      }
+    </header>
+
+    <!-- 目录 -->
+    {
+      headings.length > 1 && (
+        <nav class="toc" aria-label="文章目录">
+          <p class="toc-title">目录</p>
+          <ul>
+            {
+              headings.map((h) => (
+                <li class:list={{ 'toc-h2': h.depth === 2, 'toc-h3': h.depth === 3 }}>
+                  <a href={`#${h.slug}`}>{h.text}</a>
+                </li>
+              ))
+            }
+          </ul>
+        </nav>
+      )
+    }
+
+    <!-- 正文 -->
+    <div class="post-body">
+      <Content />
+    </div>
+
+    <!-- 上一篇 / 下一篇 -->
+    <nav class="post-nav">
+      {
+        prevPost ? (
+          <a class="nav-card" href={`/blog/${prevPost.id}/`}>
+            <span class="nav-label">← 上一篇</span>
+            <span class="nav-title">{prevPost.data.title}</span>
+          </a>
+        ) : (
+          <span></span>
+        )
+      }
+      {
+        nextPost ? (
+          <a class="nav-card next" href={`/blog/${nextPost.id}/`}>
+            <span class="nav-label">下一篇 →</span>
+            <span class="nav-title">{nextPost.data.title}</span>
+          </a>
+        ) : (
+          <span></span>
+        )
+      }
+    </nav>
+  </article>
+</BaseLayout>
+
+<style>
+  .post-page {
+    padding-top: 44px;
+    padding-bottom: 60px;
+  }
+
+  .post-head {
+    margin-bottom: 30px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .post-head h1 {
+    margin: 0 0 14px;
+    font-size: 2.1rem;
+  }
+
+  .post-meta {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--text-faint);
+    margin-bottom: 14px;
+  }
+
+  .post-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  /* 目录 */
+  .toc {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 20px;
+    margin-bottom: 26px;
+  }
+
+  .toc-title {
+    margin: 0 0 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--accent);
+    font-family: var(--font-mono);
+  }
+
+  .toc ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .toc a {
+    color: var(--text-dim);
+    font-size: 0.88rem;
+  }
+
+  .toc a:hover {
+    color: var(--accent);
+  }
+
+  .toc-h3 a {
+    padding-left: 16px;
+    font-size: 0.84rem;
+  }
+
+  /* 上一篇 / 下一篇 */
+  .post-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-top: 44px;
+    padding-top: 22px;
+    border-top: 1px solid var(--border);
+  }
+
+  .nav-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 14px 16px;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    transition: all 0.15s ease;
+  }
+
+  .nav-card:hover {
+    border-color: var(--accent);
+    color: var(--text);
+    transform: translateY(-1px);
+  }
+
+  .nav-card.next {
+    text-align: right;
+    align-items: flex-end;
+  }
+
+  .nav-label {
+    font-size: 0.78rem;
+    color: var(--text-faint);
+    font-family: var(--font-mono);
+  }
+
+  .nav-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  @media (max-width: 640px) {
+    .post-nav {
+      grid-template-columns: 1fr;
+    }
+    .post-head h1 {
+      font-size: 1.7rem;
+    }
+  }
+</style>

@@ -1,0 +1,108 @@
+---
+import { SITE } from '../config';
+
+const navItems = [
+  { href: '/', label: '首页' },
+  { href: '/about', label: '关于我' },
+  { href: '/blog', label: '文章' },
+  { href: '/works', label: '作品' },
+];
+
+const { pathname } = Astro.url;
+---
+
+<header class="header">
+  <div class="container-wide header-inner">
+    <a href="/" class="brand" aria-label={SITE.shortName}>
+      <span class="brand-mark">&lt;/&gt;</span>
+      <span class="brand-name">{SITE.shortName}</span>
+    </a>
+
+    <nav class="nav" aria-label="主导航">
+      {
+        navItems.map((item) => (
+          <a
+            href={item.href}
+            class:list={[
+              'nav-link',
+              { active: pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href)) },
+            ]}
+          >
+            {item.label}
+          </a>
+        ))
+      }
+    </nav>
+  </div>
+</header>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(13, 17, 23, 0.82);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 60px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text);
+    font-weight: 700;
+    font-size: 1.05rem;
+  }
+
+  .brand-mark {
+    font-family: var(--font-mono);
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid rgba(122, 162, 247, 0.3);
+    border-radius: 6px;
+    padding: 2px 7px;
+    font-size: 0.85rem;
+  }
+
+  .nav {
+    display: flex;
+    gap: 6px;
+  }
+
+  .nav-link {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    padding: 6px 14px;
+    border-radius: 8px;
+    transition: all 0.15s ease;
+  }
+
+  .nav-link:hover {
+    color: var(--text);
+    background: var(--bg-softer);
+  }
+
+  .nav-link.active {
+    color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  @media (max-width: 640px) {
+    .brand-name {
+      display: none;
+    }
+    .nav-link {
+      padding: 6px 9px;
+      font-size: 0.9rem;
+    }
+  }
+</style>

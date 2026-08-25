@@ -1,0 +1,101 @@
+---
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import PostCard from '../../../components/PostCard.astro';
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => !data.draft);
+  const tags = [...new Set(posts.flatMap((p) => p.data.tags))].sort();
+  return tags.map((tag) => ({
+    params: { tag },
+    props: { tag, posts: posts.filter((p) => p.data.tags.includes(tag)) },
+  }));
+}
+
+const { tag, posts } = Astro.props;
+const allTags = [...new Set((await getCollection('blog', ({ data }) => !data.draft)).flatMap((p) => p.data.tags))].sort();
+---
+
+<BaseLayout title={`标签:${tag}`} description={`标签「${tag}」下的全部文章`}>
+  <section class="container-wide">
+    <header class="page-head fade-up">
+      <h1>标签:<span class="accent-tag">{tag}</span></h1>
+      <p>共 {posts.length} 篇文章</p>
+    </header>
+
+    <!-- 全部标签导航 -->
+    <div class="tag-filter">
+      <a href="/blog" class="tag filter-tag">全部</a>
+      {
+        allTags.map((t) => (
+          <a
+            href={`/blog/tag/${encodeURIComponent(t)}/`}
+            class:list={['tag', 'filter-tag', { active: t === tag }]}
+          >
+            {t}
+          </a>
+        ))
+      }
+    </div>
+
+    <div class="post-list">
+      {posts.map((post) => <PostCard post={post} />)}
+    </div>
+
+    <div class="section-more">
+      <a class="btn" href="/blog">← 返回全部文章</a>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .page-head {
+    padding: 48px 0 8px;
+  }
+
+  .page-head h1 {
+    margin: 0 0 6px;
+    font-size: 2.2rem;
+  }
+
+  .page-head p {
+    margin: 0;
+    color: var(--text-dim);
+  }
+
+  .accent-tag {
+    color: var(--accent);
+    font-family: var(--font-mono);
+  }
+
+  .tag-filter {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 22px 0 26px;
+  }
+
+  .filter-tag {
+    padding: 4px 14px;
+    font-size: 0.8rem;
+  }
+
+  .filter-tag:hover,
+  .filter-tag.active {
+    background: var(--accent);
+    color: #0d1117;
+    border-color: var(--accent);
+  }
+
+  .post-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 40px;
+  }
+
+  .section-more {
+    text-align: center;
+    margin-bottom: 60px;
+  }
+</style>

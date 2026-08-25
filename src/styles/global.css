@@ -43,6 +43,11 @@
   box-sizing: border-box;
 }
 
+/* hidden 属性必须生效(防止被 display:flex 等覆盖,如灯箱) */
+[hidden] {
+  display: none !important;
+}
+
 html {
   scroll-behavior: smooth;
 }

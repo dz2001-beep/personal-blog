@@ -1,38 +1,128 @@
 /**
- * 古风背景动画:天空渐变 + 远山 + 古代小屋 + 花树随风摇曳 + 落花 + 流云飞鸟
- * - Canvas 轻量实现,尊重系统「减少动态效果」(静态渲染一帧)
- * - 页面隐藏时暂停动画
+ * 背景动态点缀:樱花飘落 + 星光闪烁 + 漂浮光斑 + 鼠标火花拖尾(Canvas,轻量)
+ * - 每次页面跳转(ClientRouter)后自动重建,保证任何页面都有动态背景
+ * - 事件监听全局只绑定一次,不会重复累积
+ * - 尊重系统「减少动态效果」设置:开启时静态渲染一帧
+ * - 页面隐藏时暂停,节省性能
  */
 
-const PETAL_COLORS = ['#ffb7c5', '#ffc9d4', '#ff9eb5', '#f7c8d6', '#ffe0e8'];
+const PETAL_COLORS = ['#ffb6c1', '#ffc2d1', '#ff9eb5', '#ffd1dc'];
+const PETAL_COUNT = 26;
+const STAR_COUNT = 46;
+const ORB_COUNT = 3;
+const MAX_SPARKLES = 14;
 
 interface Petal {
-  x: number; y: number; size: number; speedY: number; speedX: number;
-  sway: number; phase: number; rot: number; rotV: number; color: string;
+  x: number; y: number; size: number; speedY: number;
+  swayAmp: number; swaySpeed: number; phase: number;
+  rot: number; rotSpeed: number; color: string;
 }
 
-interface Branch {
-  x1: number; y1: number; angle: number; len: number; width: number;
-  level: number; phase: number;
+interface Star {
+  x: number; y: number; size: number; twinkleSpeed: number; phase: number; drift: number;
 }
 
-interface Blossom {
-  x: number; y: number; r: number; phase: number; amp: number;
+interface Orb {
+  x: number; y: number; r: number; dx: number; dy: number; hue: string;
 }
 
-declare global {
-  interface Window {
-    __bgInit?: boolean;
+interface Sparkle {
+  x: number; y: number; vx: number; vy: number; life: number; maxLife: number; size: number;
+}
+
+/* 鼠标火花(模块级共享,事件只绑一次) */
+const sparkles: Sparkle[] = [];
+let mouseBound = false;
+let lastMouseX = -100;
+let lastMouseY = -100;
+
+/** 当前活动的画布实例(visibilitychange 全局只绑一次) */
+let controller: { running: boolean; raf: number; canvas: HTMLCanvasElement; frame: (t: number) => void } | null = null;
+
+document.addEventListener('visibilitychange', () => {
+  const c = controller;
+  if (!c) return;
+  if (document.hidden) {
+    c.running = false;
+    cancelAnimationFrame(c.raf);
+  } else if (!c.running && c.canvas.isConnected) {
+    c.running = true;
+    c.raf = requestAnimationFrame(c.frame);
   }
+});
+
+function onMouseMove(e: MouseEvent): void {
+  const dx = e.clientX - lastMouseX;
+  const dy = e.clientY - lastMouseY;
+  if (dx * dx + dy * dy < 900) return; // 距离太近不生成,避免刷屏
+  lastMouseX = e.clientX;
+  lastMouseY = e.clientY;
+  if (sparkles.length >= MAX_SPARKLES) sparkles.shift();
+  sparkles.push({
+    x: e.clientX + (Math.random() * 6 - 3),
+    y: e.clientY + (Math.random() * 6 - 3),
+    vx: Math.random() * 0.6 - 0.3,
+    vy: -0.4 - Math.random() * 0.5,
+    life: 0,
+    maxLife: 40 + Math.random() * 30,
+    size: 1.5 + Math.random() * 2,
+  });
 }
 
-export function initBackground(): void {
-  if (window.__bgInit) return;
-  window.__bgInit = true;
+function bindMouse(): void {
+  if (mouseBound) return;
+  mouseBound = true;
+  window.addEventListener('mousemove', onMouseMove);
+}
+
+function buildScene(
+  w: number, h: number, rand: (a: number, b: number) => number
+): { petals: Petal[]; stars: Star[]; orbs: Orb[] } {
+  const petals: Petal[] = Array.from({ length: PETAL_COUNT }, () => ({
+    x: rand(0, w),
+    y: rand(-h, h),
+    size: rand(9, 18),
+    speedY: rand(0.35, 0.85),
+    swayAmp: rand(14, 36),
+    swaySpeed: rand(0.4, 0.9),
+    phase: rand(0, Math.PI * 2),
+    rot: rand(0, Math.PI * 2),
+    rotSpeed: rand(-0.02, 0.02),
+    color: PETAL_COLORS[Math.floor(Math.random() * PETAL_COLORS.length)],
+  }));
+
+  const stars: Star[] = Array.from({ length: STAR_COUNT }, () => ({
+    x: rand(0, w),
+    y: rand(0, h),
+    size: rand(1, 2.5),
+    twinkleSpeed: rand(0.5, 1.6),
+    phase: rand(0, Math.PI * 2),
+    drift: rand(0.05, 0.22),
+  }));
+
+  const orbs: Orb[] = Array.from({ length: ORB_COUNT }, () => ({
+    x: rand(0, w),
+    y: rand(0, h),
+    r: rand(120, 240),
+    dx: rand(-0.12, 0.12),
+    dy: rand(-0.1, 0.1),
+    hue: ['rgba(122,162,247,', 'rgba(187,154,247,', 'rgba(255,182,193,'][Math.floor(Math.random() * 3)],
+  }));
+
+  return { petals, stars, orbs };
+}
+
+function ensureBackground(): void {
+  if (document.getElementById('bg-canvas')) {
+    bindMouse();
+    return;
+  }
+  bindMouse();
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const canvas = document.createElement('canvas');
+  canvas.id = 'bg-canvas';
   canvas.setAttribute('aria-hidden', 'true');
   Object.assign(canvas.style, {
     position: 'fixed',
@@ -60,298 +150,128 @@ export function initBackground(): void {
   resize();
 
   const rand = (a: number, b: number) => a + Math.random() * (b - a);
+  let { petals, stars, orbs } = buildScene(w, h, rand);
 
-  /* ---------- 场景数据 ---------- */
-  let branches: Branch[] = [];
-  let blossoms: Blossom[] = [];
-  let petals: Petal[] = [];
-
-  function buildScene(): void {
-    const treeX = w * 0.85;
-    const treeBaseY = h * 0.86;
-    const treeTopY = h * 0.4;
-
-    // 花树:递归生成枝干
-    branches = [];
-    const seedBranch = (
-      x1: number, y1: number, angle: number, len: number, width: number, level: number, phase: number
-    ): void => {
-      branches.push({ x1, y1, angle, len, width, level, phase });
-      if (level >= 3) return;
-      const n = 2 + Math.floor(Math.random() * 2);
-      for (let i = 0; i < n; i++) {
-        const a = angle + rand(-0.55, 0.55);
-        const l = len * rand(0.62, 0.78);
-        seedBranch(
-          x1 + Math.cos(angle) * len,
-          y1 + Math.sin(angle) * len,
-          a, l, width * 0.66, level + 1, phase + rand(0.4, 1.6)
-        );
-      }
-    };
-    seedBranch(treeX, treeBaseY, -Math.PI / 2, h * 0.1, 15, 0, 0);
-
-    // 花簇:枝头 + 树冠区域
-    blossoms = [];
-    for (const b of branches) {
-      if (b.level >= 2) {
-        const ex = b.x1 + Math.cos(b.angle) * b.len;
-        const ey = b.y1 + Math.sin(b.angle) * b.len;
-        const n = 2 + Math.floor(Math.random() * 2);
-        for (let i = 0; i < n; i++) {
-          blossoms.push({
-            x: ex + rand(-9, 9),
-            y: ey + rand(-9, 9),
-            r: rand(3, 7),
-            phase: rand(0, Math.PI * 2),
-            amp: rand(1, 3),
-          });
-        }
-      }
-    }
-    const canopyR = w * 0.13;
-    for (let i = 0; i < 28; i++) {
-      const a = rand(0, Math.PI * 2);
-      const rr = Math.sqrt(Math.random()) * canopyR;
-      blossoms.push({
-        x: treeX + Math.cos(a) * rr,
-        y: treeTopY + Math.sin(a) * rr * 0.72,
-        r: rand(4, 9),
-        phase: rand(0, Math.PI * 2),
-        amp: rand(1.5, 4),
-      });
-    }
-
-    // 花瓣:部分从花树飘落,部分全屏飘洒
-    petals = [];
-    for (let i = 0; i < 40; i++) {
-      const fromTree = i < 22;
-      petals.push({
-        x: fromTree ? treeX + rand(-80, 90) : rand(0, w),
-        y: fromTree ? treeTopY + rand(-60, 240) : rand(-h * 0.3, h),
-        size: rand(8, 16),
-        speedY: rand(0.5, 1.15),
-        speedX: rand(0.2, 0.65),
-        sway: rand(0.4, 0.9),
-        phase: rand(0, Math.PI * 2),
-        rot: rand(0, Math.PI * 2),
-        rotV: rand(-0.03, 0.03),
-        color: PETAL_COLORS[i % PETAL_COLORS.length],
-      });
-    }
-  }
-
-  buildScene();
   window.addEventListener('resize', () => {
     resize();
-    buildScene();
+    ({ petals, stars, orbs } = buildScene(w, h, rand));
   });
 
-  /* ---------- 绘制 ---------- */
-
-  function drawSky(): void {
-    const g = ctx.createLinearGradient(0, 0, 0, h);
-    g.addColorStop(0, '#fdf8f0');
-    g.addColorStop(0.55, '#fdf0e4');
-    g.addColorStop(1, '#f5e6ec');
-    ctx.fillStyle = g;
-    ctx.fillRect(0, 0, w, h);
-  }
-
-  function drawClouds(t: number): void {
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
-    for (let i = 0; i < 2; i++) {
-      const cx = (((t * 0.006 + i * 0.45) % 1.3) * w) - w * 0.15;
-      const cy = h * (0.09 + i * 0.07);
-      ctx.beginPath();
-      ctx.ellipse(cx, cy, w * 0.09, h * 0.026, 0, 0, Math.PI * 2);
-      ctx.ellipse(cx + w * 0.035, cy - h * 0.011, w * 0.055, h * 0.019, 0, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
-
-  function drawMountains(): void {
-    const layers = [
-      { base: 0.8, alpha: 0.4, color: '#c3d0e4', peaks: [0, 0.16, 0.32, 0.5, 0.66, 0.84, 1] },
-      { base: 0.88, alpha: 0.5, color: '#aebfd9', peaks: [0.06, 0.24, 0.42, 0.6, 0.78, 0.95] },
-    ];
-    for (const layer of layers) {
-      const baseY = h * layer.base;
-      ctx.fillStyle = layer.color;
-      ctx.globalAlpha = layer.alpha;
-      ctx.beginPath();
-      ctx.moveTo(0, baseY);
-      for (let i = 0; i < layer.peaks.length; i++) {
-        const x = layer.peaks[i] * w;
-        const peakH = h * (0.055 + (i % 3) * 0.02);
-        const py = baseY - peakH;
-        if (i === 0) ctx.lineTo(x, py);
-        else ctx.quadraticCurveTo((layer.peaks[i - 1] + x) / 2, baseY - peakH * 1.7, x, py);
-      }
-      ctx.lineTo(w, h);
-      ctx.lineTo(0, h);
-      ctx.closePath();
-      ctx.fill();
-    }
-    ctx.globalAlpha = 1;
-  }
-
-  /** 古代小屋(飞檐翘角) */
-  function drawHouse(): void {
-    const gx = w * 0.08;
-    const gy = h * 0.86;
-    const bw = Math.min(w * 0.17, 200);
-    const bh = bw * 0.62;
-
-    // 地面淡雾
-    const g = ctx.createLinearGradient(0, gy, 0, h);
-    g.addColorStop(0, 'rgba(196,188,178,0.28)');
-    g.addColorStop(1, 'rgba(196,188,178,0.06)');
-    ctx.fillStyle = g;
-    ctx.fillRect(0, gy, w, h - gy);
-
-    // 墙体
-    ctx.fillStyle = 'rgba(122,118,138,0.32)';
-    ctx.fillRect(gx, gy - bh, bw, bh);
-    // 门
-    ctx.fillStyle = 'rgba(90,86,106,0.45)';
-    ctx.fillRect(gx + bw * 0.4, gy - bh * 0.52, bw * 0.2, bh * 0.52);
-    // 窗(暖光)
-    ctx.fillStyle = 'rgba(255,238,196,0.55)';
-    ctx.fillRect(gx + bw * 0.12, gy - bh * 0.62, bw * 0.17, bh * 0.2);
-    // 飞檐屋顶(两端上翘)
-    ctx.fillStyle = 'rgba(100,96,118,0.55)';
-    ctx.beginPath();
-    ctx.moveTo(gx - bw * 0.16, gy - bh * 0.94);
-    ctx.quadraticCurveTo(gx + bw * 0.26, gy - bh * 1.34, gx + bw * 0.5, gy - bh * 1.24);
-    ctx.quadraticCurveTo(gx + bw * 0.74, gy - bh * 1.34, gx + bw * 1.16, gy - bh * 0.94);
-    ctx.quadraticCurveTo(gx + bw * 0.5, gy - bh * 1.0, gx - bw * 0.16, gy - bh * 0.94);
-    ctx.closePath();
-    ctx.fill();
-    // 屋脊尖
-    ctx.fillStyle = 'rgba(84,80,100,0.6)';
-    ctx.beginPath();
-    ctx.arc(gx + bw * 0.5, gy - bh * 1.23, 3.5, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  /** 花树(随风摇曳) */
-  function drawTree(t: number): void {
-    for (const b of branches) {
-      const sway = Math.sin(t * 0.0011 + b.phase) * 0.05 * (b.level + 0.4);
-      const a = b.angle + sway;
-      const ex = b.x1 + Math.cos(a) * b.len;
-      const ey = b.y1 + Math.sin(a) * b.len;
-      ctx.strokeStyle = b.level === 0 ? 'rgba(110,84,64,0.8)' : 'rgba(124,96,74,0.72)';
-      ctx.lineWidth = Math.max(b.width * 0.5, 1.2);
-      ctx.lineCap = 'round';
-      ctx.beginPath();
-      ctx.moveTo(b.x1, b.y1);
-      ctx.quadraticCurveTo(
-        b.x1 + Math.cos(a) * b.len * 0.5 + Math.sin(t * 0.001 + b.phase) * 2,
-        b.y1 + Math.sin(a) * b.len * 0.5,
-        ex, ey
-      );
-      ctx.stroke();
-    }
-
-    // 花簇
-    for (const bl of blossoms) {
-      const ox = Math.sin(t * 0.0012 + bl.phase) * bl.amp;
-      const oy = Math.cos(t * 0.001 + bl.phase) * bl.amp * 0.5;
-      ctx.fillStyle = 'rgba(255,158,181,0.72)';
-      ctx.beginPath();
-      ctx.arc(bl.x + ox, bl.y + oy, bl.r, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = 'rgba(255,255,255,0.5)';
-      ctx.beginPath();
-      ctx.arc(bl.x + ox - bl.r * 0.3, bl.y + oy - bl.r * 0.3, bl.r * 0.34, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }
-
-  function drawPetalShape(x: number, y: number, size: number, rot: number, color: string): void {
+  function drawPetal(p: Petal, t: number): void {
     ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(rot);
-    ctx.fillStyle = color;
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rot);
+    ctx.fillStyle = p.color;
     ctx.globalAlpha = 0.8;
     ctx.beginPath();
-    ctx.moveTo(0, -size / 2);
-    ctx.quadraticCurveTo(size / 2, 0, 0, size / 2);
-    ctx.quadraticCurveTo(-size / 2, 0, 0, -size / 2);
+    ctx.moveTo(0, -p.size / 2);
+    ctx.quadraticCurveTo(p.size / 2, 0, 0, p.size / 2);
+    ctx.quadraticCurveTo(-p.size / 2, 0, 0, -p.size / 2);
     ctx.fill();
     ctx.restore();
-  }
 
-  function drawPetals(t: number): void {
-    for (const p of petals) {
-      drawPetalShape(p.x, p.y, p.size, p.rot, p.color);
-      p.y += p.speedY;
-      p.x += p.speedX + Math.sin(t * 0.0012 + p.phase) * p.sway;
-      p.rot += p.rotV;
-      if (p.y > h + 20) {
-        p.y = -20;
-        p.x = rand(0, w);
-      }
-      if (p.x > w + 30) p.x = -20;
-      if (p.x < -30) p.x = w + 20;
+    p.y += p.speedY;
+    p.x += Math.sin(t * p.swaySpeed + p.phase) * 0.6;
+    p.rot += p.rotSpeed;
+    if (p.y > h + 24) {
+      p.y = -24;
+      p.x = rand(0, w);
     }
-    ctx.globalAlpha = 1;
+    if (p.x < -30) p.x = w + 20;
+    if (p.x > w + 30) p.x = -20;
   }
 
-  function drawBirds(t: number): void {
-    ctx.strokeStyle = 'rgba(90,90,110,0.5)';
-    ctx.lineWidth = 1.6;
-    ctx.lineCap = 'round';
-    for (let i = 0; i < 2; i++) {
-      const cx = (((t * 0.012 + i * 0.5) % 1.2) * w) - w * 0.1;
-      const cy = h * (0.15 + i * 0.05) + Math.sin(t * 0.002 + i * 2) * 6;
-      const s = 7;
+  function drawStar(s: Star, t: number): void {
+    const a = 0.25 + 0.55 * Math.abs(Math.sin(t * s.twinkleSpeed + s.phase));
+    ctx.save();
+    ctx.translate(s.x, s.y);
+    ctx.rotate(Math.PI / 4);
+    ctx.fillStyle = `rgba(255, 214, 110, ${a})`;
+    ctx.beginPath();
+    ctx.moveTo(0, -s.size);
+    ctx.lineTo(s.size, 0);
+    ctx.lineTo(0, s.size);
+    ctx.lineTo(-s.size, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+
+    s.y += s.drift;
+    if (s.y > h + 10) {
+      s.y = -10;
+      s.x = rand(0, w);
+    }
+  }
+
+  function drawOrb(o: Orb): void {
+    const g = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.r);
+    g.addColorStop(0, `${o.hue}0.07)`);
+    g.addColorStop(1, `${o.hue}0)`);
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.arc(o.x, o.y, o.r, 0, Math.PI * 2);
+    ctx.fill();
+
+    o.x += o.dx;
+    o.y += o.dy;
+    if (o.x < -o.r) o.x = w + o.r;
+    if (o.x > w + o.r) o.x = -o.r;
+    if (o.y < -o.r) o.y = h + o.r;
+    if (o.y > h + o.r) o.y = -o.r;
+  }
+
+  function drawSparkles(): void {
+    for (let i = sparkles.length - 1; i >= 0; i--) {
+      const sp = sparkles[i];
+      sp.life += 1;
+      sp.x += sp.vx;
+      sp.y += sp.vy;
+      sp.vy -= 0.006;
+      const ratio = 1 - sp.life / sp.maxLife;
+      if (ratio <= 0) {
+        sparkles.splice(i, 1);
+        continue;
+      }
+      ctx.save();
+      ctx.translate(sp.x, sp.y);
+      ctx.rotate(Math.PI / 4);
+      ctx.fillStyle = `rgba(255, 220, 150, ${0.7 * ratio})`;
       ctx.beginPath();
-      ctx.moveTo(cx - s, cy);
-      ctx.quadraticCurveTo(cx - s * 0.4, cy - s * 0.7, cx, cy);
-      ctx.quadraticCurveTo(cx + s * 0.4, cy - s * 0.7, cx + s, cy);
-      ctx.stroke();
+      ctx.moveTo(0, -sp.size * ratio);
+      ctx.lineTo(sp.size * ratio, 0);
+      ctx.lineTo(0, sp.size * ratio);
+      ctx.lineTo(-sp.size * ratio, 0);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
     }
   }
 
   function render(t: number): void {
     ctx.clearRect(0, 0, w, h);
-    drawSky();
-    drawClouds(t);
-    drawMountains();
-    drawHouse();
-    drawTree(t);
-    drawPetals(t);
-    drawBirds(t);
+    for (const o of orbs) drawOrb(o);
+    for (const s of stars) drawStar(s, t / 1000);
+    for (const p of petals) drawPetal(p, t / 1000);
+    drawSparkles();
+    ctx.globalAlpha = 1;
   }
 
-  // 系统减少动画:只渲染一帧静态画面
+  // 系统减少动画:静态一帧
   if (reduced) {
     render(0);
     return;
   }
 
-  let raf = 0;
   let running = true;
-  function frame(t: number): void {
-    if (!running) return;
-    render(t);
-    raf = requestAnimationFrame(frame);
-  }
-  raf = requestAnimationFrame(frame);
 
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) {
-      running = false;
-      cancelAnimationFrame(raf);
-    } else if (!running) {
-      running = true;
-      raf = requestAnimationFrame(frame);
-    }
-  });
+  function frame(t: number): void {
+    if (!running || !canvas.isConnected) return;
+    render(t);
+    controller!.raf = requestAnimationFrame(frame);
+  }
+  controller = { running, raf: requestAnimationFrame(frame), canvas, frame };
 }
 
-// 模块加载即启动(副作用调用,防止被摇树优化移除)
-initBackground();
+// 初始加载 + 每次 ClientRouter 页面跳转后重建(保证任何页面都有动态背景)
+ensureBackground();
+document.addEventListener('astro:page-load', ensureBackground);

@@ -31,5 +31,5 @@ export const SOCIAL = {
   rss: '/rss.xml',
 };
 
-/** 默认头像路径(二次元风格,可在后台「设置」上传替换) */
-export const AVATAR = '/avatar-anime.svg';
+/** 默认头像路径(可在后台「设置」上传替换) */
+export const AVATAR = '/touxiang.jpg';

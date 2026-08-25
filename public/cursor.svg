@@ -5,7 +5,7 @@
       <stop offset="100%" stop-color="#ff5f8f"/>
     </linearGradient>
   </defs>
-  <!-- 圆润卡通箭头,尖端在 (3,2) -->
-  <path d="M3 2 L21 9.2 L13.6 11.2 L17 21.2 L13.6 22.5 L10.4 13.2 L3.8 16.2 Z"
-        fill="url(#cgrad)" stroke="#ffffff" stroke-width="2.2" stroke-linejoin="round"/>
+  <!-- 标准经典箭头(与系统鼠标相同比例),尖端在 (2.5,1.5) -->
+  <path d="M2.5 1.5 L21 9.3 L13.2 11.4 L16.8 21.6 L13.3 23 L9.9 13.4 L2.8 16.4 Z"
+        fill="url(#cgrad)" stroke="#d94f8f" stroke-width="1" stroke-linejoin="round"/>
 </svg>

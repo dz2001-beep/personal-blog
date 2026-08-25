@@ -608,49 +608,55 @@ html {
   scrollbar-color: var(--accent) var(--bg-soft);
 }
 
-/* ---------- 自定义光标 ---------- */
+/* ---------- 自定义光标:彩色箭头 + 发光跟随 ---------- */
 html.has-custom-cursor,
 html.has-custom-cursor * {
-  cursor: none !important;
+  cursor: url('/cursor.svg') 3 1, auto !important;
 }
 
-#cursor-dot,
-#cursor-ring {
+#cursor-glow {
   position: fixed;
   top: 0;
   left: 0;
-  pointer-events: none;
+  width: 36px;
+  height: 36px;
+  margin: -18px 0 0 -18px;
   border-radius: 50%;
-  z-index: 9999;
-  opacity: 0;
+  background: radial-gradient(
+    circle,
+    rgba(122, 162, 247, 0.32),
+    rgba(122, 162, 247, 0.05) 60%,
+    transparent 72%
+  );
+  pointer-events: none;
+  z-index: 9998;
   will-change: transform;
+  animation: glowPulse 2.2s ease-in-out infinite;
+  transition: width 0.18s ease, height 0.18s ease, margin 0.18s ease,
+    background 0.18s ease;
 }
 
-#cursor-dot {
-  width: 7px;
-  height: 7px;
-  background: var(--accent);
-  box-shadow: 0 0 8px rgba(37, 99, 235, 0.5);
+@keyframes glowPulse {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 0.95; }
 }
 
-#cursor-ring {
-  width: 32px;
-  height: 32px;
-  border: 2px solid rgba(37, 99, 235, 0.55);
-  transition: width 0.18s ease, height 0.18s ease, border-color 0.18s ease,
-    background 0.18s ease, opacity 0.2s ease;
+#cursor-glow.cursor-hover {
+  width: 54px;
+  height: 54px;
+  margin: -27px 0 0 -27px;
+  background: radial-gradient(
+    circle,
+    rgba(124, 58, 237, 0.38),
+    rgba(124, 58, 237, 0.07) 60%,
+    transparent 72%
+  );
 }
 
-#cursor-ring.cursor-hover {
-  width: 46px;
-  height: 46px;
-  border-color: var(--accent-2);
-  background: rgba(124, 58, 237, 0.12);
-}
-
-#cursor-ring.cursor-press {
-  width: 22px;
-  height: 22px;
+#cursor-glow.cursor-press {
+  width: 24px;
+  height: 24px;
+  margin: -12px 0 0 -12px;
 }
 
 /* ---------- 样式点缀 ---------- */
@@ -720,8 +726,7 @@ html.has-custom-cursor * {
   .typed-cursor {
     display: none;
   }
-  #cursor-dot,
-  #cursor-ring {
+  #cursor-glow {
     display: none !important;
   }
   html.has-custom-cursor,

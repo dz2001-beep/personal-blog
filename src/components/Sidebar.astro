@@ -1,0 +1,114 @@
+---
+import Avatar from './Avatar.astro';
+import { getSiteConfig, getPublishedPosts, getFeaturedWorks } from '../lib/db';
+import { formatDate } from '../utils/format';
+
+const site = getSiteConfig();
+const posts = getPublishedPosts();
+const works = getFeaturedWorks();
+
+const tagCounts = new Map<string, number>();
+for (const p of posts) {
+  for (const t of p.tags) tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1);
+}
+const tags = [...tagCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 16);
+const recent = posts.slice(0, 5);
+
+const socials = [
+  { href: site.social.github, label: 'GitHub', show: !!site.social.github },
+  { href: site.social.juejin, label: '掘金', show: !!site.social.juejin },
+  { href: site.social.email ? `mailto:${site.social.email}` : '', label: 'Email', show: !!site.social.email },
+].filter((s) => s.show);
+---
+
+<aside class="sidebar">
+  <!-- 关于 -->
+  <div class="side-card">
+    <div class="side-profile">
+      <Avatar size={56} alt={`${site.author} 的头像`} src={site.avatar} fallback={site.avatar} noTransition />
+      <div>
+        <p class="side-profile-name">{site.author}</p>
+        <p class="side-profile-tagline">{site.heroTagline}</p>
+      </div>
+    </div>
+    <div class="side-profile-links">
+      <a href="/about">关于我 →</a>
+      {
+        socials.map((s) => (
+          <a href={s.href} target="_blank" rel="noopener">{s.label}</a>
+        ))
+      }
+    </div>
+  </div>
+
+  <!-- 标签云 -->
+  {
+    tags.length > 0 && (
+      <div class="side-card">
+        <h3 class="side-card-title">标签云</h3>
+        <div class="side-tags">
+          {
+            tags.map(([tag, count]) => (
+              <a class="tag" href={`/blog/tag/${encodeURIComponent(tag)}/`}>
+                {tag} <span class="tag-count">{count}</span>
+              </a>
+            ))
+          }
+        </div>
+      </div>
+    )
+  }
+
+  <!-- 最新文章 -->
+  {
+    recent.length > 0 && (
+      <div class="side-card">
+        <h3 class="side-card-title">最新文章</h3>
+        <ul class="side-list">
+          {
+            recent.map((p) => (
+              <li>
+                <a href={`/blog/${p.slug}/`}>
+                  {p.title}
+                  <small>{formatDate(new Date(p.created_at))}</small>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    )
+  }
+
+  <!-- 精选作品 -->
+  {
+    works.length > 0 && (
+      <div class="side-card">
+        <h3 class="side-card-title">精选作品</h3>
+        <ul class="side-list">
+          {
+            works.slice(0, 4).map((w) => (
+              <li>
+                <a href={`/works/${w.slug}/`}>
+                  {w.title}
+                  <small>{w.tech.slice(0, 3).join(' · ')}</small>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    )
+  }
+</aside>
+
+<style>
+  .sidebar {
+    min-width: 0;
+  }
+
+  .tag-count {
+    opacity: 0.65;
+    font-size: 0.85em;
+  }
+</style>

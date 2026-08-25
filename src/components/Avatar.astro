@@ -8,9 +8,18 @@ interface Props {
   src?: string;
   /** 无本地头像时的回退地址 */
   fallback?: string;
+  /** 禁用页面切换 morph 动画(同页出现多个头像时使用) */
+  noTransition?: boolean;
 }
 
-const { size = 120, alt = '头像', uploadable = false, src = '/avatar.svg', fallback = src } = Astro.props;
+const {
+  size = 120,
+  alt = '头像',
+  uploadable = false,
+  src = '/avatar.svg',
+  fallback = src,
+  noTransition = false,
+} = Astro.props;
 ---
 
 <div class="avatar-wrap">
@@ -21,7 +30,7 @@ const { size = 120, alt = '头像', uploadable = false, src = '/avatar.svg', fal
     alt={alt}
     width={size}
     height={size}
-    transition:name="avatar"
+    transition:name={noTransition ? undefined : 'avatar'}
   />
   {
     uploadable && (

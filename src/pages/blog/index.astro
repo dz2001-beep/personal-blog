@@ -1,6 +1,7 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PostCard from '../../components/PostCard.astro';
+import Sidebar from '../../components/Sidebar.astro';
 import { getPublishedPosts } from '../../lib/db';
 
 const posts = getPublishedPosts();
@@ -14,38 +15,44 @@ const allTags = [...new Set(posts.flatMap((p) => p.tags))].sort();
       <p>记录技术思考、踩坑经验与学习笔记。</p>
     </header>
 
-    <!-- 标签筛选 -->
-    {
-      allTags.length > 0 && (
-        <div class="tag-filter">
-          <span class="tag filter-tag active">全部</span>
-          {
-            allTags.map((tag) => (
-              <a href={`/blog/tag/${encodeURIComponent(tag)}/`} class="tag filter-tag">
-                {tag}
-              </a>
-            ))
-          }
-        </div>
-      )
-    }
+    <div class="layout-two">
+      <div class="layout-main">
+        <!-- 标签筛选 -->
+        {
+          allTags.length > 0 && (
+            <div class="tag-filter">
+              <span class="tag filter-tag active">全部</span>
+              {
+                allTags.map((tag) => (
+                  <a href={`/blog/tag/${encodeURIComponent(tag)}/`} class="tag filter-tag">
+                    {tag}
+                  </a>
+                ))
+              }
+            </div>
+          )
+        }
 
-    <!-- 实时搜索 -->
-    <div class="search-box">
-      <span class="search-icon" aria-hidden="true">🔍</span>
-      <input id="search-input" type="search" placeholder="搜索文章标题、摘要或标签…" autocomplete="off" />
+        <!-- 实时搜索 -->
+        <div class="search-box">
+          <span class="search-icon" aria-hidden="true">🔍</span>
+          <input id="search-input" type="search" placeholder="搜索文章标题、摘要或标签…" autocomplete="off" />
+        </div>
+
+        {
+          posts.length > 0 ? (
+            <div class="post-list">
+              {posts.map((post) => <PostCard post={post} />)}
+            </div>
+          ) : (
+            <p class="empty">还没有文章,登录后台写第一篇吧!</p>
+          )
+        }
+        <p class="search-empty" id="search-empty">没有找到匹配的文章,换个关键词试试?</p>
+      </div>
+
+      <Sidebar />
     </div>
-
-    {
-      posts.length > 0 ? (
-        <div class="post-list">
-          {posts.map((post) => <PostCard post={post} />)}
-        </div>
-      ) : (
-        <p class="empty">还没有文章,登录后台写第一篇吧!</p>
-      )
-    }
-    <p class="search-empty" id="search-empty">没有找到匹配的文章,换个关键词试试?</p>
   </section>
 </BaseLayout>
 

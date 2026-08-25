@@ -1,0 +1,258 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getSiteConfig, getPublishedPosts } from '../lib/db';
+import { formatDate } from '../utils/format';
+
+const site = getSiteConfig();
+const posts = getPublishedPosts();
+const firstPost = posts.length > 0 ? posts[posts.length - 1] : undefined;
+
+const stack = [
+  { name: 'Astro 7', desc: '前端框架(SSR 服务端渲染)', url: 'https://astro.build' },
+  { name: 'Node.js 24', desc: '运行时,内置 node:sqlite 驱动' },
+  { name: 'SQLite', desc: '数据库,存储文章/作品/站点信息' },
+  { name: 'marked + shiki', desc: 'Markdown 渲染与代码高亮' },
+  { name: 'PM2', desc: '进程守护,服务常驻' },
+  { name: 'Caddy', desc: '反向代理 + 自动 HTTPS 证书' },
+  { name: 'GitHub Actions', desc: 'git push 自动部署' },
+  { name: '轻量云服务器', desc: '国内 2核2G,Ubuntu' },
+];
+
+const changelog = [
+  { version: 'v2.3', date: '2025-08', items: ['新增音乐播放器挂件', '新增「关于本站」页面', '新增「相册」页面与灯箱预览'] },
+  { version: 'v2.2', date: '2025-08', items: ['内容布局加宽、双栏侧栏', '侧栏新增一言/网站统计/友链组件', '自定义光标(圆润卡通箭头 + 光晕)'] },
+  { version: 'v2.1', date: '2025-08', items: ['樱花飘落动态背景', '鼠标火花拖尾', '二次元风默认头像'] },
+  { version: 'v2.0', date: '2025-08', items: ['全栈化:SQLite 数据库存储文章/作品/站点信息', '网页后台:在线写作、作品管理、站点设置、头像上传', '管理员登录体系(会话 + 登录限流)'] },
+  { version: 'v1.5', date: '2025-08', items: ['白色主题 + 动画特效', '文章实时搜索、阅读进度条、回到顶部', '浏览器端头像上传'] },
+  { version: 'v1.0', date: '2025-01', items: ['基于 Astro 的静态博客', '文章 / 作品 / 个人 Profile 三大板块'] },
+];
+---
+
+<BaseLayout title="关于本站" description="这个博客是怎么搭建的:技术栈、改版历史与致谢">
+  <section class="container-wide">
+    <header class="page-head fade-up">
+      <h1>关于本站</h1>
+      <p>这个博客是怎么搭起来的,以及一路走来的改版记录。</p>
+    </header>
+
+    <!-- 站点简介 -->
+    <section class="block">
+      <h2 class="section-title">站点简介</h2>
+      <p class="intro">
+        这是一个由我亲手从零搭建的个人博客:记录技术思考、分享开源作品、展示个人成长。
+        全栈架构,文章和站点信息都存在自己的 SQLite 数据库里,通过网页后台在线写作与维护。
+      </p>
+      <div class="site-facts">
+        <div class="fact"><span class="fact-label">站点标题</span><span>{site.title}</span></div>
+        <div class="fact"><span class="fact-label">作者</span><span>{site.author}</span></div>
+        <div class="fact">
+          <span class="fact-label">建站时间</span>
+          <span>{firstPost ? formatDate(new Date(firstPost.created_at)) : '—'}</span>
+        </div>
+        <div class="fact"><span class="fact-label">文章总数</span><span>{posts.length}</span></div>
+      </div>
+    </section>
+
+    <!-- 技术栈 -->
+    <section class="block">
+      <h2 class="section-title">技术栈</h2>
+      <div class="stack-grid">
+        {
+          stack.map((item) => (
+            <a
+              class="stack-card"
+              href={item.url ?? '#'}
+              target={item.url ? '_blank' : undefined}
+              rel={item.url ? 'noopener' : undefined}
+            >
+              <span class="stack-name">{item.name}</span>
+              <span class="stack-desc">{item.desc}</span>
+            </a>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- 改版历史 -->
+    <section class="block">
+      <h2 class="section-title">改版历史</h2>
+      <div class="timeline">
+        {
+          changelog.map((v) => (
+            <div class="timeline-item">
+              <div class="timeline-dot"></div>
+              <div class="timeline-body">
+                <div class="timeline-head">
+                  <span class="timeline-version">{v.version}</span>
+                  <span class="timeline-date">{v.date}</span>
+                </div>
+                <ul class="timeline-items">
+                  {v.items.map((item) => <li>{item}</li>)}
+                </ul>
+              </div>
+            </div>
+          ))
+        }
+      </div>
+    </section>
+
+    <!-- 致谢 -->
+    <section class="block">
+      <h2 class="section-title">致谢</h2>
+      <ul class="thanks">
+        <li>感谢 <a href="https://astro.build" target="_blank" rel="noopener">Astro</a> 团队与整个开源社区,让个人站点的搭建变得如此简单优雅。</li>
+        <li>感谢 <a href="https://unsplash.com" target="_blank" rel="noopener">Unsplash</a> 及各位摄影师提供的免费授权风景照片。</li>
+        <li>感谢每一位读到这里的读者——你的每一次访问,都是继续写下去的动力。</li>
+      </ul>
+    </section>
+  </section>
+</BaseLayout>
+
+<style>
+  .page-head {
+    padding: 48px 0 24px;
+  }
+
+  .page-head h1 {
+    margin: 0 0 6px;
+    font-size: 2.2rem;
+  }
+
+  .page-head p {
+    margin: 0;
+    color: var(--text-dim);
+  }
+
+  .block {
+    margin-bottom: 44px;
+  }
+
+  .intro {
+    color: var(--text-dim);
+    max-width: 720px;
+  }
+
+  /* 站点信息小卡 */
+  .site-facts {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+    margin-top: 18px;
+  }
+
+  .fact {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .fact-label {
+    font-size: 0.76rem;
+    color: var(--text-faint);
+    font-family: var(--font-mono);
+  }
+
+  /* 技术栈 */
+  .stack-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 14px;
+  }
+
+  .stack-card {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    color: var(--text);
+    transition: all 0.18s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .stack-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+    color: var(--text);
+  }
+
+  .stack-name {
+    font-weight: 700;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: 0.95rem;
+  }
+
+  .stack-desc {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+  }
+
+  /* 时间线 */
+  .timeline {
+    border-left: 2px solid var(--border);
+    padding-left: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .timeline-item {
+    position: relative;
+  }
+
+  .timeline-dot {
+    position: absolute;
+    left: -29px;
+    top: 5px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 4px var(--accent-soft);
+  }
+
+  .timeline-head {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+
+  .timeline-version {
+    font-weight: 700;
+    font-size: 1.05rem;
+    font-family: var(--font-mono);
+    color: var(--accent);
+  }
+
+  .timeline-date {
+    font-size: 0.8rem;
+    color: var(--text-faint);
+    font-family: var(--font-mono);
+  }
+
+  .timeline-items {
+    margin: 0;
+    padding-left: 18px;
+    color: var(--text-dim);
+    font-size: 0.92rem;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .thanks {
+    color: var(--text-dim);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-left: 20px;
+  }
+</style>

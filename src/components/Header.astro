@@ -8,6 +8,7 @@ const navItems = [
   { href: '/about', label: '关于我' },
   { href: '/blog', label: '文章' },
   { href: '/works', label: '作品' },
+  { href: '/gallery', label: '相册' },
 ];
 
 const { pathname } = Astro.url;
@@ -121,9 +122,13 @@ const { pathname } = Astro.url;
     .brand-name {
       display: none;
     }
+    .nav {
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
     .nav-link {
-      padding: 6px 9px;
-      font-size: 0.9rem;
+      padding: 5px 8px;
+      font-size: 0.88rem;
     }
   }
 </style>

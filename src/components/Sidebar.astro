@@ -2,7 +2,7 @@
 import Avatar from './Avatar.astro';
 import { getSiteConfig, getPublishedPosts, getAllWorks } from '../lib/db';
 import { formatDate } from '../utils/format';
-import { QUOTES, FRIEND_LINKS } from '../data/widgets';
+import { QUOTES, FRIEND_LINKS, MUSIC } from '../data/widgets';
 
 const site = getSiteConfig();
 const posts = getPublishedPosts();
@@ -41,12 +41,28 @@ const socials = [
     </div>
     <div class="side-profile-links">
       <a href="/about">关于我 →</a>
+      <a href="/about-site">关于本站 →</a>
       {
         socials.map((s) => (
           <a href={s.href} target="_blank" rel="noopener">{s.label}</a>
         ))
       }
     </div>
+  </div>
+
+  <!-- 音乐播放器 -->
+  <div class="side-card music-card">
+    <h3 class="side-card-title">音乐</h3>
+    <iframe
+      class="music-player"
+      title="网易云音乐播放器"
+      src={`https://music.163.com/outchain/player?type=2&id=${MUSIC.songId}&auto=${MUSIC.autoPlay ? 1 : 0}&height=66`}
+      loading="lazy"
+      scrolling="no"
+      frameborder="no"
+      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+    ></iframe>
+    <p class="music-name">♪ {MUSIC.songName}</p>
   </div>
 
   <!-- 一言(自动轮播) -->
@@ -161,6 +177,35 @@ const socials = [
   .tag-count {
     opacity: 0.65;
     font-size: 0.85em;
+  }
+
+  /* 音乐播放器(深色卡片贴合网易云主题) */
+  .music-card {
+    background: linear-gradient(160deg, #232a35, #161b23);
+    border-color: #2d3542;
+  }
+
+  .music-card .side-card-title {
+    color: #fff;
+  }
+
+  .music-card .side-card-title::before {
+    color: #ff5f8f;
+  }
+
+  .music-player {
+    width: 100%;
+    height: 66px;
+    border: 0;
+    border-radius: 8px;
+    display: block;
+  }
+
+  .music-name {
+    margin: 8px 0 0;
+    font-size: 0.78rem;
+    color: #8b94a3;
+    font-family: var(--font-mono);
   }
 
   /* 一言 */

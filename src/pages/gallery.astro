@@ -1,0 +1,246 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { GALLERY } from '../data/gallery';
+---
+
+<BaseLayout title="相册" description="自然风景摄影收藏">
+  <section class="container-wide">
+    <header class="page-head fade-up">
+      <h1>相册</h1>
+      <p>一些喜欢的自然风景,图片来自 Unsplash 免费授权。</p>
+    </header>
+
+    <div class="gallery-masonry">
+      {
+        GALLERY.map((item, i) => (
+          <figure class="gallery-item reveal" data-index={i}>
+            <img src={item.src} alt={item.title} loading="lazy" />
+            <figcaption>
+              <span class="gal-title">{item.title}</span>
+              <span class="gal-hint">点击查看大图 🔍</span>
+            </figcaption>
+          </figure>
+        ))
+      }
+    </div>
+  </section>
+
+  <!-- 灯箱 -->
+  <div class="lightbox" id="lightbox" hidden>
+    <button class="lb-close" id="lb-close" aria-label="关闭">✕</button>
+    <button class="lb-prev" id="lb-prev" aria-label="上一张">‹</button>
+    <figure class="lb-figure">
+      <img id="lb-img" src="" alt="" />
+      <figcaption id="lb-caption"></figcaption>
+    </figure>
+    <button class="lb-next" id="lb-next" aria-label="下一张">›</button>
+  </div>
+</BaseLayout>
+
+<script>
+  const items = Array.from(document.querySelectorAll<HTMLElement>('.gallery-item'));
+  const overlay = document.getElementById('lightbox') as HTMLElement;
+  const img = document.getElementById('lb-img') as HTMLImageElement;
+  const caption = document.getElementById('lb-caption')!;
+  let current = -1;
+
+  if (overlay && items.length > 0) {
+    function open(i: number): void {
+      current = (i + items.length) % items.length;
+      const item = items[current];
+      const source = item.querySelector('img')!;
+      img.src = source.src;
+      caption.textContent = source.alt;
+      overlay.hidden = false;
+      document.body.style.overflow = 'hidden';
+    }
+
+    function close(): void {
+      overlay.hidden = true;
+      document.body.style.overflow = '';
+    }
+
+    items.forEach((item, i) => {
+      item.addEventListener('click', () => open(i));
+    });
+
+    document.getElementById('lb-close')!.addEventListener('click', close);
+    document.getElementById('lb-prev')!.addEventListener('click', (e) => {
+      e.stopPropagation();
+      open(current - 1);
+    });
+    document.getElementById('lb-next')!.addEventListener('click', (e) => {
+      e.stopPropagation();
+      open(current + 1);
+    });
+
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) close();
+    });
+
+    window.addEventListener('keydown', (e) => {
+      if (overlay.hidden) return;
+      if (e.key === 'Escape') close();
+      if (e.key === 'ArrowLeft') open(current - 1);
+      if (e.key === 'ArrowRight') open(current + 1);
+    });
+  }
+</script>
+
+<style>
+  .page-head {
+    padding: 48px 0 24px;
+  }
+
+  .page-head h1 {
+    margin: 0 0 6px;
+    font-size: 2.2rem;
+  }
+
+  .page-head p {
+    margin: 0;
+    color: var(--text-dim);
+  }
+
+  /* 瀑布流 */
+  .gallery-masonry {
+    columns: 3 300px;
+    column-gap: 16px;
+    margin-bottom: 60px;
+  }
+
+  .gallery-item {
+    break-inside: avoid;
+    margin: 0 0 16px;
+    position: relative;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    cursor: zoom-in;
+  }
+
+  .gallery-item img {
+    width: 100%;
+    display: block;
+    transition: transform 0.4s ease;
+  }
+
+  .gallery-item:hover img {
+    transform: scale(1.05);
+  }
+
+  .gallery-item figcaption {
+    position: absolute;
+    inset: auto 0 0 0;
+    padding: 26px 14px 12px;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.62));
+    color: #fff;
+    font-size: 0.9rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .gallery-item:hover figcaption {
+    opacity: 1;
+  }
+
+  .gal-title {
+    font-weight: 600;
+  }
+
+  .gal-hint {
+    font-size: 0.74rem;
+    opacity: 0.85;
+  }
+
+  /* 灯箱 */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    background: rgba(10, 12, 16, 0.92);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
+
+  .lb-figure {
+    margin: 0;
+    max-width: 90vw;
+    max-height: 86vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    animation: fadeUp 0.3s ease both;
+  }
+
+  .lb-figure img {
+    max-width: 90vw;
+    max-height: 78vh;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+  }
+
+  .lb-figure figcaption {
+    color: #d5dbe4;
+    font-size: 0.95rem;
+  }
+
+  .lb-close,
+  .lb-prev,
+  .lb-next {
+    position: fixed;
+    z-index: 2001;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    font-size: 1.3rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.18s ease;
+  }
+
+  .lb-close:hover,
+  .lb-prev:hover,
+  .lb-next:hover {
+    background: rgba(255, 255, 255, 0.22);
+    border-color: #fff;
+  }
+
+  .lb-close {
+    top: 20px;
+    right: 24px;
+  }
+
+  .lb-prev {
+    left: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .lb-next {
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  @media (max-width: 640px) {
+    .lb-prev {
+      left: 10px;
+    }
+    .lb-next {
+      right: 10px;
+    }
+  }
+</style>

@@ -21,29 +21,12 @@ const nextPost = idx < allPosts.length - 1 ? allPosts[idx + 1] : undefined;
 ---
 
 <BaseLayout title={title} description={description}>
-  <article class="container prose post-page">
-    <!-- 文章头 -->
-    <header class="post-head fade-up">
-      <h1>{title}</h1>
-      <div class="post-meta">
-        <time datetime={post.created_at}>📅 {formatDate(new Date(post.created_at))}</time>
-        <span>⏱ 阅读约 {readingTime(post.content)} 分钟</span>
-        {post.updated_at !== post.created_at && <span>✏️ 更新于 {formatDate(new Date(post.updated_at))}</span>}
-      </div>
-      {
-        tags.length > 0 && (
-          <div class="post-tags">
-            {tags.map((tag) => <a class="tag" href={`/blog/tag/${encodeURIComponent(tag)}/`}>{tag}</a>)}
-          </div>
-        )
-      }
-    </header>
-
-    <!-- 目录 -->
+  <div class="container-wide article-layout">
+    <!-- 左侧固定目录 -->
     {
       headings.length > 1 && (
-        <nav class="toc" aria-label="文章目录">
-          <p class="toc-title">目录</p>
+        <aside class="article-toc" id="article-toc" aria-label="文章目录">
+          <p class="toc-title">📑 目录</p>
           <ul>
             {
               headings.map((h) => (
@@ -53,45 +36,166 @@ const nextPost = idx < allPosts.length - 1 ? allPosts[idx + 1] : undefined;
               ))
             }
           </ul>
-        </nav>
+        </aside>
       )
     }
 
-    <!-- 正文 -->
-    <div class="post-body">
-      <div set:html={html} />
-    </div>
+    <!-- 右侧正文 -->
+    <article class="prose post-page">
+      <header class="post-head fade-up">
+        <h1>{title}</h1>
+        <div class="post-meta">
+          <time datetime={post.created_at}>📅 {formatDate(new Date(post.created_at))}</time>
+          <span>⏱ 阅读约 {readingTime(post.content)} 分钟</span>
+          {post.updated_at !== post.created_at && <span>✏️ 更新于 {formatDate(new Date(post.updated_at))}</span>}
+        </div>
+        {
+          tags.length > 0 && (
+            <div class="post-tags">
+              {tags.map((tag) => <a class="tag" href={`/blog/tag/${encodeURIComponent(tag)}/`}>{tag}</a>)}
+            </div>
+          )
+        }
+      </header>
 
-    <!-- 上一篇 / 下一篇 -->
-    <nav class="post-nav">
-      {
-        prevPost ? (
-          <a class="nav-card" href={`/blog/${prevPost.slug}/`}>
-            <span class="nav-label">← 上一篇</span>
-            <span class="nav-title">{prevPost.title}</span>
-          </a>
-        ) : (
-          <span></span>
-        )
-      }
-      {
-        nextPost ? (
-          <a class="nav-card next" href={`/blog/${nextPost.slug}/`}>
-            <span class="nav-label">下一篇 →</span>
-            <span class="nav-title">{nextPost.title}</span>
-          </a>
-        ) : (
-          <span></span>
-        )
-      }
-    </nav>
-  </article>
+      <div class="post-body">
+        <div set:html={html} />
+      </div>
+
+      <!-- 上一篇 / 下一篇 -->
+      <nav class="post-nav">
+        {
+          prevPost ? (
+            <a class="nav-card" href={`/blog/${prevPost.slug}/`}>
+              <span class="nav-label">← 上一篇</span>
+              <span class="nav-title">{prevPost.title}</span>
+            </a>
+          ) : (
+            <span></span>
+          )
+        }
+        {
+          nextPost ? (
+            <a class="nav-card next" href={`/blog/${nextPost.slug}/`}>
+              <span class="nav-label">下一篇 →</span>
+              <span class="nav-title">{nextPost.title}</span>
+            </a>
+          ) : (
+            <span></span>
+          )
+        }
+      </nav>
+    </article>
+  </div>
 </BaseLayout>
 
+<script>
+  // 滚动高亮当前章节
+  const toc = document.getElementById('article-toc');
+  const links = toc ? Array.from(toc.querySelectorAll('a')) : [];
+  const targets = links
+    .map((a) => document.getElementById(a.getAttribute('href')?.slice(1) ?? ''))
+    .filter(Boolean);
+
+  if (toc && targets.length > 0) {
+    const setActive = (id: string) => {
+      links.forEach((a) => {
+        const active = a.getAttribute('href') === `#${id}`;
+        a.classList.toggle('active', active);
+        if (active) {
+          const el = a.closest('li');
+          if (el && el.scrollIntoView) {
+            // 保持当前项在目录可视范围内
+            const rect = a.getBoundingClientRect();
+            const tocRect = toc.getBoundingClientRect();
+            if (rect.top < tocRect.top || rect.bottom > tocRect.bottom) {
+              a.scrollIntoView({ block: 'nearest' });
+            }
+          }
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) setActive(entry.target.id);
+        }
+      },
+      { rootMargin: '-90px 0px -70% 0px' }
+    );
+    targets.forEach((h) => observer.observe(h));
+  }
+</script>
+
 <style>
-  .post-page {
+  /* 双栏:左侧目录 + 右侧正文 */
+  .article-layout {
+    display: grid;
+    grid-template-columns: 232px minmax(0, 1fr);
+    gap: 44px;
+    align-items: start;
     padding-top: 44px;
     padding-bottom: 60px;
+  }
+
+  /* 左侧固定目录 */
+  .article-toc {
+    position: sticky;
+    top: 84px;
+    max-height: calc(100vh - 110px);
+    overflow-y: auto;
+    padding: 6px 0;
+    scrollbar-width: thin;
+  }
+
+  .toc-title {
+    margin: 0 0 10px;
+    padding: 0 12px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--accent);
+    font-family: var(--font-mono);
+  }
+
+  .article-toc ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .article-toc a {
+    display: block;
+    padding: 5px 12px;
+    color: var(--text-dim);
+    font-size: 0.86rem;
+    line-height: 1.5;
+    border-left: 2px solid transparent;
+    transition: all 0.15s ease;
+  }
+
+  .article-toc a:hover {
+    color: var(--accent);
+  }
+
+  .article-toc a.active {
+    color: var(--accent);
+    font-weight: 600;
+    border-left-color: var(--accent);
+    background: var(--accent-soft);
+  }
+
+  .article-toc .toc-h3 a {
+    padding-left: 26px;
+    font-size: 0.82rem;
+  }
+
+  /* 右侧正文 */
+  .post-page {
+    min-width: 0;
   }
 
   .post-head {
@@ -103,6 +207,7 @@ const nextPost = idx < allPosts.length - 1 ? allPosts[idx + 1] : undefined;
   .post-head h1 {
     margin: 0 0 14px;
     font-size: 2.1rem;
+    line-height: 1.35;
   }
 
   .post-meta {
@@ -119,46 +224,6 @@ const nextPost = idx < allPosts.length - 1 ? allPosts[idx + 1] : undefined;
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
-  }
-
-  /* 目录 */
-  .toc {
-    background: var(--bg-soft);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 14px 20px;
-    margin-bottom: 26px;
-  }
-
-  .toc-title {
-    margin: 0 0 8px;
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--accent);
-    font-family: var(--font-mono);
-  }
-
-  .toc ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .toc a {
-    color: var(--text-dim);
-    font-size: 0.88rem;
-  }
-
-  .toc a:hover {
-    color: var(--accent);
-  }
-
-  .toc-h3 a {
-    padding-left: 16px;
-    font-size: 0.84rem;
   }
 
   /* 上一篇 / 下一篇 */
@@ -205,12 +270,37 @@ const nextPost = idx < allPosts.length - 1 ? allPosts[idx + 1] : undefined;
     font-weight: 600;
   }
 
-  @media (max-width: 640px) {
-    .post-nav {
+  /* 窄屏:目录折叠到顶部 */
+  @media (max-width: 900px) {
+    .article-layout {
       grid-template-columns: 1fr;
+      gap: 0;
+    }
+    .article-toc {
+      position: static;
+      max-height: 240px;
+      overflow-y: auto;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--bg-soft);
+      padding: 12px;
+      margin-bottom: 24px;
+    }
+    .article-toc a {
+      border-left: none;
+      border-radius: 6px;
+    }
+    .article-toc .toc-h3 a {
+      padding-left: 24px;
     }
     .post-head h1 {
       font-size: 1.7rem;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .post-nav {
+      grid-template-columns: 1fr;
     }
   }
 </style>

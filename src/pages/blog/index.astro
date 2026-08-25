@@ -33,6 +33,12 @@ const allTags = [...new Set(posts.flatMap((p) => p.data.tags))].sort();
       )
     }
 
+    <!-- 实时搜索 -->
+    <div class="search-box">
+      <span class="search-icon" aria-hidden="true">🔍</span>
+      <input id="search-input" type="search" placeholder="搜索文章标题、摘要或标签…" autocomplete="off" />
+    </div>
+
     {
       posts.length > 0 ? (
         <div class="post-list">
@@ -42,6 +48,7 @@ const allTags = [...new Set(posts.flatMap((p) => p.data.tags))].sort();
         <p class="empty">还没有文章,在 <code>src/content/blog/</code> 里写第一篇吧!</p>
       )
     }
+    <p class="search-empty" id="search-empty">没有找到匹配的文章,换个关键词试试?</p>
   </section>
 </BaseLayout>
 
@@ -76,7 +83,7 @@ const allTags = [...new Set(posts.flatMap((p) => p.data.tags))].sort();
   .filter-tag:hover,
   .filter-tag.active {
     background: var(--accent);
-    color: #0d1117;
+    color: #fff;
     border-color: var(--accent);
   }
 

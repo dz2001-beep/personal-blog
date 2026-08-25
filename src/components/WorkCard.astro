@@ -10,7 +10,7 @@ const { work } = Astro.props;
 const { title, description, pubDate, tech, demoUrl, repoUrl } = work.data;
 ---
 
-<article class="work-card">
+<article class="work-card reveal">
   <a href={`/works/${work.id}/`} class="work-card-link">
     <div class="work-head">
       <span class="work-dots">

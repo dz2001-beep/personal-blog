@@ -8,9 +8,10 @@ interface Props {
 
 const { post } = Astro.props;
 const { title, description, pubDate, tags } = post.data;
+const searchText = `${title} ${description} ${tags.join(' ')}`.toLowerCase();
 ---
 
-<article class="post-card">
+<article class="post-card reveal" data-search={searchText}>
   <a href={`/blog/${post.id}/`} class="post-card-link">
     <div class="post-meta">
       <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
@@ -86,5 +87,11 @@ const { title, description, pubDate, tags } = post.data;
     font-size: 0.85rem;
     font-weight: 600;
     color: var(--accent);
+    display: inline-block;
+    transition: transform 0.18s ease;
+  }
+
+  .post-card:hover .post-more {
+    transform: translateX(4px);
   }
 </style>

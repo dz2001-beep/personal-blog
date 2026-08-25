@@ -4,10 +4,11 @@
 
 ## ✨ 功能
 
-- 👤 **关于我**:头像、个人简介、技术栈、工作经历、教育背景
-- 📝 **技术文章**:Markdown 写作、标签筛选、目录导航、阅读时长、代码高亮、上一篇/下一篇
+- 👤 **关于我**:头像(支持网页端上传/恢复默认)、个人简介、技术栈、工作经历、教育背景
+- 📝 **技术文章**:Markdown 写作、实时搜索、标签页、目录导航、阅读时长、代码高亮、上一篇/下一篇
 - 🚀 **作品集**:作品卡片、技术栈标签、在线演示/源码链接
-- 📡 **RSS 订阅** + 🤖 **Sitemap** + ⚡ 纯静态零 JS 高性能
+- 🎬 **动画特效**:白色主题 + 页面切换过渡、hero 打字机、滚动渐显、阅读进度条、回到顶部
+- 📡 **RSS 订阅** + 🤖 **Sitemap** + ⚡ 纯静态零依赖 JS 高性能
 
 ## 🚀 快速开始
 
@@ -77,10 +78,12 @@ featured: true    # true 时在首页精选展示
 | 想改什么 | 改哪里 |
 | --- | --- |
 | 站点标题、简介、域名 | `src/config.ts` |
-| 头像、favicon | 替换 `public/avatar.svg`、`public/favicon.svg` |
+| 头像、favicon | 网页端「关于我」页可上传,或替换 `public/avatar.svg`、`public/favicon.svg` |
 | 关于我页面的资料 | `src/data/profile.ts` |
-| 主题颜色、字体 | `src/styles/global.css` 里的 CSS 变量 |
+| 主题颜色(白/暗)、动画 | `src/styles/global.css` 里的 CSS 变量 |
 | 社交链接 | `src/config.ts` 的 `SOCIAL` |
+
+> 💡 头像上传是纯前端方案:图片会压缩后存到浏览器 localStorage,刷新/换页都在,但换浏览器或设备不会同步;想永久生效就把图片放到 `public/` 替换 `avatar.svg`。
 
 ## ☁️ 部署
 

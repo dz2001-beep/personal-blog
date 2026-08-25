@@ -64,7 +64,7 @@ Astro 内置了 [Shiki](https://shiki.style) 语法高亮,在配置里选一个�
 ```js
 markdown: {
   shikiConfig: {
-    theme: 'github-dark-dimmed',
+    theme: 'github-light',
     wrap: true,
   },
 }

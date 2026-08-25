@@ -17,7 +17,7 @@ const socialContact = [
   <!-- 个人信息头部 -->
   <section class="profile-head">
     <div class="container profile-card fade-up">
-      <Avatar size={110} alt={`${PROFILE.name} 的头像`} />
+      <Avatar size={120} alt={`${PROFILE.name} 的头像`} uploadable />
       <div class="profile-info">
         <h1>{PROFILE.name} <span class="handle">@{PROFILE.handle}</span></h1>
         <p class="profile-title">{PROFILE.title} · {PROFILE.tagline}</p>
@@ -251,13 +251,21 @@ const socialContact = [
 
   @media (max-width: 640px) {
     .profile-card {
-      flex-direction: column;
-      text-align: center;
-      padding: 26px 20px;
+      flex-direction: row;
+      align-items: flex-start;
+      text-align: left;
+      padding: 24px 18px;
       gap: 18px;
     }
+    .profile-info h1 {
+      font-size: 1.35rem;
+    }
     .profile-contact {
-      justify-content: center;
+      justify-content: flex-start;
+    }
+    .social-btn {
+      padding: 4px 10px;
+      font-size: 0.75rem;
     }
   }
 </style>

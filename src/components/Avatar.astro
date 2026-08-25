@@ -1,20 +1,38 @@
 ---
+import { AVATAR } from '../config';
+
 interface Props {
   size?: number;
   alt?: string;
+  /** 是否支持本地上传(显示上传按钮) */
+  uploadable?: boolean;
 }
 
-const { size = 120, alt = '头像' } = Astro.props;
+const { size = 120, alt = '头像', uploadable = false } = Astro.props;
 ---
 
-<img
-  class="avatar"
-  src="/avatar.svg"
-  alt={alt}
-  width={size}
-  height={size}
-  loading="lazy"
-/>
+<div class="avatar-wrap">
+  <img
+    class="avatar avatar-img"
+    src={AVATAR}
+    data-fallback={AVATAR}
+    alt={alt}
+    width={size}
+    height={size}
+    transition:name="avatar"
+  />
+  {
+    uploadable && (
+      <>
+        <button type="button" class="avatar-upload-btn" data-avatar-upload title="上传头像">
+          📷 更换头像
+        </button>
+        <button type="button" class="avatar-reset-btn" data-avatar-reset title="恢复默认头像">↺</button>
+        <input type="file" accept="image/*" data-avatar-input hidden />
+      </>
+    )
+  }
+</div>
 
 <style>
   .avatar {
@@ -23,5 +41,31 @@ const { size = 120, alt = '头像' } = Astro.props;
     box-shadow: 0 0 0 6px var(--accent-soft);
     background: var(--bg-soft);
     flex-shrink: 0;
+  }
+
+  .avatar-reset-btn {
+    position: absolute;
+    right: -6px;
+    bottom: -6px;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1px solid var(--border-strong);
+    background: var(--bg);
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.18s ease;
+  }
+
+  .avatar-reset-btn:hover {
+    color: var(--red);
+    border-color: var(--red);
+    transform: rotate(-30deg);
   }
 </style>

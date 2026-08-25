@@ -1,26 +1,26 @@
 /* ============================================================
-   全局样式 —— 暗色程序员风
+   全局样式 —— 白色主题 + 动画特效
    修改这里的 CSS 变量即可快速换主题
    ============================================================ */
 
 :root {
-  /* 配色 */
-  --bg: #0d1117;            /* 页面背景 */
-  --bg-soft: #161b22;       /* 卡片/区块背景 */
-  --bg-softer: #1c2129;     /* 悬浮/hover 背景 */
-  --border: #262d38;        /* 边框 */
-  --border-strong: #333d4d;
+  /* 配色(白色主题) */
+  --bg: #ffffff;            /* 页面背景 */
+  --bg-soft: #f6f8fa;       /* 卡片/区块背景 */
+  --bg-softer: #eef1f6;     /* 悬浮/hover 背景 */
+  --border: #d8dee7;        /* 边框 */
+  --border-strong: #b7c0cd;
 
-  --text: #e6edf3;          /* 正文 */
-  --text-dim: #9aa4b2;      /* 次要文字 */
-  --text-faint: #6b7684;    /* 更弱文字 */
+  --text: #1f2328;          /* 正文 */
+  --text-dim: #57606a;      /* 次要文字 */
+  --text-faint: #8c959f;    /* 更弱文字 */
 
-  --accent: #7aa2f7;        /* 主强调色 */
-  --accent-2: #bb9af7;      /* 次强调色(渐变用) */
-  --accent-soft: rgba(122, 162, 247, 0.12);
-  --green: #9ece6a;
-  --red: #f7768e;
-  --yellow: #e0af68;
+  --accent: #2563eb;        /* 主强调色(蓝) */
+  --accent-2: #7c3aed;      /* 次强调色(紫,渐变用) */
+  --accent-soft: rgba(37, 99, 235, 0.08);
+  --green: #1a7f37;
+  --red: #cf222e;
+  --yellow: #bf8700;
 
   /* 字体 */
   --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
@@ -31,8 +31,8 @@
   /* 圆角与阴影 */
   --radius: 12px;
   --radius-sm: 8px;
-  --shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.25);
+  --shadow: 0 10px 34px rgba(31, 35, 40, 0.10);
+  --shadow-sm: 0 2px 10px rgba(31, 35, 40, 0.07);
 
   /* 布局 */
   --container: 720px;       /* 文章正文宽度 */
@@ -55,9 +55,10 @@ body {
   font-size: 16px;
   line-height: 1.75;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
-/* 背景装饰:顶部一抹渐变光晕 */
+/* 背景装饰:顶部一抹轻盈的渐变光晕 */
 body::before {
   content: '';
   position: fixed;
@@ -65,8 +66,12 @@ body::before {
   pointer-events: none;
   z-index: -1;
   background:
-    radial-gradient(600px 300px at 20% -10%, rgba(122, 162, 247, 0.08), transparent 70%),
-    radial-gradient(500px 300px at 90% -10%, rgba(187, 154, 247, 0.06), transparent 70%);
+    radial-gradient(640px 320px at 15% -8%, rgba(37, 99, 235, 0.07), transparent 70%),
+    radial-gradient(560px 320px at 90% -8%, rgba(124, 58, 237, 0.06), transparent 70%);
+}
+
+::selection {
+  background: rgba(37, 99, 235, 0.16);
 }
 
 img {
@@ -202,7 +207,7 @@ th {
   border-radius: 999px;
   background: var(--accent-soft);
   color: var(--accent);
-  border: 1px solid rgba(122, 162, 247, 0.25);
+  border: 1px solid rgba(37, 99, 235, 0.22);
   white-space: nowrap;
 }
 
@@ -218,25 +223,27 @@ th {
   border: 1px solid var(--border-strong);
   background: var(--bg-soft);
   color: var(--text);
-  transition: all 0.15s ease;
+  cursor: pointer;
+  transition: all 0.18s ease;
 }
 
 .btn:hover {
   border-color: var(--accent);
   color: var(--accent);
   transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
 }
 
 .btn-primary {
   background: var(--accent);
   border-color: var(--accent);
-  color: #0d1117;
+  color: #fff;
 }
 
 .btn-primary:hover {
   background: var(--accent-2);
   border-color: var(--accent-2);
-  color: #0d1117;
+  color: #fff;
 }
 
 /* 章节标题 */
@@ -255,11 +262,11 @@ th {
   font-weight: 400;
 }
 
-/* ---------- 动画 ---------- */
+/* ---------- 动画:加载淡入 ---------- */
 @keyframes fadeUp {
   from {
     opacity: 0;
-    transform: translateY(12px);
+    transform: translateY(14px);
   }
   to {
     opacity: 1;
@@ -268,7 +275,224 @@ th {
 }
 
 .fade-up {
-  animation: fadeUp 0.5s ease both;
+  animation: fadeUp 0.55s ease both;
+}
+
+/* ---------- 动画:滚动渐显 ---------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+
+.reveal.revealed {
+  opacity: 1;
+  transform: none;
+}
+
+/* ---------- 动画:打字机光标 ---------- */
+.typed-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin-left: 3px;
+  vertical-align: -0.1em;
+  background: var(--accent);
+  animation: blink 0.85s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.typed-done .typed-cursor {
+  display: none;
+}
+
+/* ---------- 阅读进度条 ---------- */
+#progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  z-index: 200;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transform-origin: left center;
+  transform: scaleX(0);
+  transition: transform 0.1s linear;
+}
+
+/* ---------- 回到顶部 ---------- */
+#back-to-top {
+  position: fixed;
+  right: 22px;
+  bottom: 26px;
+  z-index: 150;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  background: var(--bg);
+  color: var(--text-dim);
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: all 0.25s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+#back-to-top.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+#back-to-top:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  transform: translateY(-2px);
+}
+
+/* ---------- 头像上传 ---------- */
+.avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.avatar-upload-btn {
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg);
+  color: var(--text-dim);
+  cursor: pointer;
+  white-space: nowrap;
+  opacity: 0.95;
+  transition: all 0.18s ease;
+  box-shadow: var(--shadow-sm);
+}
+
+.avatar-upload-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  transform: translateX(-50%) translateY(-1px);
+}
+
+/* ---------- 搜索框 ---------- */
+.search-box {
+  position: relative;
+  margin-bottom: 24px;
+}
+
+.search-box input {
+  width: 100%;
+  padding: 12px 16px 12px 42px;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.search-box input::placeholder {
+  color: var(--text-faint);
+}
+
+.search-box input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+  background: var(--bg);
+}
+
+.search-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-faint);
+  font-size: 1rem;
+  pointer-events: none;
+}
+
+.search-empty {
+  display: none;
+  color: var(--text-dim);
+  padding: 36px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius);
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.search-empty.show {
+  display: block;
+}
+
+/* ---------- 提示 toast ---------- */
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: 34px;
+  transform: translateX(-50%) translateY(16px);
+  z-index: 300;
+  padding: 10px 20px;
+  border-radius: 999px;
+  background: var(--text);
+  color: var(--bg);
+  font-size: 0.88rem;
+  font-weight: 600;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow);
+  white-space: nowrap;
+}
+
+#toast.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ---------- 尊重系统「减少动态效果」设置 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .fade-up,
+  .reveal {
+    animation: none;
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+  }
+  .typed-cursor {
+    display: none;
+  }
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }
 
 /* ---------- 响应式 ---------- */

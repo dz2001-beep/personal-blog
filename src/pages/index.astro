@@ -24,12 +24,14 @@ const socialButtons = [
 ---
 
 <BaseLayout>
-  <!-- ============ Hero ============ -->
+  <!-- ============ Hero(头像靠左,信息在右) ============ -->
   <section class="hero">
     <div class="container hero-inner fade-up">
       <Avatar size={132} alt={`${SITE.author} 的头像`} />
       <div class="hero-text">
-        <h1 class="hero-title">{SITE.heroTitle}</h1>
+        <h1 class="hero-title" id="hero-title">
+          <span id="typed" data-text={SITE.heroTitle}></span><span class="typed-cursor">|</span>
+        </h1>
         <p class="hero-tagline">
           <span class="hero-code">{'<'}dev{'>'}</span> {SITE.heroTagline}{' '}
           <span class="hero-code">{'</'}dev{'>'}</span>
@@ -103,6 +105,7 @@ const socialButtons = [
   .hero-title {
     font-size: 2.4rem;
     margin: 0 0 8px;
+    min-height: 1.3em;
     background: linear-gradient(120deg, var(--accent), var(--accent-2));
     -webkit-background-clip: text;
     background-clip: text;
@@ -180,20 +183,34 @@ const socialButtons = [
     text-align: center;
   }
 
+  /* 手机端:头像依然靠左,内容在右侧 */
   @media (max-width: 640px) {
     .hero {
       padding: 44px 0 30px;
     }
     .hero-inner {
-      flex-direction: column;
-      text-align: center;
-      gap: 26px;
-    }
-    .hero-actions, .hero-social {
-      justify-content: center;
+      flex-direction: row;
+      align-items: flex-start;
+      gap: 20px;
     }
     .hero-title {
-      font-size: 1.8rem;
+      font-size: 1.55rem;
+    }
+    .hero-desc {
+      font-size: 0.9rem;
+    }
+    .hero-actions {
+      gap: 8px;
+    }
+  }
+
+  @media (max-width: 400px) {
+    .hero-inner {
+      gap: 14px;
+    }
+    .hero-actions .btn {
+      padding: 8px 12px;
+      font-size: 0.85rem;
     }
   }
 </style>

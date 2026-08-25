@@ -12,8 +12,8 @@ export default defineConfig({
   integrations: [sitemap(), mdx()],
   markdown: {
     shikiConfig: {
-      // 代码高亮主题,可选 github-dark / one-dark-pro 等
-      theme: 'github-dark-dimmed',
+      // 代码高亮主题(白色主题用浅色系)
+      theme: 'github-light',
       // 让代码块在窄屏上可横向滚动而不是换行
       wrap: true,
     },

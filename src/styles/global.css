@@ -35,8 +35,8 @@
   --shadow-sm: 0 2px 10px rgba(31, 35, 40, 0.07);
 
   /* 布局 */
-  --container: 820px;       /* 文章正文宽度(已加宽) */
-  --container-wide: 1280px; /* 列表页/双栏宽度(已加宽) */
+  --container: 860px;       /* 文章正文宽度 */
+  --container-wide: 1400px; /* 列表页/双栏宽度 */
 }
 
 * {

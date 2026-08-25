@@ -1,11 +1,12 @@
 ---
 import Avatar from './Avatar.astro';
-import { getSiteConfig, getPublishedPosts, getFeaturedWorks } from '../lib/db';
+import { getSiteConfig, getPublishedPosts, getAllWorks } from '../lib/db';
 import { formatDate } from '../utils/format';
+import { QUOTES, FRIEND_LINKS } from '../data/widgets';
 
 const site = getSiteConfig();
 const posts = getPublishedPosts();
-const works = getFeaturedWorks();
+const works = getAllWorks();
 
 const tagCounts = new Map<string, number>();
 for (const p of posts) {
@@ -13,6 +14,13 @@ for (const p of posts) {
 }
 const tags = [...tagCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 16);
 const recent = posts.slice(0, 5);
+
+// 网站统计
+const allTags = tagCounts.size;
+const firstPost = posts.length > 0 ? posts[posts.length - 1] : undefined;
+const days = firstPost
+  ? Math.max(1, Math.floor((Date.now() - new Date(firstPost.created_at).getTime()) / 86400000))
+  : 0;
 
 const socials = [
   { href: site.social.github, label: 'GitHub', show: !!site.social.github },
@@ -38,6 +46,35 @@ const socials = [
           <a href={s.href} target="_blank" rel="noopener">{s.label}</a>
         ))
       }
+    </div>
+  </div>
+
+  <!-- 一言(自动轮播) -->
+  <div class="side-card quote-card">
+    <h3 class="side-card-title">一言</h3>
+    <blockquote class="side-quote" id="quote-text">{QUOTES[0]}</blockquote>
+  </div>
+
+  <!-- 网站统计 -->
+  <div class="side-card">
+    <h3 class="side-card-title">网站统计</h3>
+    <div class="stat-grid-side">
+      <div class="stat-cell">
+        <span class="stat-num">{posts.length}</span>
+        <span class="stat-label">文章</span>
+      </div>
+      <div class="stat-cell">
+        <span class="stat-num">{works.length}</span>
+        <span class="stat-label">作品</span>
+      </div>
+      <div class="stat-cell">
+        <span class="stat-num">{allTags}</span>
+        <span class="stat-label">标签</span>
+      </div>
+      <div class="stat-cell">
+        <span class="stat-num">{days || '—'}</span>
+        <span class="stat-label">已建站天数</span>
+      </div>
     </div>
   </div>
 
@@ -80,18 +117,18 @@ const socials = [
     )
   }
 
-  <!-- 精选作品 -->
+  <!-- 友链 -->
   {
-    works.length > 0 && (
+    FRIEND_LINKS.length > 0 && (
       <div class="side-card">
-        <h3 class="side-card-title">精选作品</h3>
-        <ul class="side-list">
+        <h3 class="side-card-title">友链</h3>
+        <ul class="side-list friend-list">
           {
-            works.slice(0, 4).map((w) => (
+            FRIEND_LINKS.map((f) => (
               <li>
-                <a href={`/works/${w.slug}/`}>
-                  {w.title}
-                  <small>{w.tech.slice(0, 3).join(' · ')}</small>
+                <a href={f.url} target="_blank" rel="noopener">
+                  {f.name}
+                  {f.desc && <small>{f.desc}</small>}
                 </a>
               </li>
             ))
@@ -102,6 +139,20 @@ const socials = [
   }
 </aside>
 
+<script define:vars={{ quotes: QUOTES }}>
+  const el = document.getElementById('quote-text');
+  if (el && !el.dataset.bound && quotes.length > 0) {
+    el.dataset.bound = '1';
+    let i = Math.floor(Math.random() * quotes.length);
+    el.textContent = quotes[i];
+    setInterval(() => {
+      if (!document.body.contains(el)) return;
+      i = (i + 1) % quotes.length;
+      el.textContent = quotes[i];
+    }, 6000);
+  }
+</script>
+
 <style>
   .sidebar {
     min-width: 0;
@@ -110,5 +161,59 @@ const socials = [
   .tag-count {
     opacity: 0.65;
     font-size: 0.85em;
+  }
+
+  /* 一言 */
+  .side-quote {
+    margin: 0;
+    padding: 4px 0 4px 14px;
+    border-left: 3px solid var(--accent-2);
+    color: var(--text-dim);
+    font-size: 0.88rem;
+    line-height: 1.7;
+    font-style: italic;
+    min-height: 3.2em;
+  }
+
+  /* 网站统计 */
+  .stat-grid-side {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .stat-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 10px 6px;
+    background: var(--bg-softer);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+
+  .stat-num {
+    font-size: 1.25rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: var(--accent);
+  }
+
+  .stat-label {
+    font-size: 0.74rem;
+    color: var(--text-faint);
+  }
+
+  /* 友链 */
+  .friend-list a {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .friend-list small {
+    text-align: right;
   }
 </style>

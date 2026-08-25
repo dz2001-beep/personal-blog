@@ -31,5 +31,5 @@ export const SOCIAL = {
   rss: '/rss.xml',
 };
 
-/** 头像路径(放在 public/ 目录下,替换成你自己的头像即可) */
-export const AVATAR = '/avatar.svg';
+/** 默认头像路径(二次元风格,可在后台「设置」上传替换) */
+export const AVATAR = '/avatar-anime.svg';

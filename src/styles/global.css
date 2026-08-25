@@ -474,6 +474,128 @@ th {
   transform: translateX(-50%) translateY(0);
 }
 
+/* ---------- 自定义滚动条(渐变紫蓝) ---------- */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-soft);
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--accent), var(--accent-2));
+  border-radius: 8px;
+  border: 2px solid var(--bg);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--accent-2), var(--accent));
+}
+
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent) var(--bg-soft);
+}
+
+/* ---------- 自定义光标 ---------- */
+html.has-custom-cursor,
+html.has-custom-cursor * {
+  cursor: none !important;
+}
+
+#cursor-dot,
+#cursor-ring {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  border-radius: 50%;
+  z-index: 9999;
+  opacity: 0;
+  will-change: transform;
+}
+
+#cursor-dot {
+  width: 7px;
+  height: 7px;
+  background: var(--accent);
+  box-shadow: 0 0 8px rgba(37, 99, 235, 0.5);
+}
+
+#cursor-ring {
+  width: 32px;
+  height: 32px;
+  border: 2px solid rgba(37, 99, 235, 0.55);
+  transition: width 0.18s ease, height 0.18s ease, border-color 0.18s ease,
+    background 0.18s ease, opacity 0.2s ease;
+}
+
+#cursor-ring.cursor-hover {
+  width: 46px;
+  height: 46px;
+  border-color: var(--accent-2);
+  background: rgba(124, 58, 237, 0.12);
+}
+
+#cursor-ring.cursor-press {
+  width: 22px;
+  height: 22px;
+}
+
+/* ---------- 样式点缀 ---------- */
+
+/* 章节标题闪烁星星 */
+.section-title::after {
+  content: '✦';
+  margin-left: 4px;
+  font-size: 0.85em;
+  color: var(--accent-2);
+  opacity: 0.6;
+  animation: twinkle 2.4s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.35; transform: scale(0.9); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+/* 正文链接:悬浮渐显下划线 */
+.prose a {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1.5px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size 0.25s ease, color 0.15s ease;
+  padding-bottom: 1px;
+}
+
+.prose a:hover {
+  background-size: 100% 1.5px;
+}
+
+/* 头像轻轻浮动(首页 Hero + 关于页) */
+.hero .avatar,
+.profile-card .avatar {
+  animation: avatarFloat 3.4s ease-in-out infinite alternate;
+}
+
+@keyframes avatarFloat {
+  from { transform: translateY(0); }
+  to { transform: translateY(-7px); }
+}
+
+/* 主按钮悬浮光晕 */
+.btn-primary:hover {
+  box-shadow: 0 0 22px rgba(37, 99, 235, 0.35);
+}
+
+/* 头像上传按钮悬浮微光 */
+.avatar-upload-btn:hover {
+  box-shadow: 0 0 12px rgba(37, 99, 235, 0.25);
+}
+
 /* ---------- 尊重系统「减少动态效果」设置 ---------- */
 @media (prefers-reduced-motion: reduce) {
   html {
@@ -488,6 +610,14 @@ th {
   }
   .typed-cursor {
     display: none;
+  }
+  #cursor-dot,
+  #cursor-ring {
+    display: none !important;
+  }
+  html.has-custom-cursor,
+  html.has-custom-cursor * {
+    cursor: auto !important;
   }
   * {
     transition-duration: 0.01ms !important;

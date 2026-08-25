@@ -55,9 +55,11 @@ const pageTitle = title === site.title ? site.title : `${title} | ${site.title}`
     <!-- 回到顶部 -->
     <button id="back-to-top" aria-label="回到顶部" title="回到顶部">↑</button>
 
-    <!-- 全局交互脚本(头像同步/滚动渐显/进度条/打字机/搜索) -->
+    <!-- 前台交互:头像同步/打字机/滚动渐显 + 背景樱花动画 + 自定义光标 -->
     <script>
       import '../scripts/site';
+      import '../scripts/background';
+      import '../scripts/cursor';
     </script>
   </body>
 </html>

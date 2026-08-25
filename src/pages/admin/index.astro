@@ -1,0 +1,132 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getAllPosts, getAllWorks, getSiteConfig } from '../../lib/db';
+import { formatDate } from '../../utils/format';
+
+const posts = getAllPosts();
+const works = getAllWorks();
+const site = getSiteConfig();
+const published = posts.filter((p) => p.status === 'published').length;
+const drafts = posts.filter((p) => p.status === 'draft').length;
+---
+
+<AdminLayout title="仪表盘">
+  <!-- 统计 -->
+  <div class="stat-grid">
+    <div class="stat-card">
+      <div class="stat-num">{published}</div>
+      <div class="stat-label">已发布文章</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">{drafts}</div>
+      <div class="stat-label">草稿</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">{works.length}</div>
+      <div class="stat-label">作品</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">{site.avatar.startsWith('/uploads') ? '✓' : '—'}</div>
+      <div class="stat-label">已上传头像</div>
+    </div>
+  </div>
+
+  <!-- 快捷操作 -->
+  <div class="panel">
+    <h2>快捷操作</h2>
+    <div class="form-actions" style="margin-top:0">
+      <a class="btn btn-primary" href="/admin/posts/new">✍️ 写新文章</a>
+      <a class="btn" href="/admin/works/new">🚀 添加作品</a>
+      <a class="btn" href="/admin/settings">⚙️ 站点设置</a>
+      <a class="btn" href="/" target="_blank" rel="noopener">🌐 查看前台</a>
+    </div>
+  </div>
+
+  <!-- 文章列表 -->
+  <div class="panel">
+    <h2>文章({posts.length})</h2>
+    {
+      posts.length > 0 ? (
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>标题</th>
+              <th>状态</th>
+              <th>标签</th>
+              <th>日期</th>
+              <th style="text-align:right">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              posts.slice(0, 12).map((post) => (
+                <tr>
+                  <td><a href={`/admin/posts/${post.id}`}>{post.title}</a></td>
+                  <td>
+                    <span class:list={['badge', post.status === 'published' ? 'published' : 'draft']}>
+                      {post.status === 'published' ? '已发布' : '草稿'}
+                    </span>
+                  </td>
+                  <td style="font-size:0.8rem;color:var(--text-dim)">
+                    {post.tags.slice(0, 3).join(' · ') || '—'}
+                  </td>
+                  <td style="font-family:var(--font-mono);font-size:0.8rem;color:var(--text-dim)">
+                    {formatDate(new Date(post.created_at))}
+                  </td>
+                  <td style="text-align:right;white-space:nowrap">
+                    <a class="mini-btn" href={`/blog/${post.slug}/`} target="_blank" rel="noopener">查看</a>
+                    <a class="mini-btn" href={`/admin/posts/${post.id}`} style="margin-left:6px">编辑</a>
+                  </td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      ) : (
+        <p class="empty-tip">还没有文章,点击「写新文章」开始吧!</p>
+      )
+    }
+  </div>
+
+  <!-- 作品列表 -->
+  <div class="panel">
+    <h2>作品({works.length})</h2>
+    {
+      works.length > 0 ? (
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>名称</th>
+              <th>精选</th>
+              <th>技术栈</th>
+              <th>日期</th>
+              <th style="text-align:right">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            {
+              works.slice(0, 8).map((work) => (
+                <tr>
+                  <td><a href={`/admin/works/${work.id}`}>{work.title}</a></td>
+                  <td>{work.featured ? '⭐' : '—'}</td>
+                  <td style="font-size:0.8rem;color:var(--text-dim)">
+                    {work.tech.slice(0, 3).join(' · ') || '—'}
+                  </td>
+                  <td style="font-family:var(--font-mono);font-size:0.8rem;color:var(--text-dim)">
+                    {formatDate(new Date(work.created_at))}
+                  </td>
+                  <td style="text-align:right;white-space:nowrap">
+                    <a class="mini-btn" href={`/works/${work.slug}/`} target="_blank" rel="noopener">查看</a>
+                    <a class="mini-btn" href={`/admin/works/${work.id}`} style="margin-left:6px">编辑</a>
+                  </td>
+                </tr>
+              ))
+            }
+          </tbody>
+        </table>
+      ) : (
+        <p class="empty-tip">还没有作品,点击「添加作品」开始吧!</p>
+      )
+    }
+  </div>
+</AdminLayout>

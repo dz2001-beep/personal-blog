@@ -1,20 +1,20 @@
 ---
 import { formatDate } from '../utils/format';
-import type { CollectionEntry } from 'astro:content';
+import type { Post } from '../lib/db';
 
 interface Props {
-  post: CollectionEntry<'blog'>;
+  post: Post;
 }
 
 const { post } = Astro.props;
-const { title, description, pubDate, tags } = post.data;
+const { title, description, tags, slug } = post;
 const searchText = `${title} ${description} ${tags.join(' ')}`.toLowerCase();
 ---
 
 <article class="post-card reveal" data-search={searchText}>
-  <a href={`/blog/${post.id}/`} class="post-card-link">
+  <a href={`/blog/${slug}/`} class="post-card-link">
     <div class="post-meta">
-      <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
+      <time datetime={post.created_at}>{formatDate(new Date(post.created_at))}</time>
       {
         tags.length > 0 && (
           <span class="post-tags">

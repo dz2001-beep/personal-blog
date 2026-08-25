@@ -1,19 +1,17 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getCollection, render } from 'astro:content';
+import { getWorkBySlug } from '../../lib/db';
+import { renderMarkdown } from '../../lib/md';
 import { formatDate } from '../../utils/format';
 
-export async function getStaticPaths() {
-  const works = await getCollection('works');
-  return works.map((work) => ({
-    params: { slug: work.id },
-    props: { work },
-  }));
+const slug = Astro.params.slug;
+const work = getWorkBySlug(slug || '');
+if (!work) {
+  return Astro.redirect('/404');
 }
 
-const { work } = Astro.props;
-const { Content } = await render(work);
-const { title, description, pubDate, tech, demoUrl, repoUrl } = work.data;
+const { html } = await renderMarkdown(work.content);
+const { title, description, tech, demo_url, repo_url } = work;
 ---
 
 <BaseLayout title={title} description={description}>
@@ -22,7 +20,7 @@ const { title, description, pubDate, tech, demoUrl, repoUrl } = work.data;
       <h1>{title}</h1>
       <p class="work-desc">{description}</p>
       <div class="work-meta">
-        <time datetime={pubDate.toISOString()}>📅 {formatDate(pubDate)}</time>
+        <time datetime={work.created_at}>📅 {formatDate(new Date(work.created_at))}</time>
       </div>
       {
         tech.length > 0 && (
@@ -32,14 +30,14 @@ const { title, description, pubDate, tech, demoUrl, repoUrl } = work.data;
         )
       }
       <div class="work-actions">
-        {demoUrl && <a class="btn btn-primary" href={demoUrl} target="_blank" rel="noopener">🚀 在线演示</a>}
-        {repoUrl && <a class="btn" href={repoUrl} target="_blank" rel="noopener">💻 查看源码</a>}
+        {demo_url && <a class="btn btn-primary" href={demo_url} target="_blank" rel="noopener">🚀 在线演示</a>}
+        {repo_url && <a class="btn" href={repo_url} target="_blank" rel="noopener">💻 查看源码</a>}
         <a class="btn" href="/works">← 返回作品列表</a>
       </div>
     </header>
 
     <div class="work-body">
-      <Content />
+      <div set:html={html} />
     </div>
   </article>
 </BaseLayout>

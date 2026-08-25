@@ -1,0 +1,19 @@
+# Caddy 反向代理 + 自动 HTTPS(Let's Encrypt 免费证书)
+# 把 example.com 换成你的真实域名后: caddy reload
+example.com {
+    encode zstd gzip
+
+    # 反向代理到 Astro 服务
+    reverse_proxy 127.0.0.1:3000
+
+    # 上传的头像等静态资源长缓存
+    @static path /uploads/*
+    header @static Cache-Control "public, max-age=31536000, immutable"
+
+    # 安全响应头
+    header {
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "SAMEORIGIN"
+        Referrer-Policy "strict-origin-when-cross-origin"
+    }
+}

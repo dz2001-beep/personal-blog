@@ -1,0 +1,170 @@
+---
+import '../../styles/global.css';
+import { getSiteConfig } from '../../lib/db';
+
+const site = getSiteConfig();
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>登录 · 后台 | {site.title}</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body class="login-body">
+    <div class="login-card">
+      <div class="login-logo">&lt;/&gt;</div>
+      <h1>管理后台</h1>
+      <p class="login-sub">登录后即可在线写作与管理站点</p>
+
+      <form id="login-form">
+        <div class="field">
+          <label>用户名</label>
+          <input id="username" type="text" autocomplete="username" placeholder="admin" required />
+        </div>
+        <div class="field">
+          <label>密码</label>
+          <input id="password" type="password" autocomplete="current-password" placeholder="••••••••" required />
+        </div>
+        <p class="msg" id="msg"></p>
+        <button type="submit" class="btn btn-primary login-btn">登 录</button>
+      </form>
+
+      <p class="login-foot">
+        <a href="/">← 返回首页</a>
+      </p>
+    </div>
+
+    <script>
+      const form = document.getElementById('login-form') as HTMLFormElement;
+      const msg = document.getElementById('msg')!;
+      const btn = form.querySelector('button')!;
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        msg.textContent = '';
+        btn.disabled = true;
+        btn.textContent = '登录中…';
+        try {
+          const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              username: (document.getElementById('username') as HTMLInputElement).value,
+              password: (document.getElementById('password') as HTMLInputElement).value,
+            }),
+          });
+          const result = await res.json();
+          if (res.ok) {
+            location.href = '/admin';
+            return;
+          }
+          msg.textContent = result.error || '登录失败';
+        } catch {
+          msg.textContent = '网络错误';
+        }
+        btn.disabled = false;
+        btn.textContent = '登 录';
+      });
+    </script>
+
+    <style>
+      .login-body {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #eef2ff, #faf5ff);
+        padding: 20px;
+      }
+
+      .login-card {
+        width: 100%;
+        max-width: 380px;
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 40px 36px;
+        box-shadow: var(--shadow);
+        text-align: center;
+        animation: fadeUp 0.5s ease both;
+      }
+
+      .login-logo {
+        width: 56px;
+        height: 56px;
+        margin: 0 auto 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-2));
+        color: #fff;
+        font-family: var(--font-mono);
+        font-weight: 700;
+        font-size: 1.1rem;
+      }
+
+      .login-card h1 {
+        margin: 0 0 4px;
+        font-size: 1.4rem;
+      }
+
+      .login-sub {
+        margin: 0 0 24px;
+        color: var(--text-dim);
+        font-size: 0.9rem;
+      }
+
+      .field {
+        text-align: left;
+        margin-bottom: 14px;
+      }
+
+      .field label {
+        display: block;
+        font-size: 0.83rem;
+        font-weight: 600;
+        color: var(--text-dim);
+        margin-bottom: 6px;
+      }
+
+      .field input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 0.95rem;
+        outline: none;
+        transition: all 0.15s ease;
+        box-sizing: border-box;
+      }
+
+      .field input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px var(--accent-soft);
+      }
+
+      .msg {
+        min-height: 1.4em;
+        margin: 0 0 6px;
+        font-size: 0.85rem;
+        color: var(--red);
+      }
+
+      .login-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 11px;
+        font-size: 0.95rem;
+      }
+
+      .login-foot {
+        margin: 20px 0 0;
+        font-size: 0.85rem;
+      }
+    </style>
+  </body>
+</html>

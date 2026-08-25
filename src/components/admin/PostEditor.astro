@@ -1,0 +1,142 @@
+---
+import type { Post } from '../../lib/db';
+
+interface Props {
+  post?: Post;
+}
+
+const { post } = Astro.props;
+const endpoint = post ? `/api/admin/posts/${post.id}` : '/api/admin/posts';
+---
+
+<form class="editor-form" id="post-form" data-endpoint={endpoint}>
+  <div class="panel">
+    <div class="form-row">
+      <div class="admin-field">
+        <label>标题 *</label>
+        <input id="f-title" value={post?.title ?? ''} placeholder="文章标题" required />
+      </div>
+      <div class="admin-field">
+        <label>Slug(URL 标识,留空自动生成)</label>
+        <input id="f-slug" value={post?.slug ?? ''} placeholder="my-first-post" />
+      </div>
+    </div>
+    <div class="admin-field">
+      <label>摘要(列表页与 SEO 显示)</label>
+      <input id="f-desc" value={post?.description ?? ''} placeholder="一句话介绍这篇文章" />
+    </div>
+    <div class="form-row">
+      <div class="admin-field">
+        <label>标签(逗号分隔)</label>
+        <input id="f-tags" value={post?.tags.join(', ') ?? ''} placeholder="Astro, TypeScript, 前端" />
+      </div>
+      <div class="admin-field">
+        <label>状态</label>
+        <select id="f-status">
+          <option value="published" selected={!post || post.status === 'published'}>发布</option>
+          <option value="draft" selected={post?.status === 'draft'}>草稿(不对外显示)</option>
+        </select>
+      </div>
+    </div>
+    <div class="admin-field">
+      <label>正文(Markdown)</label>
+      <textarea id="f-content" rows="20" placeholder="支持 Markdown:标题、列表、**加粗**、`代码`、``` 代码块 ```、表格、引用…">{post?.content ?? ''}</textarea>
+      <div class="form-actions" style="margin-top:10px">
+        <button type="button" class="mini-btn" id="preview-btn">👁 预览正文</button>
+        <span class="form-msg" id="preview-hint"></span>
+      </div>
+      <div class="editor-preview" id="preview" hidden></div>
+    </div>
+    <div class="form-actions">
+      {post && (
+        <button type="button" class="btn danger" id="delete-btn">🗑 删除</button>
+      )}
+      <button type="button" class="btn" id="draft-btn">存为草稿</button>
+      <button type="submit" class="btn btn-primary">发布 / 保存</button>
+      <span class="form-msg" id="save-msg"></span>
+    </div>
+  </div>
+</form>
+
+<script>
+  const form = document.getElementById('post-form') as HTMLFormElement;
+  const endpoint = form.dataset.endpoint!;
+  const isEdit = endpoint.includes('/posts/');
+
+  const $ = (id: string) => (document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement);
+
+  function collect(): Record<string, unknown> {
+    return {
+      title: ($('f-title') as HTMLInputElement).value.trim(),
+      slug: ($('f-slug') as HTMLInputElement).value.trim(),
+      description: ($('f-desc') as HTMLInputElement).value.trim(),
+      tags: ($('f-tags') as HTMLInputElement).value.split(',').map((t) => t.trim()).filter(Boolean),
+      status: ($('f-status') as HTMLSelectElement).value,
+      content: ($('f-content') as HTMLTextAreaElement).value,
+    };
+  }
+
+  function showMsg(id: string, text: string, ok: boolean) {
+    const el = document.getElementById(id)!;
+    el.textContent = text;
+    el.className = `form-msg ${ok ? 'ok' : 'err'}`;
+  }
+
+  async function save(status?: string) {
+    const data = collect();
+    if (status) data.status = status;
+    try {
+      const res = await fetch(endpoint, {
+        method: isEdit ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        showMsg('save-msg', result.error || '保存失败', false);
+        return;
+      }
+      location.href = '/admin';
+    } catch {
+      showMsg('save-msg', '网络错误', false);
+    }
+  }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    save();
+  });
+
+  document.getElementById('draft-btn')?.addEventListener('click', () => save('draft'));
+
+  document.getElementById('delete-btn')?.addEventListener('click', async () => {
+    if (!confirm('确定删除这篇文章吗?此操作不可恢复。')) return;
+    const res = await fetch(endpoint, { method: 'DELETE' });
+    if (res.ok) location.href = '/admin';
+    else showMsg('save-msg', '删除失败', false);
+  });
+
+  document.getElementById('preview-btn')?.addEventListener('click', async () => {
+    const preview = document.getElementById('preview')!;
+    const hint = document.getElementById('preview-hint')!;
+    if (!preview.hidden) {
+      preview.hidden = true;
+      hint.textContent = '';
+      return;
+    }
+    hint.textContent = '渲染中…';
+    try {
+      const res = await fetch('/api/admin/preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: ($('f-content') as HTMLTextAreaElement).value }),
+      });
+      const result = await res.json();
+      preview.innerHTML = result.html || '';
+      preview.hidden = false;
+      hint.textContent = '';
+    } catch {
+      hint.textContent = '预览失败';
+    }
+  });
+</script>

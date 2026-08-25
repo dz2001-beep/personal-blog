@@ -1,0 +1,224 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { getSiteConfig } from '../../lib/db';
+
+const site = getSiteConfig();
+const { social } = site;
+---
+
+<AdminLayout title="站点设置">
+  <!-- 站点信息 -->
+  <form id="settings-form" class="panel">
+    <h2>站点信息</h2>
+    <div class="form-row">
+      <div class="admin-field">
+        <label>站点标题</label>
+        <input name="title" value={site.title} />
+      </div>
+      <div class="admin-field">
+        <label>导航栏名称</label>
+        <input name="shortName" value={site.shortName} />
+      </div>
+    </div>
+    <div class="admin-field">
+      <label>站点描述</label>
+      <input name="description" value={site.description} />
+    </div>
+    <div class="form-row">
+      <div class="admin-field">
+        <label>作者名</label>
+        <input name="author" value={site.author} />
+      </div>
+      <div class="admin-field">
+        <label>域名(用于 RSS/Sitemap,如 https://example.com)</label>
+        <input name="url" value={site.url} placeholder="https://example.com" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="admin-field">
+        <label>首页大标题</label>
+        <input name="heroTitle" value={site.heroTitle} />
+      </div>
+      <div class="admin-field">
+        <label>首页副标题</label>
+        <input name="heroTagline" value={site.heroTagline} />
+      </div>
+    </div>
+    <div class="admin-field">
+      <label>关于我 - 个人简介(支持 Markdown)</label>
+      <textarea name="bio" rows="6" placeholder="**加粗**、*斜体*、[链接](url)…">{site.bio || ''}</textarea>
+    </div>
+    <div class="admin-field">
+      <label>社交链接(留空则不显示)</label>
+      <div class="form-row">
+        <div class="admin-field" style="margin-bottom:8px">
+          <label style="font-weight:400">GitHub</label>
+          <input name="social.github" value={social.github} placeholder="https://github.com/you" />
+        </div>
+        <div class="admin-field" style="margin-bottom:8px">
+          <label style="font-weight:400">Email</label>
+          <input name="social.email" value={social.email} placeholder="you@example.com" />
+        </div>
+        <div class="admin-field" style="margin-bottom:8px">
+          <label style="font-weight:400">Twitter/X</label>
+          <input name="social.twitter" value={social.twitter} placeholder="https://x.com/you" />
+        </div>
+        <div class="admin-field" style="margin-bottom:8px">
+          <label style="font-weight:400">掘金</label>
+          <input name="social.juejin" value={social.juejin} placeholder="https://juejin.cn/user/…" />
+        </div>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn btn-primary">保存设置</button>
+      <span class="form-msg" id="settings-msg"></span>
+    </div>
+  </form>
+
+  <!-- 头像 -->
+  <div class="panel">
+    <h2>头像</h2>
+    <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+      <img id="avatar-preview" class="avatar avatar-img" src={site.avatar} data-fallback={site.avatar} alt="头像预览" width="96" height="96" />
+      <div>
+        <input type="file" id="avatar-input" accept="image/*" hidden />
+        <button type="button" class="btn" id="avatar-btn">📷 选择图片并上传</button>
+        <p style="font-size:0.8rem;color:var(--text-faint);margin:8px 0 0">
+          自动居中裁切为正方形并压缩,上传后全站生效
+        </p>
+        <span class="form-msg" id="avatar-msg"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 修改密码 -->
+  <form id="pwd-form" class="panel">
+    <h2>修改密码</h2>
+    <div class="form-row">
+      <div class="admin-field">
+        <label>当前密码</label>
+        <input name="current" type="password" autocomplete="current-password" required />
+      </div>
+      <div class="admin-field">
+        <label>新密码(至少 6 位)</label>
+        <input name="next" type="password" autocomplete="new-password" required minlength="6" />
+      </div>
+    </div>
+    <div class="form-actions">
+      <button type="submit" class="btn">修改密码</button>
+      <span class="form-msg" id="pwd-msg"></span>
+    </div>
+  </form>
+</AdminLayout>
+
+<script>
+  /* ---- 站点信息保存 ---- */
+  const settingsForm = document.getElementById('settings-form') as HTMLFormElement;
+  settingsForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(settingsForm);
+    const body: Record<string, unknown> = {};
+    const social: Record<string, string> = {};
+    fd.forEach((value, key) => {
+      if (key.startsWith('social.')) social[key.slice(7)] = String(value);
+      else body[key] = String(value);
+    });
+    body.social = social;
+
+    const msg = document.getElementById('settings-msg')!;
+    try {
+      const res = await fetch('/api/admin/settings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      const result = await res.json();
+      msg.textContent = res.ok ? '✓ 已保存' : result.error || '保存失败';
+      msg.className = `form-msg ${res.ok ? 'ok' : 'err'}`;
+    } catch {
+      msg.textContent = '网络错误';
+      msg.className = 'form-msg err';
+    }
+  });
+
+  /* ---- 头像上传(前端裁切压缩 → 服务端存储) ---- */
+  const avatarBtn = document.getElementById('avatar-btn')!;
+  const avatarInput = document.getElementById('avatar-input') as HTMLInputElement;
+  const avatarMsg = document.getElementById('avatar-msg')!;
+
+  avatarBtn.addEventListener('click', () => avatarInput.click());
+
+  avatarInput.addEventListener('change', async () => {
+    const file = avatarInput.files?.[0];
+    if (!file) return;
+    avatarMsg.textContent = '处理中…';
+    avatarMsg.className = 'form-msg';
+
+    // 居中裁切成正方形并压缩为 512px
+    const dataUrl = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = new Image();
+        img.onload = () => {
+          const size = Math.min(img.width, img.height);
+          const sx = (img.width - size) / 2;
+          const sy = (img.height - size) / 2;
+          const canvas = document.createElement('canvas');
+          canvas.width = 512;
+          canvas.height = 512;
+          const ctx = canvas.getContext('2d')!;
+          ctx.drawImage(img, sx, sy, size, size, 0, 0, 512, 512);
+          resolve(canvas.toDataURL('image/webp', 0.86));
+        };
+        img.onerror = reject;
+        img.src = String(reader.result);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+    try {
+      const res = await fetch('/api/admin/avatar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dataUrl }),
+      });
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.error || '上传失败');
+      // 同步所有头像(含本地 localStorage 覆盖逻辑)
+      document.querySelectorAll<HTMLImageElement>('.avatar-img').forEach((img) => {
+        img.src = result.avatar;
+        img.dataset.fallback = result.avatar;
+      });
+      localStorage.removeItem('blog:avatar');
+      avatarMsg.textContent = '✓ 头像已更新';
+      avatarMsg.className = 'form-msg ok';
+    } catch (err) {
+      avatarMsg.textContent = (err as Error).message || '上传失败';
+      avatarMsg.className = 'form-msg err';
+    }
+    avatarInput.value = '';
+  });
+
+  /* ---- 修改密码 ---- */
+  const pwdForm = document.getElementById('pwd-form') as HTMLFormElement;
+  pwdForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(pwdForm);
+    const msg = document.getElementById('pwd-msg')!;
+    try {
+      const res = await fetch('/api/admin/password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ current: fd.get('current'), next: fd.get('next') }),
+      });
+      const result = await res.json();
+      msg.textContent = res.ok ? '✓ 密码已修改' : result.error || '修改失败';
+      msg.className = `form-msg ${res.ok ? 'ok' : 'err'}`;
+      if (res.ok) pwdForm.reset();
+    } catch {
+      msg.textContent = '网络错误';
+      msg.className = 'form-msg err';
+    }
+  });
+</script>

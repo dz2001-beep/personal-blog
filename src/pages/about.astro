@@ -2,24 +2,28 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Avatar from '../components/Avatar.astro';
 import { PROFILE } from '../data/profile';
-import { SITE, SOCIAL } from '../config';
+import { getSiteConfig } from '../lib/db';
 import { mdInline } from '../utils/md';
 
+const site = getSiteConfig();
+const bio = site.bio || PROFILE.bio;
+const bioParagraphs = bio.split('\n\n').filter((p) => p.trim());
+
 const socialContact = [
-  { href: SOCIAL.github, label: 'GitHub', show: !!SOCIAL.github },
-  { href: SOCIAL.email ? `mailto:${SOCIAL.email}` : '', label: 'Email', show: !!SOCIAL.email },
-  { href: SOCIAL.twitter, label: 'Twitter', show: !!SOCIAL.twitter },
-  { href: SOCIAL.juejin, label: '掘金', show: !!SOCIAL.juejin },
+  { href: site.social.github, label: 'GitHub', show: !!site.social.github },
+  { href: site.social.email ? `mailto:${site.social.email}` : '', label: 'Email', show: !!site.social.email },
+  { href: site.social.twitter, label: 'Twitter', show: !!site.social.twitter },
+  { href: site.social.juejin, label: '掘金', show: !!site.social.juejin },
 ].filter((s) => s.show);
 ---
 
-<BaseLayout title="关于我" description={`${PROFILE.name} 的个人简介、技能与经历`}>
+<BaseLayout title="关于我" description={`${site.author} 的个人简介、技能与经历`}>
   <!-- 个人信息头部 -->
   <section class="profile-head">
     <div class="container profile-card fade-up">
-      <Avatar size={120} alt={`${PROFILE.name} 的头像`} uploadable />
+      <Avatar size={120} alt={`${site.author} 的头像`} src={site.avatar} fallback={site.avatar} uploadable />
       <div class="profile-info">
-        <h1>{PROFILE.name} <span class="handle">@{PROFILE.handle}</span></h1>
+        <h1>{site.author} <span class="handle">@{PROFILE.handle}</span></h1>
         <p class="profile-title">{PROFILE.title} · {PROFILE.tagline}</p>
         <div class="profile-contact">
           {
@@ -32,13 +36,17 @@ const socialContact = [
     </div>
   </section>
 
-  <!-- 个人简介 -->
+  <!-- 个人简介(后台「设置」可在线修改) -->
   <section class="container">
     <h2 class="section-title">个人简介</h2>
     {
-      PROFILE.bio.split('\n\n').map((para) => (
-        <p class="bio-para" set:html={mdInline(para)}></p>
-      ))
+      bioParagraphs.length > 0 ? (
+        bioParagraphs.map((para) => (
+          <p class="bio-para" set:html={mdInline(para)}></p>
+        ))
+      ) : (
+        <p class="bio-para" set:html={mdInline(PROFILE.bio)}></p>
+      )
     }
   </section>
 
@@ -147,6 +155,10 @@ const socialContact = [
     font-family: var(--font-mono);
     font-size: 0.8rem;
     padding: 5px 14px;
+  }
+
+  .bio-para {
+    color: var(--text);
   }
 
   .skill-grid {

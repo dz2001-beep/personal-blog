@@ -1,22 +1,22 @@
 ---
 import { formatDate } from '../utils/format';
-import type { CollectionEntry } from 'astro:content';
+import type { Work } from '../lib/db';
 
 interface Props {
-  work: CollectionEntry<'works'>;
+  work: Work;
 }
 
 const { work } = Astro.props;
-const { title, description, pubDate, tech, demoUrl, repoUrl } = work.data;
+const { title, description, tech, slug, demo_url, repo_url } = work;
 ---
 
 <article class="work-card reveal">
-  <a href={`/works/${work.id}/`} class="work-card-link">
+  <a href={`/works/${slug}/`} class="work-card-link">
     <div class="work-head">
       <span class="work-dots">
         <i></i><i></i><i></i>
       </span>
-      <span class="work-date">{formatDate(pubDate)}</span>
+      <span class="work-date">{formatDate(new Date(work.created_at))}</span>
     </div>
     <h3 class="work-title">{title}</h3>
     <p class="work-desc">{description}</p>
@@ -29,8 +29,8 @@ const { title, description, pubDate, tech, demoUrl, repoUrl } = work.data;
     }
   </a>
   <div class="work-links">
-    {demoUrl && <a class="btn btn-primary" href={demoUrl} target="_blank" rel="noopener">在线演示</a>}
-    {repoUrl && <a class="btn" href={repoUrl} target="_blank" rel="noopener">源码</a>}
+    {demo_url && <a class="btn btn-primary" href={demo_url} target="_blank" rel="noopener">在线演示</a>}
+    {repo_url && <a class="btn" href={repo_url} target="_blank" rel="noopener">源码</a>}
   </div>
 </article>
 

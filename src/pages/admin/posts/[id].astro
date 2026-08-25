@@ -1,0 +1,21 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import PostEditor from '../../../components/admin/PostEditor.astro';
+import { getPostById } from '../../../lib/db';
+
+const id = Number(Astro.params.id);
+const post = getPostById(id);
+---
+
+<AdminLayout title={post ? `编辑文章:${post.title}` : '文章不存在'}>
+  {
+    post ? (
+      <PostEditor post={post} />
+    ) : (
+      <div class="panel">
+        <p class="empty-tip">文章不存在或已被删除。</p>
+        <p><a class="btn" href="/admin">← 返回仪表盘</a></p>
+      </div>
+    )
+  }
+</AdminLayout>

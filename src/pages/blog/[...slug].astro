@@ -1,25 +1,21 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getCollection, render } from 'astro:content';
+import { getPublishedPosts, getPostBySlug } from '../../lib/db';
+import { renderMarkdown } from '../../lib/md';
 import { formatDate, readingTime } from '../../utils/format';
 
-export async function getStaticPaths() {
-  const posts = await getCollection('blog', ({ data }) => !data.draft);
-  return posts.map((post) => ({
-    params: { slug: post.id },
-    props: { post },
-  }));
+const slug = Astro.params.slug;
+const post = getPostBySlug(slug || '');
+if (!post || post.status !== 'published') {
+  return Astro.redirect('/404');
 }
 
-const { post } = Astro.props;
-const { Content, headings } = await render(post);
-const { title, description, pubDate, updatedDate, tags } = post.data;
+const { html, headings } = await renderMarkdown(post.content);
+const { title, description, tags } = post;
 
 // 上一篇 / 下一篇(按时间排序)
-const allPosts = (await getCollection('blog', ({ data }) => !data.draft)).sort(
-  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()
-);
-const idx = allPosts.findIndex((p) => p.id === post.id);
+const allPosts = getPublishedPosts();
+const idx = allPosts.findIndex((p) => p.slug === post.slug);
 const prevPost = idx > 0 ? allPosts[idx - 1] : undefined;
 const nextPost = idx < allPosts.length - 1 ? allPosts[idx + 1] : undefined;
 ---
@@ -30,9 +26,9 @@ const nextPost = idx < allPosts.length - 1 ? allPosts[idx + 1] : undefined;
     <header class="post-head fade-up">
       <h1>{title}</h1>
       <div class="post-meta">
-        <time datetime={pubDate.toISOString()}>📅 {formatDate(pubDate)}</time>
-        <span>⏱ 阅读约 {readingTime(post.body)} 分钟</span>
-        {updatedDate && <span>✏️ 更新于 {formatDate(updatedDate)}</span>}
+        <time datetime={post.created_at}>📅 {formatDate(new Date(post.created_at))}</time>
+        <span>⏱ 阅读约 {readingTime(post.content)} 分钟</span>
+        {post.updated_at !== post.created_at && <span>✏️ 更新于 {formatDate(new Date(post.updated_at))}</span>}
       </div>
       {
         tags.length > 0 && (
@@ -63,16 +59,16 @@ const nextPost = idx < allPosts.length - 1 ? allPosts[idx + 1] : undefined;
 
     <!-- 正文 -->
     <div class="post-body">
-      <Content />
+      <div set:html={html} />
     </div>
 
     <!-- 上一篇 / 下一篇 -->
     <nav class="post-nav">
       {
         prevPost ? (
-          <a class="nav-card" href={`/blog/${prevPost.id}/`}>
+          <a class="nav-card" href={`/blog/${prevPost.slug}/`}>
             <span class="nav-label">← 上一篇</span>
-            <span class="nav-title">{prevPost.data.title}</span>
+            <span class="nav-title">{prevPost.title}</span>
           </a>
         ) : (
           <span></span>
@@ -80,9 +76,9 @@ const nextPost = idx < allPosts.length - 1 ? allPosts[idx + 1] : undefined;
       }
       {
         nextPost ? (
-          <a class="nav-card next" href={`/blog/${nextPost.id}/`}>
+          <a class="nav-card next" href={`/blog/${nextPost.slug}/`}>
             <span class="nav-label">下一篇 →</span>
-            <span class="nav-title">{nextPost.data.title}</span>
+            <span class="nav-title">{nextPost.title}</span>
           </a>
         ) : (
           <span></span>

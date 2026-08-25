@@ -3,23 +3,17 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import Avatar from '../components/Avatar.astro';
 import PostCard from '../components/PostCard.astro';
 import WorkCard from '../components/WorkCard.astro';
-import { SITE, SOCIAL } from '../config';
-import { getCollection } from 'astro:content';
+import { getPublishedPosts, getFeaturedWorks, getSiteConfig } from '../lib/db';
 
-const posts = (await getCollection('blog', ({ data }) => !data.draft))
-  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
-  .slice(0, 3);
-
-const works = (await getCollection('works'))
-  .filter((w) => w.data.featured)
-  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
-  .slice(0, 3);
+const site = getSiteConfig();
+const posts = getPublishedPosts().slice(0, 3);
+const works = getFeaturedWorks().slice(0, 3);
 
 const socialButtons = [
-  { href: SOCIAL.github, label: 'GitHub', show: !!SOCIAL.github },
-  { href: SOCIAL.juejin, label: '掘金', show: !!SOCIAL.juejin },
-  { href: SOCIAL.twitter, label: 'Twitter', show: !!SOCIAL.twitter },
-  { href: SOCIAL.email ? `mailto:${SOCIAL.email}` : '', label: 'Email', show: !!SOCIAL.email },
+  { href: site.social.github, label: 'GitHub', show: !!site.social.github },
+  { href: site.social.juejin, label: '掘金', show: !!site.social.juejin },
+  { href: site.social.twitter, label: 'Twitter', show: !!site.social.twitter },
+  { href: site.social.email ? `mailto:${site.social.email}` : '', label: 'Email', show: !!site.social.email },
 ].filter((s) => s.show);
 ---
 
@@ -27,16 +21,16 @@ const socialButtons = [
   <!-- ============ Hero(头像靠左,信息在右) ============ -->
   <section class="hero">
     <div class="container hero-inner fade-up">
-      <Avatar size={132} alt={`${SITE.author} 的头像`} />
+      <Avatar size={132} alt={`${site.author} 的头像`} src={site.avatar} fallback={site.avatar} />
       <div class="hero-text">
         <h1 class="hero-title" id="hero-title">
-          <span id="typed" data-text={SITE.heroTitle}></span><span class="typed-cursor">|</span>
+          <span id="typed" data-text={site.heroTitle}></span><span class="typed-cursor">|</span>
         </h1>
         <p class="hero-tagline">
-          <span class="hero-code">{'<'}dev{'>'}</span> {SITE.heroTagline}{' '}
+          <span class="hero-code">{'<'}dev{'>'}</span> {site.heroTagline}{' '}
           <span class="hero-code">{'</'}dev{'>'}</span>
         </p>
-        <p class="hero-desc">{SITE.description}</p>
+        <p class="hero-desc">{site.description}</p>
         <div class="hero-actions">
           <a class="btn btn-primary" href="/blog">📝 阅读文章</a>
           <a class="btn" href="/works">🚀 查看作品</a>
@@ -65,7 +59,7 @@ const socialButtons = [
           {posts.map((post) => <PostCard post={post} />)}
         </div>
       ) : (
-        <p class="empty">还没有文章,在 <code>src/content/blog/</code> 里写第一篇吧!</p>
+        <p class="empty">还没有文章,登录后台写第一篇吧!</p>
       )
     }
     <div class="section-more">
@@ -82,7 +76,7 @@ const socialButtons = [
           {works.map((work) => <WorkCard work={work} />)}
         </div>
       ) : (
-        <p class="empty">还没有作品,在 <code>src/content/works/</code> 里添加第一个作品吧!</p>
+        <p class="empty">还没有作品,登录后台添加第一个作品吧!</p>
       )
     }
     <div class="section-more">

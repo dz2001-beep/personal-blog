@@ -1,19 +1,11 @@
 ---
 import BaseLayout from '../../../layouts/BaseLayout.astro';
 import PostCard from '../../../components/PostCard.astro';
-import { getCollection } from 'astro:content';
+import { getPublishedPosts } from '../../../lib/db';
 
-export async function getStaticPaths() {
-  const posts = await getCollection('blog', ({ data }) => !data.draft);
-  const tags = [...new Set(posts.flatMap((p) => p.data.tags))].sort();
-  return tags.map((tag) => ({
-    params: { tag },
-    props: { tag, posts: posts.filter((p) => p.data.tags.includes(tag)) },
-  }));
-}
-
-const { tag, posts } = Astro.props;
-const allTags = [...new Set((await getCollection('blog', ({ data }) => !data.draft)).flatMap((p) => p.data.tags))].sort();
+const tag = Astro.params.tag || '';
+const posts = getPublishedPosts().filter((p) => p.tags.includes(tag));
+const allTags = [...new Set(getPublishedPosts().flatMap((p) => p.tags))].sort();
 ---
 
 <BaseLayout title={`标签:${tag}`} description={`标签「${tag}」下的全部文章`}>
@@ -38,9 +30,15 @@ const allTags = [...new Set((await getCollection('blog', ({ data }) => !data.dra
       }
     </div>
 
-    <div class="post-list">
-      {posts.map((post) => <PostCard post={post} />)}
-    </div>
+    {
+      posts.length > 0 ? (
+        <div class="post-list">
+          {posts.map((post) => <PostCard post={post} />)}
+        </div>
+      ) : (
+        <p class="empty">该标签下暂时没有文章。</p>
+      )
+    }
 
     <div class="section-more">
       <a class="btn" href="/blog">← 返回全部文章</a>
@@ -92,6 +90,14 @@ const allTags = [...new Set((await getCollection('blog', ({ data }) => !data.dra
     flex-direction: column;
     gap: 14px;
     margin-bottom: 40px;
+  }
+
+  .empty {
+    color: var(--text-dim);
+    padding: 40px;
+    border: 1px dashed var(--border-strong);
+    border-radius: var(--radius);
+    text-align: center;
   }
 
   .section-more {

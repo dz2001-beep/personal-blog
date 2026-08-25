@@ -1,95 +1,92 @@
-# 个人博客
+# 个人博客(全栈版)
 
-基于 [Astro](https://astro.build) 构建的静态个人博客,包含 **个人 Profile、技术文章、作品集** 三大板块,全部内容用 Markdown 编写,提交即发布。
+基于 **Astro(SSR)+ SQLite** 的完整个人博客:前台是白色主题 + 动画的展示站,后台是网页管理界面,文章/作品/站点信息全部存在自己的数据库里。
 
 ## ✨ 功能
 
-- 👤 **关于我**:头像(支持网页端上传/恢复默认)、个人简介、技术栈、工作经历、教育背景
-- 📝 **技术文章**:Markdown 写作、实时搜索、标签页、目录导航、阅读时长、代码高亮、上一篇/下一篇
-- 🚀 **作品集**:作品卡片、技术栈标签、在线演示/源码链接
-- 🎬 **动画特效**:白色主题 + 页面切换过渡、hero 打字机、滚动渐显、阅读进度条、回到顶部
-- 📡 **RSS 订阅** + 🤖 **Sitemap** + ⚡ 纯静态零依赖 JS 高性能
+**前台**
+- 👤 关于我:头像(支持上传)、个人简介、技术栈、经历
+- 📝 技术文章:Markdown 渲染、代码高亮、目录、实时搜索、标签页、上一篇/下一篇
+- 🚀 作品集:作品卡片、在线演示/源码链接、首页精选
+- 🎬 白色主题 + 页面过渡、hero 打字机、滚动渐显、阅读进度条、回到顶部
+- 📡 RSS + Sitemap(动态生成)
 
-## 🚀 快速开始
+**后台(`/admin`)**
+- 🔐 管理员登录(会话 Cookie + 登录限流)
+- ✍️ 在线写文章/作品:Markdown 编辑器 + 实时预览 + 草稿箱
+- ⚙️ 站点设置:标题、简介、域名、Hero 文案、社交链接、个人简介
+- 📷 头像上传:自动裁切压缩,全站生效
+- 🔑 修改密码
+
+**存储**
+- 🗄 SQLite 数据库(`data/blog.db`,零外部依赖)
+- 首次启动自动把 `src/content/` 下的旧 Markdown 迁移入库
+
+## 🚀 本地运行
 
 ```bash
 npm install
-npm run dev        # 本地开发:http://localhost:4321
-npm run build      # 构建静态站点(输出到 dist/)
-npm run preview    # 本地预览构建产物
+npm run dev        # http://localhost:4321
+npm run build      # SSR 构建
+npm start          # 运行生产服务(需先 build)
 ```
+
+**首次登录后台**:打开 `/admin`,默认账号 `admin / admin123`,登录后**立即改密码**。
 
 ## 📁 项目结构
 
 ```
-├── public/                  # 静态资源(头像、favicon)
-│   ├── avatar.svg           # ← 替换成你的头像
-│   └── favicon.svg
+├── deploy/                  # 部署套件
+│   ├── setup-server.sh      # 服务器一键初始化(Ubuntu)
+│   ├── ecosystem.config.cjs # PM2 配置
+│   ├── Caddyfile            # 反向代理 + 自动 HTTPS
+│   └── backup.sh            # 定时备份(DB+头像,保留7份)
+├── .github/workflows/       # GitHub Actions 自动部署
 ├── src/
-│   ├── config.ts            # ← 站点信息、社交链接(先改这里!)
-│   ├── content.config.ts    # 内容集合 schema
-│   ├── content/
-│   │   ├── blog/            # ← 技术文章:每个 .md 文件一篇文章
-│   │   └── works/           # ← 作品:每个 .md 文件一个作品
-│   ├── data/
-│   │   └── profile.ts       # ← 关于我页面的个人资料
-│   ├── layouts/             # 布局
-│   ├── components/          # 组件(Header/Footer/卡片等)
-│   ├── pages/               # 页面(首页/关于/文章/作品)
-│   ├── styles/              # 全局样式(改 CSS 变量即可换主题)
-│   └── utils/
-└── astro.config.mjs         # Astro 配置
+│   ├── lib/                 # 核心逻辑
+│   │   ├── db.ts            # SQLite 数据层(node:sqlite,零依赖)
+│   │   ├── auth.ts          # 密码哈希 + 会话
+│   │   ├── md.ts            # Markdown 渲染 + shiki 高亮
+│   │   └── http.ts          # API 工具
+│   ├── pages/
+│   │   ├── index.astro      # 首页
+│   │   ├── about.astro      # 关于我
+│   │   ├── blog/            # 文章列表/详情/标签
+│   │   ├── works/           # 作品列表/详情
+│   │   ├── admin/           # 后台(登录/仪表盘/编辑器/设置)
+│   │   └── api/             # 后端 API
+│   ├── components/          # 前台组件 + admin 编辑器
+│   ├── layouts/             # BaseLayout / AdminLayout
+│   ├── scripts/site.ts      # 前台交互(打字机/渐显/搜索等)
+│   ├── styles/global.css    # 白色主题 + 动画(CSS 变量换主题)
+│   └── content/             # 旧 Markdown(首次启动自动迁移,可保留作备份)
+├── data/                    # SQLite 数据库(自动生成,已 gitignore)
+└── astro.config.mjs         # SSR + node adapter
 ```
 
-## ✍️ 写一篇文章
+## ☁️ 部署到服务器
 
-在 `src/content/blog/` 下新建一个 `.md` 文件即可,头部格式:
+见 `deploy/setup-server.sh`(一键脚本)与 `.github/workflows/deploy.yml`(push 自动部署)。
 
-```yaml
----
-title: '文章标题'
-description: '文章摘要(列表页和 SEO 使用)'
-pubDate: 2025-01-01
-tags: ['标签一', '标签二']
-draft: false          # true 时不发布
----
-```
+**流程概述**(详见交付文档):
+1. 购买服务器(阿里云/腾讯云轻量 2核2G)+ 域名
+2. 域名 ICP 备案(国内服务器必需,约 1–3 周)
+3. 控制台安全组放行 80/443
+4. `bash setup-server.sh <仓库地址> <域名>`
+5. 配置 GitHub Actions 密钥,之后 `git push` 自动上线
 
-正文直接写 Markdown,支持代码高亮、引用、表格、图片等。
-
-## 🛠️ 添加一个作品
-
-在 `src/content/works/` 下新建 `.md` 文件:
-
-```yaml
----
-title: '作品名称'
-description: '作品简介'
-pubDate: 2025-01-01
-tech: ['React', 'TypeScript']   # 技术栈标签
-demoUrl: 'https://demo.example.com'   # 在线演示(可选)
-repoUrl: 'https://github.com/you/repo'  # 源码地址(可选)
-featured: true    # true 时在首页精选展示
----
-```
+**数据安全**:SQLite + 上传头像每天凌晨自动备份到服务器,保留 7 份;建议定期把 `backups/` 下载到本地。
 
 ## 🎨 个性化
 
 | 想改什么 | 改哪里 |
 | --- | --- |
-| 站点标题、简介、域名 | `src/config.ts` |
-| 头像、favicon | 网页端「关于我」页可上传,或替换 `public/avatar.svg`、`public/favicon.svg` |
-| 关于我页面的资料 | `src/data/profile.ts` |
-| 主题颜色(白/暗)、动画 | `src/styles/global.css` 里的 CSS 变量 |
-| 社交链接 | `src/config.ts` 的 `SOCIAL` |
-
-> 💡 头像上传是纯前端方案:图片会压缩后存到浏览器 localStorage,刷新/换页都在,但换浏览器或设备不会同步;想永久生效就把图片放到 `public/` 替换 `avatar.svg`。
-
-## ☁️ 部署
-
-静态站点可部署到任意平台:Vercel、Netlify、GitHub Pages、Nginx 等。
-
-> ⚠️ 上线前记得把 `src/config.ts` 里的 `url` 改成真实域名。
+| 站点信息(标题/域名/社交) | 后台「设置」在线修改 |
+| 个人简介 | 后台「设置」在线修改 |
+| 头像 | 后台「设置」上传 |
+| 技能/经历/教育(结构化) | `src/data/profile.ts` |
+| 主题颜色/动画 | `src/styles/global.css` |
+| 默认管理员密码 | 环境变量 `ADMIN_PASSWORD`(首启时) |
 
 ## 📄 License
 

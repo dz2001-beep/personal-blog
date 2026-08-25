@@ -1,0 +1,145 @@
+---
+import type { Work } from '../../lib/db';
+
+interface Props {
+  work?: Work;
+}
+
+const { work } = Astro.props;
+const endpoint = work ? `/api/admin/works/${work.id}` : '/api/admin/works';
+---
+
+<form class="editor-form" id="work-form" data-endpoint={endpoint}>
+  <div class="panel">
+    <div class="form-row">
+      <div class="admin-field">
+        <label>作品名称 *</label>
+        <input id="f-title" value={work?.title ?? ''} placeholder="作品名称" required />
+      </div>
+      <div class="admin-field">
+        <label>Slug(URL 标识,留空自动生成)</label>
+        <input id="f-slug" value={work?.slug ?? ''} placeholder="my-project" />
+      </div>
+    </div>
+    <div class="admin-field">
+      <label>简介</label>
+      <input id="f-desc" value={work?.description ?? ''} placeholder="一句话介绍这个作品" />
+    </div>
+    <div class="form-row">
+      <div class="admin-field">
+        <label>技术栈(逗号分隔)</label>
+        <input id="f-tech" value={work?.tech.join(', ') ?? ''} placeholder="React, TypeScript, Vite" />
+      </div>
+      <div class="admin-field">
+        <label>在线演示地址</label>
+        <input id="f-demo" value={work?.demo_url ?? ''} placeholder="https://…(可留空)" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="admin-field">
+        <label>源码仓库地址</label>
+        <input id="f-repo" value={work?.repo_url ?? ''} placeholder="https://github.com/…(可留空)" />
+      </div>
+      <div class="admin-field">
+        <label>首页精选</label>
+        <select id="f-featured">
+          <option value="0" selected={!work?.featured}>否</option>
+          <option value="1" selected={work?.featured}>是(首页展示)</option>
+        </select>
+      </div>
+    </div>
+    <div class="admin-field">
+      <label>详细介绍(Markdown)</label>
+      <textarea id="f-content" rows="16" placeholder="项目背景、功能特性、技术要点…">{work?.content ?? ''}</textarea>
+      <div class="form-actions" style="margin-top:10px">
+        <button type="button" class="mini-btn" id="preview-btn">👁 预览正文</button>
+        <span class="form-msg" id="preview-hint"></span>
+      </div>
+      <div class="editor-preview" id="preview" hidden></div>
+    </div>
+    <div class="form-actions">
+      {work && (
+        <button type="button" class="btn danger" id="delete-btn">🗑 删除</button>
+      )}
+      <button type="submit" class="btn btn-primary">保存</button>
+      <span class="form-msg" id="save-msg"></span>
+    </div>
+  </div>
+</form>
+
+<script>
+  const form = document.getElementById('work-form') as HTMLFormElement;
+  const endpoint = form.dataset.endpoint!;
+  const isEdit = endpoint.includes('/works/');
+
+  const $ = (id: string) => (document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement);
+
+  function collect(): Record<string, unknown> {
+    return {
+      title: ($('f-title') as HTMLInputElement).value.trim(),
+      slug: ($('f-slug') as HTMLInputElement).value.trim(),
+      description: ($('f-desc') as HTMLInputElement).value.trim(),
+      tech: ($('f-tech') as HTMLInputElement).value.split(',').map((t) => t.trim()).filter(Boolean),
+      demo_url: ($('f-demo') as HTMLInputElement).value.trim(),
+      repo_url: ($('f-repo') as HTMLInputElement).value.trim(),
+      featured: ($('f-featured') as HTMLSelectElement).value === '1',
+      content: ($('f-content') as HTMLTextAreaElement).value,
+    };
+  }
+
+  function showMsg(text: string, ok: boolean) {
+    const el = document.getElementById('save-msg')!;
+    el.textContent = text;
+    el.className = `form-msg ${ok ? 'ok' : 'err'}`;
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(endpoint, {
+        method: isEdit ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(collect()),
+      });
+      const result = await res.json();
+      if (!res.ok) {
+        showMsg(result.error || '保存失败', false);
+        return;
+      }
+      location.href = '/admin';
+    } catch {
+      showMsg('网络错误', false);
+    }
+  });
+
+  document.getElementById('delete-btn')?.addEventListener('click', async () => {
+    if (!confirm('确定删除这个作品吗?此操作不可恢复。')) return;
+    const res = await fetch(endpoint, { method: 'DELETE' });
+    if (res.ok) location.href = '/admin';
+    else showMsg('删除失败', false);
+  });
+
+  document.getElementById('preview-btn')?.addEventListener('click', async () => {
+    const preview = document.getElementById('preview')!;
+    const hint = document.getElementById('preview-hint')!;
+    if (!preview.hidden) {
+      preview.hidden = true;
+      hint.textContent = '';
+      return;
+    }
+    hint.textContent = '渲染中…';
+    try {
+      const res = await fetch('/api/admin/preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: ($('f-content') as HTMLTextAreaElement).value }),
+      });
+      const result = await res.json();
+      preview.innerHTML = result.html || '';
+      preview.hidden = false;
+      hint.textContent = '';
+    } catch {
+      hint.textContent = '预览失败';
+    }
+  });
+</script>

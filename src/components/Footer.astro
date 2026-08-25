@@ -1,13 +1,14 @@
 ---
-import { SITE, SOCIAL } from '../config';
+import { getSiteConfig } from '../lib/db';
 
+const site = getSiteConfig();
 const year = new Date().getFullYear();
 
 const socialLinks = [
-  { href: SOCIAL.github, label: 'GitHub', icon: 'GitHub' },
-  { href: SOCIAL.juejin, label: '掘金', icon: '掘金' },
-  { href: SOCIAL.twitter, label: 'Twitter', icon: 'Twitter' },
-  { href: SOCIAL.rss, label: 'RSS', icon: 'RSS' },
+  { href: site.social.github, label: 'GitHub', icon: 'GitHub' },
+  { href: site.social.juejin, label: '掘金', icon: '掘金' },
+  { href: site.social.twitter, label: 'Twitter', icon: 'Twitter' },
+  { href: '/rss.xml', label: 'RSS', icon: 'RSS' },
 ].filter((item) => item.href);
 ---
 
@@ -15,7 +16,7 @@ const socialLinks = [
   <div class="container-wide">
     <div class="footer-inner">
       <p class="copyright">
-        © {year} {SITE.author} · Powered by{' '}
+        © {year} {site.author} · Powered by{' '}
         <a href="https://astro.build" target="_blank" rel="noopener">Astro</a>
       </p>
       <div class="links">

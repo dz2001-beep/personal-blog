@@ -1,0 +1,21 @@
+---
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+import WorkEditor from '../../../components/admin/WorkEditor.astro';
+import { getWorkById } from '../../../lib/db';
+
+const id = Number(Astro.params.id);
+const work = getWorkById(id);
+---
+
+<AdminLayout title={work ? `编辑作品:${work.title}` : '作品不存在'}>
+  {
+    work ? (
+      <WorkEditor work={work} />
+    ) : (
+      <div class="panel">
+        <p class="empty-tip">作品不存在或已被删除。</p>
+        <p><a class="btn" href="/admin">← 返回仪表盘</a></p>
+      </div>
+    )
+  }
+</AdminLayout>

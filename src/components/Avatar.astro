@@ -1,21 +1,23 @@
 ---
-import { AVATAR } from '../config';
-
 interface Props {
   size?: number;
   alt?: string;
   /** 是否支持本地上传(显示上传按钮) */
   uploadable?: boolean;
+  /** 头像地址(来自站点设置,默认 /avatar.svg) */
+  src?: string;
+  /** 无本地头像时的回退地址 */
+  fallback?: string;
 }
 
-const { size = 120, alt = '头像', uploadable = false } = Astro.props;
+const { size = 120, alt = '头像', uploadable = false, src = '/avatar.svg', fallback = src } = Astro.props;
 ---
 
 <div class="avatar-wrap">
   <img
     class="avatar avatar-img"
-    src={AVATAR}
-    data-fallback={AVATAR}
+    src={src}
+    data-fallback={fallback}
     alt={alt}
     width={size}
     height={size}
@@ -41,6 +43,7 @@ const { size = 120, alt = '头像', uploadable = false } = Astro.props;
     box-shadow: 0 0 0 6px var(--accent-soft);
     background: var(--bg-soft);
     flex-shrink: 0;
+    object-fit: cover;
   }
 
   .avatar-reset-btn {

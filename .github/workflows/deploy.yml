@@ -1,0 +1,33 @@
+# 自动部署:push 到 main 分支后,自动在服务器上更新
+#
+# 使用前提(一次性配置):
+#   1. 在 GitHub 仓库 Settings → Secrets and variables → Actions 添加:
+#      - SSH_HOST: 服务器公网 IP
+#      - SSH_USER: 登录用户(如 root)
+#      - SSH_KEY: 服务器的私钥(PEM 内容)
+#   2. 服务器上先运行一次 deploy/setup-server.sh 完成初始化
+name: 自动部署
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 通过 SSH 更新服务器
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /var/www/blog
+            git pull --ff-only
+            npm ci --no-audit --no-fund
+            npm run build
+            pm2 reload blog --update-env || pm2 start ecosystem.config.cjs

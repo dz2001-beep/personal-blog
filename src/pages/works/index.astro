@@ -1,10 +1,9 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import WorkCard from '../../components/WorkCard.astro';
-import { getCollection } from 'astro:content';
+import { getAllWorks } from '../../lib/db';
 
-const works = (await getCollection('works'))
-  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+const works = getAllWorks();
 ---
 
 <BaseLayout title="作品" description="个人作品集">
@@ -20,7 +19,7 @@ const works = (await getCollection('works'))
           {works.map((work) => <WorkCard work={work} />)}
         </div>
       ) : (
-        <p class="empty">还没有作品,在 <code>src/content/works/</code> 里添加第一个作品吧!</p>
+        <p class="empty">还没有作品,登录后台添加第一个作品吧!</p>
       )
     }
   </section>

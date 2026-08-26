@@ -4,7 +4,7 @@ description: '基于 Astro 构建的静态个人博客,支持技术文章、作�
 pubDate: 2025-03-01
 tech: ['Astro', 'TypeScript', 'Markdown']
 demoUrl: 'https://example.com'
-repoUrl: 'https://github.com/yourname/personal-blog'
+repoUrl: 'https://github.com/dz2001-beep/personal-blog'
 featured: true
 ---
 
@@ -32,7 +32,7 @@ featured: true
 ## 快速开始
 
 ```bash
-git clone https://github.com/yourname/personal-blog
+git clone https://github.com/dz2001-beep/personal-blog
 cd personal-blog
 npm install
 npm run dev

@@ -4,7 +4,7 @@ description: '一个用 Node.js 编写的命令行脚手架工具,支持自定�
 pubDate: 2024-11-08
 tech: ['Node.js', 'TypeScript', 'CLI']
 demoUrl: ''
-repoUrl: 'https://github.com/yourname/awesome-cli'
+repoUrl: 'https://github.com/dz2001-beep/awesome-cli'
 featured: true
 ---
 

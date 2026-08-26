@@ -10,9 +10,9 @@ export const SITE = {
   /** 部署域名(用于 RSS / Sitemap / SEO,上线前改成你的真实域名) */
   url: 'https://example.com',
   /** 站点作者 */
-  author: '你的名字',
+  author: 'DZ-Vanguard',
   /** 首页大标题 */
-  heroTitle: '你好,我是你的名字',
+  heroTitle: '你好,我是 DZ-Vanguard',
   /** 首页副标题(一句话介绍) */
   heroTagline: '全栈工程师 · 热爱开源与写作',
   /** 导航栏/页脚显示的博客名 */
@@ -23,7 +23,7 @@ export const SITE = {
 
 /** 社交链接(首页按钮、页脚展示,不需要的留空即可) */
 export const SOCIAL = {
-  github: 'https://github.com/yourname',
+  github: 'https://github.com/dz2001-beep',
   email: 'you@example.com',
   twitter: '',
   juejin: '',

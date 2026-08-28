@@ -4,9 +4,23 @@
 
 ## 📸 界面预览
 
-![首页截图](docs/screenshot-home.png)
+| 首页 | 关于我 |
+| :---: | :---: |
+| ![首页](docs/screenshots/home.png) | ![关于我](docs/screenshots/about.png) |
 
-> 最新版本首页截图(1440×900);本地构建运行后截取,部署后可更新为线上域名截图。
+| 文章列表 | 文章详情(左侧目录) |
+| :---: | :---: |
+| ![文章列表](docs/screenshots/blog.png) | ![文章详情](docs/screenshots/post.png) |
+
+| 作品集 | 相册 |
+| :---: | :---: |
+| ![作品](docs/screenshots/works.png) | ![相册](docs/screenshots/gallery.png) |
+
+| 后台登录 | |
+| :---: | :---: |
+| ![后台登录](docs/screenshots/admin.png) | |
+
+> 以上为最新版本截图(1440×900),本地构建运行后截取;部署后可更新为线上域名截图。
 
 ## ✨ 功能
 

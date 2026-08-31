@@ -27,7 +27,7 @@ interface Orb {
 }
 
 interface Sparkle {
-  x: number; y: number; vx: number; vy: number; life: number; maxLife: number; size: number;
+  x: number; y: number; vx: number; vy: number; life: number; maxLife: number; size: number; hue: number;
 }
 
 /* 鼠标火花(模块级共享,事件只绑一次) */
@@ -35,6 +35,8 @@ const sparkles: Sparkle[] = [];
 let mouseBound = false;
 let lastMouseX = -100;
 let lastMouseY = -100;
+/** 彩虹色相游标:连续生成的粒子按序取色,形成彩虹拖尾 */
+let hueCursor = 0;
 
 /** 当前活动的画布实例(visibilitychange 全局只绑一次) */
 let controller: { running: boolean; raf: number; canvas: HTMLCanvasElement; frame: (t: number) => void } | null = null;
@@ -66,6 +68,7 @@ function onMouseMove(e: MouseEvent): void {
     life: 0,
     maxLife: 40 + Math.random() * 30,
     size: 1.5 + Math.random() * 2,
+    hue: (hueCursor = (hueCursor + 16) % 360), // 彩虹色相按序推进
   });
 }
 
@@ -235,7 +238,10 @@ function ensureBackground(): void {
       ctx.save();
       ctx.translate(sp.x, sp.y);
       ctx.rotate(Math.PI / 4);
-      ctx.fillStyle = `rgba(255, 220, 150, ${0.7 * ratio})`;
+      // 彩虹拖尾:按粒子的 hue 取色,并随生命周期渐淡
+      ctx.fillStyle = `hsla(${sp.hue}, 95%, 66%, ${0.75 * ratio})`;
+      ctx.shadowColor = `hsla(${sp.hue}, 95%, 66%, ${0.6 * ratio})`;
+      ctx.shadowBlur = 6;
       ctx.beginPath();
       ctx.moveTo(0, -sp.size * ratio);
       ctx.lineTo(sp.size * ratio, 0);

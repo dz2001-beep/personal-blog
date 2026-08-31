@@ -54,6 +54,7 @@ const drafts = posts.filter((p) => p.status === 'draft').length;
               <th>状态</th>
               <th>标签</th>
               <th>日期</th>
+              <th>浏览</th>
               <th style="text-align:right">操作</th>
             </tr>
           </thead>
@@ -72,6 +73,9 @@ const drafts = posts.filter((p) => p.status === 'draft').length;
                   </td>
                   <td style="font-family:var(--font-mono);font-size:0.8rem;color:var(--text-dim)">
                     {formatDate(new Date(post.created_at))}
+                  </td>
+                  <td style="font-family:var(--font-mono);font-size:0.8rem;color:var(--text-dim)">
+                    👁 {post.views}
                   </td>
                   <td style="text-align:right;white-space:nowrap">
                     <a class="mini-btn" href={`/blog/${post.slug}/`} target="_blank" rel="noopener">查看</a>

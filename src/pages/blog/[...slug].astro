@@ -1,6 +1,6 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { getPublishedPosts, getPostBySlug } from '../../lib/db';
+import { getPublishedPosts, getPostBySlug, incrementPostViews } from '../../lib/db';
 import { renderMarkdown } from '../../lib/md';
 import { formatDate, readingTime } from '../../utils/format';
 
@@ -9,6 +9,9 @@ const post = getPostBySlug(slug || '');
 if (!post || post.status !== 'published') {
   return Astro.redirect('/404');
 }
+
+// 统计浏览量
+incrementPostViews(post.slug);
 
 const { html, headings } = await renderMarkdown(post.content);
 const { title, description, tags } = post;
@@ -47,6 +50,7 @@ const nextPost = idx < allPosts.length - 1 ? allPosts[idx + 1] : undefined;
         <div class="post-meta">
           <time datetime={post.created_at}>📅 {formatDate(new Date(post.created_at))}</time>
           <span>⏱ 阅读约 {readingTime(post.content)} 分钟</span>
+          <span>👁 {post.views} 次浏览</span>
           {post.updated_at !== post.created_at && <span>✏️ 更新于 {formatDate(new Date(post.updated_at))}</span>}
         </div>
         {

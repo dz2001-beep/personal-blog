@@ -1,12 +1,13 @@
 ---
 import Avatar from './Avatar.astro';
-import { getSiteConfig, getPublishedPosts, getAllWorks } from '../lib/db';
+import { getSiteConfig, getPublishedPosts, getAllWorks, getHotPosts } from '../lib/db';
 import { formatDate } from '../utils/format';
 import { QUOTES, FRIEND_LINKS, MUSIC } from '../data/widgets';
 
 const site = getSiteConfig();
 const posts = getPublishedPosts();
 const works = getAllWorks();
+const hotPosts = getHotPosts(5);
 
 const tagCounts = new Map<string, number>();
 for (const p of posts) {
@@ -108,6 +109,28 @@ const socials = [
             ))
           }
         </div>
+      </div>
+    )
+  }
+
+  <!-- 热门文章 -->
+  {
+    hotPosts.length > 0 && (
+      <div class="side-card">
+        <h3 class="side-card-title">热门文章</h3>
+        <ul class="side-list hot-list">
+          {
+            hotPosts.map((p, i) => (
+              <li>
+                <a href={`/blog/${p.slug}/`}>
+                  <span class="hot-rank">{i + 1}</span>
+                  <span class="hot-title">{p.title}</span>
+                  <small>👁 {p.views}</small>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
       </div>
     )
   }
@@ -248,6 +271,47 @@ const socials = [
   .stat-label {
     font-size: 0.74rem;
     color: var(--text-faint);
+  }
+
+  /* 热门文章(带排名) */
+  .hot-list a {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .hot-rank {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 6px;
+    background: var(--bg-softer);
+    border: 1px solid var(--border);
+    color: var(--text-faint);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hot-list li:nth-child(-n+3) .hot-rank {
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    border-color: transparent;
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .hot-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .hot-list small {
+    flex-shrink: 0;
   }
 
   /* 友链 */

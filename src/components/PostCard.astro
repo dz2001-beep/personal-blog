@@ -14,7 +14,10 @@ const searchText = `${title} ${description} ${tags.join(' ')}`.toLowerCase();
 <article class="post-card reveal" data-search={searchText}>
   <a href={`/blog/${slug}/`} class="post-card-link">
     <div class="post-meta">
-      <time datetime={post.created_at}>{formatDate(new Date(post.created_at))}</time>
+      <span class="post-date">
+        <time datetime={post.created_at}>{formatDate(new Date(post.created_at))}</time>
+        <span class="post-views">👁 {post.views}</span>
+      </span>
       {
         tags.length > 0 && (
           <span class="post-tags">
@@ -59,6 +62,16 @@ const searchText = `${title} ${description} ${tags.join(' ')}`.toLowerCase();
     font-size: 0.8rem;
     color: var(--text-faint);
     margin-bottom: 10px;
+  }
+
+  .post-date {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .post-views {
+    color: var(--text-faint);
   }
 
   .post-tags {

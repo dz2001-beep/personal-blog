@@ -149,6 +149,8 @@ export interface Post {
   status: 'published' | 'draft';
   created_at: string;
   updated_at: string;
+  /** 浏览量(每次文章页被访问 +1) */
+  views: number;
 }
 
 function mapPost(row: Record<string, unknown>): Post {
@@ -162,7 +164,30 @@ function mapPost(row: Record<string, unknown>): Post {
     status: row.status as Post['status'],
     created_at: row.created_at as string,
     updated_at: row.updated_at as string,
+    views: (row.views as number) ?? 0,
   };
+}
+
+/** 老库升级:为 posts 表补充 views 列(幂等) */
+function ensureViewsColumn(): void {
+  const cols = db.prepare('PRAGMA table_info(posts)').all() as { name: string }[];
+  if (!cols.some((c) => c.name === 'views')) {
+    db.exec('ALTER TABLE posts ADD COLUMN views INTEGER NOT NULL DEFAULT 0');
+    console.warn('[db] 已为 posts 表添加 views 列');
+  }
+}
+
+/** 文章被访问时浏览量 +1 */
+export function incrementPostViews(slug: string): void {
+  db.prepare('UPDATE posts SET views = views + 1 WHERE slug = ?').run(slug);
+}
+
+/** 热门文章:按浏览量降序 */
+export function getHotPosts(limit = 5): Post[] {
+  const rows = db
+    .prepare("SELECT * FROM posts WHERE status = 'published' ORDER BY views DESC, created_at DESC LIMIT ?")
+    .all(limit) as Record<string, unknown>[];
+  return rows.map(mapPost);
 }
 
 export function getPublishedPosts(): Post[] {
@@ -187,12 +212,12 @@ export function getPostById(id: number): Post | undefined {
   return row ? mapPost(row) : undefined;
 }
 
-export function createPost(data: Omit<Post, 'id' | 'created_at' | 'updated_at'>): number {
+export function createPost(data: Omit<Post, 'id' | 'created_at' | 'updated_at' | 'views'>): number {
   const now = new Date().toISOString();
   const result = db
     .prepare(
-      `INSERT INTO posts (slug, title, description, content, tags, status, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+      `INSERT INTO posts (slug, title, description, content, tags, status, created_at, updated_at, views)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)`
     )
     .run(data.slug, data.title, data.description, data.content, JSON.stringify(data.tags), data.status, now, now);
   return Number(result.lastInsertRowid);
@@ -389,8 +414,9 @@ export function migrateLegacyContent(): void {
   }
 }
 
-/** 启动初始化:默认设置、默认管理员、旧内容迁移 */
+/** 启动初始化:默认设置、默认管理员、旧内容迁移、表结构升级 */
 export function initApp(): void {
+  ensureViewsColumn();
   migrateLegacyContent();
   if (countUsers() === 0) {
     const pw = process.env.ADMIN_PASSWORD || 'admin123';

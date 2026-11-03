@@ -68,17 +68,17 @@ const socialButtons = [
       <div class="layout-two">
         <div class="layout-main">
           <!-- 自我介绍 -->
-          <div class="block intro-head reveal">
+          <div class="block intro-head reveal" data-tilt>
             <p class="intro-kicker">// 自我介绍</p>
             <p class="intro-text">{site.homeIntro}</p>
             <div class="intro-stats">
-              <span><b>{allPosts.length}</b> 篇文章</span>
+              <span><b data-count={String(allPosts.length)}>{allPosts.length}</b> 篇文章</span>
               <span class="dot">·</span>
-              <span><b>{allWorks.length}</b> 个作品</span>
+              <span><b data-count={String(allWorks.length)}>{allWorks.length}</b> 个作品</span>
               <span class="dot">·</span>
-              <span><b>{GALLERY.length}</b> 张照片</span>
+              <span><b data-count={String(GALLERY.length)}>{GALLERY.length}</b> 张照片</span>
               <span class="dot">·</span>
-              <span>建站 <b>{days}</b> 天</span>
+              <span>建站 <b data-count={String(days)}>{days}</b> 天</span>
             </div>
             <div class="intro-links">
               <a href="/about">关于我</a>
@@ -94,7 +94,7 @@ const socialButtons = [
           <!-- 最近在写 -->
           {
             posts.length > 0 && (
-              <section class="block mini-section reveal">
+              <section class="block mini-section reveal" data-tilt>
                 <div class="mini-head">
                   <h2>最近在写</h2>
                   <a href="/blog">全部文章 →</a>
@@ -118,7 +118,7 @@ const socialButtons = [
           <!-- 做过的东西 -->
           {
             works.length > 0 && (
-              <section class="block mini-section reveal">
+              <section class="block mini-section reveal" data-tilt>
                 <div class="mini-head">
                   <h2>做过的东西</h2>
                   <a href="/works">全部作品 →</a>
@@ -137,7 +137,7 @@ const socialButtons = [
           }
 
           <!-- 光影瞬间 -->
-          <section class="block mini-section reveal">
+          <section class="block mini-section reveal" data-tilt>
             <div class="mini-head">
               <h2>光影瞬间</h2>
               <a href="/gallery">全部相册 →</a>
@@ -356,7 +356,7 @@ const socialButtons = [
     background-attachment: fixed;
   }
 
-  /* 分块卡片(玻璃拟态) */
+  /* 分块卡片(玻璃拟态 + 3D 倾斜 + 光扫) */
   .block {
     position: relative;
     background: rgba(255, 255, 255, 0.82);
@@ -367,6 +367,51 @@ const socialButtons = [
     padding: 24px 26px;
     margin-bottom: 18px;
     box-shadow: 0 2px 18px rgba(31, 35, 40, 0.05);
+    overflow: hidden;
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+
+  /* 悬停时玻璃高光扫过 */
+  .block::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      115deg,
+      transparent 32%,
+      rgba(255, 255, 255, 0.55) 48%,
+      transparent 64%
+    );
+    transform: translateX(-130%);
+    transition: transform 0.75s ease;
+    pointer-events: none;
+    border-radius: inherit;
+  }
+
+  .block:hover::after {
+    transform: translateX(130%);
+  }
+
+  .block:hover {
+    box-shadow: 0 10px 30px rgba(31, 35, 40, 0.09);
+  }
+
+  /* 分块依次浮现(错峰) */
+  .layout-main > .block:nth-child(1) {
+    transition-delay: 0s;
+  }
+
+  .layout-main > .block:nth-child(2) {
+    transition-delay: 0.08s;
+  }
+
+  .layout-main > .block:nth-child(3) {
+    transition-delay: 0.16s;
+  }
+
+  .layout-main > .block:nth-child(4) {
+    transition-delay: 0.24s;
   }
 
   .intro-kicker {

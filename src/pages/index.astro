@@ -6,6 +6,7 @@ import WorkCard from '../components/WorkCard.astro';
 import Sidebar from '../components/Sidebar.astro';
 import { getPublishedPosts, getFeaturedWorks, getAllWorks, getSiteConfig } from '../lib/db';
 import { GALLERY } from '../data/gallery';
+import { COVER_IMAGE } from '../config';
 
 const site = getSiteConfig();
 const allPosts = getPublishedPosts();
@@ -22,69 +23,77 @@ const socialButtons = [
 ---
 
 <BaseLayout>
-  <!-- ============ Hero:头像紧贴左侧,信息在右 ============ -->
-  <section class="hero">
-    <div class="hero-inner fade-up">
-      <Avatar size={150} alt={`${site.author} 的头像`} src={site.avatar} fallback={site.avatar} />
-      <div class="hero-text">
-        <h1 class="hero-title" id="hero-title">
-          <span id="typed" data-text={site.heroTitle}></span><span class="typed-cursor">|</span>
-        </h1>
-        <p class="hero-tagline">
-          <span class="hero-code">{'<'}dev{'>'}</span> {site.heroTagline}{' '}
-          <span class="hero-code">{'</'}dev{'>'}</span>
-        </p>
-        <p class="hero-desc">{site.description}</p>
-        <div class="hero-actions">
-          <a class="btn btn-primary" href="/blog">📝 阅读文章</a>
-          <a class="btn" href="/works">🚀 查看作品</a>
-        </div>
-        {
-          socialButtons.length > 0 && (
-            <div class="hero-social">
-              {
-                socialButtons.map((s) => (
-                  <a class="btn social-btn" href={s.href} target="_blank" rel="noopener">{s.label}</a>
-                ))
-              }
-            </div>
-          )
-        }
-      </div>
-    </div>
-    <!-- 右侧装饰符号 -->
-    <span class="hero-deco" aria-hidden="true">&lt;/&gt;</span>
+  <!-- ============ 全屏封面(大背景图) ============ -->
+  <section class="cover" id="cover">
+    <div class="cover-bg" style={`background-image:url('${COVER_IMAGE}')`}></div>
+    <div class="cover-mask"></div>
 
-    <!-- 网站自我介绍:功能入口卡片 -->
-    <div class="site-intro container-wide fade-up">
-      <p class="intro-lead">这个站点都装了什么 ↓</p>
+    <div class="cover-inner">
+      <div class="cover-avatar">
+        <Avatar size={128} alt={`${site.author} 的头像`} src={site.avatar} fallback={site.avatar} />
+      </div>
+      <h1 class="cover-title">{site.author}</h1>
+      <p class="cover-sub">{site.heroTagline}</p>
+      <p class="cover-desc">{site.description}</p>
+      <div class="cover-actions">
+        <a class="btn cover-btn" href="/blog">📝 阅读文章</a>
+        <a class="btn cover-btn" href="/works">🚀 查看作品</a>
+      </div>
+      {
+        socialButtons.length > 0 && (
+          <div class="cover-social">
+            {socialButtons.map((s) => (
+              <a href={s.href} target="_blank" rel="noopener">{s.label}</a>
+            ))}
+          </div>
+        )
+      }
+    </div>
+
+    <!-- 向下滚动提示 -->
+    <a class="scroll-hint" href="#intro" aria-label="向下滚动查看介绍">
+      <span class="mouse"><span class="wheel"></span></span>
+      <span class="scroll-text">向下滚动</span>
+    </a>
+  </section>
+
+  <!-- ============ 我的页面介绍(滚动进入) ============ -->
+  <section class="intro-section" id="intro">
+    <div class="container-wide">
+      <div class="intro-head reveal">
+        <p class="intro-kicker">// 关于这个站</p>
+        <h2 class="intro-title">我的页面介绍</h2>
+        <p class="intro-desc">{site.description}</p>
+      </div>
+
       <div class="intro-grid">
-        <a class="intro-card" href="/blog">
+        <a class="intro-card reveal" href="/blog">
           <span class="intro-icon">📝</span>
           <span class="intro-name">技术文章</span>
-          <span class="intro-desc">{allPosts.length} 篇 · 源码解析 / 面试八股 / 学习笔记</span>
+          <span class="intro-desc">{allPosts.length} 篇 · DeepSeek Harness 源码解析 / 面试八股 / 学习笔记</span>
           <span class="intro-arrow">→</span>
         </a>
-        <a class="intro-card" href="/works">
+        <a class="intro-card reveal" href="/works">
           <span class="intro-icon">🚀</span>
           <span class="intro-name">开源作品</span>
-          <span class="intro-desc">{allWorks.length} 个 · 在线演示与源码</span>
+          <span class="intro-desc">{allWorks.length} 个 · 在线演示与源码仓库</span>
           <span class="intro-arrow">→</span>
         </a>
-        <a class="intro-card" href="/gallery">
+        <a class="intro-card reveal" href="/gallery">
           <span class="intro-icon">🖼</span>
           <span class="intro-name">生活相册</span>
           <span class="intro-desc">{GALLERY.length} 张 · 风景光影收藏</span>
           <span class="intro-arrow">→</span>
         </a>
-        <a class="intro-card" href="/about-site">
+        <a class="intro-card reveal" href="/about-site">
           <span class="intro-icon">🍜</span>
           <span class="intro-name">关于本站</span>
           <span class="intro-desc">技术栈 / 改版历史 / 致谢</span>
           <span class="intro-arrow">→</span>
         </a>
       </div>
-      <p class="intro-hint">
+
+      <p class="intro-hint reveal">
         🐱 左下角的小宠物可以点它聊天 · 页面任意处点击会撒樱花 · 键盘依次按 ↑ ↑ ↓ ↓ ← → ← → B A 有惊喜
       </p>
     </div>
@@ -94,40 +103,40 @@ const socialButtons = [
   <div class="container-wide">
     <div class="layout-two">
       <div class="layout-main">
-      <!-- 最近文章(双列网格) -->
-      <section class="section">
-        <h2 class="section-title">最近文章</h2>
-        {
-          posts.length > 0 ? (
-            <div class="post-grid">
-              {posts.map((post) => <PostCard post={post} />)}
-            </div>
-          ) : (
-            <p class="empty">还没有文章,登录后台写第一篇吧!</p>
-          )
-        }
-        <div class="section-more">
-          <a class="btn" href="/blog">全部文章 →</a>
-        </div>
-      </section>
+        <!-- 最近文章(双列网格) -->
+        <section class="section">
+          <h2 class="section-title">最近文章</h2>
+          {
+            posts.length > 0 ? (
+              <div class="post-grid">
+                {posts.map((post) => <PostCard post={post} />)}
+              </div>
+            ) : (
+              <p class="empty">还没有文章,登录后台写第一篇吧!</p>
+            )
+          }
+          <div class="section-more">
+            <a class="btn" href="/blog">全部文章 →</a>
+          </div>
+        </section>
 
-      <!-- 精选作品 -->
-      <section class="section">
-        <h2 class="section-title">精选作品</h2>
-        {
-          works.length > 0 ? (
-            <div class="work-grid">
-              {works.map((work) => <WorkCard work={work} />)}
-            </div>
-          ) : (
-            <p class="empty">还没有作品,登录后台添加第一个作品吧!</p>
-          )
-        }
-        <div class="section-more">
-          <a class="btn" href="/works">全部作品 →</a>
-        </div>
-      </section>
-    </div>
+        <!-- 精选作品 -->
+        <section class="section">
+          <h2 class="section-title">精选作品</h2>
+          {
+            works.length > 0 ? (
+              <div class="work-grid">
+                {works.map((work) => <WorkCard work={work} />)}
+              </div>
+            ) : (
+              <p class="empty">还没有作品,登录后台添加第一个作品吧!</p>
+            )
+          }
+          <div class="section-more">
+            <a class="btn" href="/works">全部作品 →</a>
+          </div>
+        </section>
+      </div>
 
       <Sidebar />
     </div>
@@ -153,109 +162,227 @@ const socialButtons = [
 </BaseLayout>
 
 <style>
-  /* ---------- Hero:头像紧贴左侧 ---------- */
-  .hero {
+  /* ============ 全屏封面 ============ */
+  .cover {
     position: relative;
-    padding: 58px 0 46px;
-    border-bottom: 1px solid var(--border);
-    background: linear-gradient(180deg, var(--accent-soft), transparent 75%);
+    min-height: calc(100vh - 60px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
   }
 
-  .hero-inner {
+  /* 背景图:入场轻微缩放 + 视差(向下滚动时背景位移更慢) */
+  .cover-bg {
+    position: absolute;
+    inset: 0;
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    animation: coverZoom 1.6s ease-out both;
+    will-change: transform;
+  }
+
+  .cover-mask {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(180deg, rgba(15, 20, 30, 0.35) 0%, rgba(15, 20, 30, 0.5) 60%, rgba(247, 248, 250, 0.96) 100%);
+  }
+
+  .cover-inner {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 40px 20px 90px;
+    animation: coverContentIn 1s ease 0.25s both;
+  }
+
+  .cover-avatar {
+    display: inline-block;
+    margin-bottom: 22px;
+    animation: avatarFloat 3.4s ease-in-out infinite alternate;
+  }
+
+  :global(.cover-avatar .avatar) {
+    border-color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.18), 0 12px 30px rgba(0, 0, 0, 0.35);
+  }
+
+  .cover-title {
+    margin: 0 0 10px;
+    font-size: 3.4rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    color: #fff;
+    text-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+  }
+
+  .cover-sub {
+    margin: 0 0 12px;
+    font-size: 1.08rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  }
+
+  .cover-desc {
+    margin: 0 auto 26px;
+    max-width: 560px;
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: rgba(255, 255, 255, 0.86);
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+  }
+
+  .cover-actions {
     display: flex;
+    gap: 12px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .cover-btn {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.55);
+    color: #fff;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+  }
+
+  .cover-btn:hover {
+    background: rgba(255, 255, 255, 0.26);
+    border-color: #fff;
+    color: #fff;
+  }
+
+  .cover-social {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-top: 18px;
+    flex-wrap: wrap;
+  }
+
+  .cover-social a {
+    color: rgba(255, 255, 255, 0.82);
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    padding-bottom: 2px;
+  }
+
+  .cover-social a:hover {
+    color: #fff;
+    border-color: #fff;
+  }
+
+  /* 向下滚动提示 */
+  .scroll-hint {
+    position: absolute;
+    left: 50%;
+    bottom: 26px;
+    transform: translateX(-50%);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 44px;
-    max-width: var(--container-wide);
-    margin: 0 auto;
-    padding: 0 24px;
+    gap: 8px;
+    color: #fff;
+    animation: hintFloat 2.2s ease-in-out infinite;
   }
 
-  .hero-text {
-    max-width: 620px;
+  .mouse {
+    width: 26px;
+    height: 42px;
+    border: 2px solid rgba(255, 255, 255, 0.9);
+    border-radius: 14px;
+    position: relative;
+    display: block;
   }
 
-  .hero-title {
-    font-size: 2.4rem;
+  .wheel {
+    position: absolute;
+    left: 50%;
+    top: 8px;
+    width: 4px;
+    height: 8px;
+    margin-left: -2px;
+    border-radius: 2px;
+    background: #fff;
+    animation: wheelMove 1.6s ease-in-out infinite;
+  }
+
+  .scroll-text {
+    font-size: 0.76rem;
+    font-family: var(--font-mono);
+    letter-spacing: 0.08em;
+    color: rgba(255, 255, 255, 0.92);
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
+  }
+
+  @keyframes coverZoom {
+    from { transform: scale(1.08); }
+    to { transform: scale(1); }
+  }
+
+  @keyframes coverContentIn {
+    from { opacity: 0; transform: translateY(26px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes hintFloat {
+    0%, 100% { transform: translate(-50%, 0); }
+    50% { transform: translate(-50%, -8px); }
+  }
+
+  @keyframes wheelMove {
+    0% { opacity: 0; transform: translateY(0); }
+    30% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(14px); }
+  }
+
+  /* ============ 我的页面介绍 ============ */
+  .intro-section {
+    padding: 56px 0 10px;
+    margin-top: -70px;
+    position: relative;
+    z-index: 3;
+    background: linear-gradient(180deg, transparent 0%, var(--bg) 70px);
+  }
+
+  .intro-head {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+
+  .intro-kicker {
     margin: 0 0 8px;
-    min-height: 1.3em;
+    font-family: var(--font-mono);
+    font-size: 0.8rem;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+  }
+
+  .intro-title {
+    margin: 0 0 12px;
+    font-size: 2rem;
     background: linear-gradient(120deg, var(--accent), var(--accent-2));
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
   }
 
-  .hero-tagline {
-    margin: 0 0 10px;
-    font-size: 1.05rem;
-    color: var(--text);
-    font-weight: 600;
-  }
-
-  .hero-code {
-    font-family: var(--font-mono);
-    color: var(--accent);
-  }
-
-  .hero-desc {
-    margin: 0 0 22px;
+  .intro-desc {
+    margin: 0 auto;
+    max-width: 620px;
     color: var(--text-dim);
-  }
-
-  .hero-actions {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-  }
-
-  .hero-social {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-top: 16px;
-  }
-
-  .social-btn {
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    padding: 5px 12px;
-    color: var(--text-dim);
-  }
-
-  .social-btn:hover {
-    color: var(--accent);
-  }
-
-  /* 右侧装饰 */
-  .hero-deco {
-    position: absolute;
-    right: 24px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-family: var(--font-mono);
-    font-size: 11rem;
-    font-weight: 700;
-    color: rgba(37, 99, 235, 0.06);
-    pointer-events: none;
-    user-select: none;
-    line-height: 1;
-  }
-
-  /* ---------- 网站自我介绍 ---------- */
-  .site-intro {
-    margin-top: 36px;
-  }
-
-  .intro-lead {
-    font-family: var(--font-mono);
-    font-size: 0.82rem;
-    color: var(--text-faint);
-    margin: 0 0 12px;
+    font-size: 0.95rem;
   }
 
   .intro-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
     gap: 14px;
   }
 
@@ -264,8 +391,8 @@ const socialButtons = [
     display: flex;
     flex-direction: column;
     gap: 4px;
-    padding: 16px 18px;
-    background: var(--bg);
+    padding: 18px 20px;
+    background: var(--bg-soft);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     color: var(--text);
@@ -281,7 +408,7 @@ const socialButtons = [
   }
 
   .intro-icon {
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     line-height: 1;
   }
 
@@ -290,7 +417,8 @@ const socialButtons = [
     font-size: 1rem;
   }
 
-  .intro-desc {
+  .intro-desc-text,
+  .intro-card .intro-desc {
     font-size: 0.8rem;
     color: var(--text-dim);
   }
@@ -298,7 +426,7 @@ const socialButtons = [
   .intro-arrow {
     position: absolute;
     right: 16px;
-    bottom: 14px;
+    bottom: 16px;
     color: var(--accent);
     font-size: 0.95rem;
     opacity: 0;
@@ -312,12 +440,13 @@ const socialButtons = [
   }
 
   .intro-hint {
-    margin: 14px 0 0;
+    margin: 16px 0 0;
+    text-align: center;
     font-size: 0.78rem;
     color: var(--text-faint);
   }
 
-  /* ---------- 主区 ---------- */
+  /* ============ 内容区(与原样式一致) ============ */
   .section {
     margin-top: 46px;
   }
@@ -338,7 +467,6 @@ const socialButtons = [
     gap: 16px;
   }
 
-  /* 首页相册精选 */
   .home-photos {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -398,40 +526,26 @@ const socialButtons = [
     text-align: center;
   }
 
-  /* ---------- 响应式 ---------- */
+  /* ============ 响应式 ============ */
   @media (max-width: 640px) {
-    .hero {
-      padding: 36px 0 30px;
+    .cover {
+      min-height: calc(100vh - 56px);
     }
-    .hero-inner {
-      gap: 18px;
-      padding: 0 16px;
+    .cover-bg {
+      background-attachment: scroll;
     }
-    .hero-inner .avatar {
-      width: 92px !important;
-      height: 92px !important;
+    .cover-title {
+      font-size: 2.1rem;
     }
-    .hero-title {
+    .cover-inner {
+      padding: 24px 16px 80px;
+    }
+    :global(.cover-avatar .avatar) {
+      width: 100px !important;
+      height: 100px !important;
+    }
+    .intro-title {
       font-size: 1.5rem;
-    }
-    .hero-desc {
-      font-size: 0.9rem;
-    }
-    .hero-actions {
-      gap: 8px;
-    }
-    .hero-deco {
-      display: none;
-    }
-  }
-
-  @media (max-width: 400px) {
-    .hero-inner {
-      gap: 12px;
-    }
-    .hero-actions .btn {
-      padding: 8px 12px;
-      font-size: 0.85rem;
     }
   }
 </style>

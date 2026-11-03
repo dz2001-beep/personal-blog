@@ -33,3 +33,6 @@ export const SOCIAL = {
 
 /** 默认头像路径(可在后台「设置」上传替换) */
 export const AVATAR = '/touxiang.jpg';
+
+/** 首页全屏封面背景图(可换成 public/ 下的任意图片) */
+export const COVER_IMAGE = '/gallery/foggy-peaks.jpg';

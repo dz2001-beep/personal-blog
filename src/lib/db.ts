@@ -81,6 +81,8 @@ export interface SiteConfig {
   heroTitle: string;
   heroTagline: string;
   shortName: string;
+  /** 首页自我介绍段落 */
+  homeIntro: string;
   avatar: string;
   bio: string;
   social: { github: string; email: string; twitter: string; juejin: string; zhihu: string };
@@ -106,6 +108,7 @@ export function getSiteConfig(): SiteConfig {
     heroTitle: s('heroTitle', SITE.heroTitle),
     heroTagline: s('heroTagline', SITE.heroTagline),
     shortName: s('shortName', SITE.shortName),
+    homeIntro: s('homeIntro', SITE.homeIntro),
     avatar: s('avatar', AVATAR),
     bio: s('bio', ''),
     social,

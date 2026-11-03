@@ -2,10 +2,21 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Avatar from '../components/Avatar.astro';
 import Sidebar from '../components/Sidebar.astro';
-import { getSiteConfig } from '../lib/db';
+import { getSiteConfig, getPublishedPosts, getFeaturedWorks, getAllWorks } from '../lib/db';
+import { GALLERY } from '../data/gallery';
+import { formatDate } from '../utils/format';
 import { COVER_IMAGE } from '../config';
 
 const site = getSiteConfig();
+const allPosts = getPublishedPosts();
+const allWorks = getAllWorks();
+const posts = allPosts;
+const works = getFeaturedWorks();
+
+const firstPost = allPosts.length > 0 ? allPosts[allPosts.length - 1] : undefined;
+const days = firstPost
+  ? Math.max(1, Math.floor((Date.now() - new Date(firstPost.created_at).getTime()) / 86400000))
+  : 0;
 
 const socialButtons = [
   { href: site.social.github, label: 'GitHub', show: !!site.social.github },
@@ -51,22 +62,95 @@ const socialButtons = [
     </a>
   </section>
 
-  <!-- ============ 自我介绍 + 侧栏 ============ -->
+  <!-- ============ 自我介绍 + 精选内容 + 侧栏 ============ -->
   <section class="intro-section" id="intro">
     <div class="container-wide">
       <div class="layout-two">
         <div class="layout-main">
-          <p class="intro-kicker">// 自我介绍</p>
-          <p class="intro-text">{site.homeIntro}</p>
-          <div class="intro-links">
-            <a href="/about">关于我</a>
-            <span>·</span>
-            <a href="/blog">技术文章</a>
-            <span>·</span>
-            <a href="/works">开源作品</a>
-            <span>·</span>
-            <a href="/gallery">生活相册</a>
+          <!-- 自我介绍 -->
+          <div class="intro-head reveal">
+            <p class="intro-kicker">// 自我介绍</p>
+            <p class="intro-text">{site.homeIntro}</p>
+            <div class="intro-stats">
+              <span><b>{allPosts.length}</b> 篇文章</span>
+              <span class="dot">·</span>
+              <span><b>{allWorks.length}</b> 个作品</span>
+              <span class="dot">·</span>
+              <span><b>{GALLERY.length}</b> 张照片</span>
+              <span class="dot">·</span>
+              <span>建站 <b>{days}</b> 天</span>
+            </div>
+            <div class="intro-links">
+              <a href="/about">关于我</a>
+              <span>·</span>
+              <a href="/blog">技术文章</a>
+              <span>·</span>
+              <a href="/works">开源作品</a>
+              <span>·</span>
+              <a href="/gallery">生活相册</a>
+            </div>
           </div>
+
+          <!-- 最近在写 -->
+          {
+            posts.length > 0 && (
+              <section class="mini-section reveal">
+                <div class="mini-head">
+                  <h2>最近在写</h2>
+                  <a href="/blog">全部文章 →</a>
+                </div>
+                <ul class="post-mini-list">
+                  {posts.slice(0, 3).map((p) => (
+                    <li>
+                      <a href={`/blog/${p.slug}/`}>
+                        <span class="pm-title">{p.title}</span>
+                        <span class="pm-meta">
+                          {formatDate(new Date(p.created_at))} · {p.views} 浏览
+                        </span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )
+          }
+
+          <!-- 做过的东西 -->
+          {
+            works.length > 0 && (
+              <section class="mini-section reveal">
+                <div class="mini-head">
+                  <h2>做过的东西</h2>
+                  <a href="/works">全部作品 →</a>
+                </div>
+                <div class="work-mini-grid">
+                  {works.slice(0, 2).map((w) => (
+                    <a class="work-mini" href={`/works/${w.slug}/`}>
+                      <span class="wm-title">{w.title}</span>
+                      <span class="wm-desc">{w.description}</span>
+                      <span class="wm-tech">{w.tech.slice(0, 3).join(' · ')}</span>
+                    </a>
+                  ))}
+                </div>
+              </section>
+            )
+          }
+
+          <!-- 光影瞬间 -->
+          <section class="mini-section reveal">
+            <div class="mini-head">
+              <h2>光影瞬间</h2>
+              <a href="/gallery">全部相册 →</a>
+            </div>
+            <div class="photo-mini-grid">
+              {GALLERY.slice(0, 3).map((item) => (
+                <a class="photo-mini" href="/gallery">
+                  <img src={item.src} alt={item.title} loading="lazy" />
+                  <span>{item.title}</span>
+                </a>
+              ))}
+            </div>
+          </section>
         </div>
 
         <Sidebar />
@@ -301,6 +385,203 @@ const socialButtons = [
 
   .intro-links a:hover {
     color: var(--accent);
+  }
+
+  /* ---------- 统计数据 ---------- */
+  .intro-stats {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 0 0 18px;
+    font-size: 0.86rem;
+    color: var(--text-dim);
+    font-family: var(--font-mono);
+  }
+
+  .intro-stats b {
+    color: var(--accent);
+    font-size: 1.05rem;
+    font-weight: 700;
+  }
+
+  .intro-stats .dot {
+    color: var(--text-faint);
+  }
+
+  /* ---------- 首页迷你板块 ---------- */
+  .mini-section {
+    margin-top: 44px;
+    padding-top: 30px;
+    border-top: 1px solid var(--border);
+  }
+
+  .mini-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .mini-head h2 {
+    margin: 0;
+    font-size: 1.15rem;
+  }
+
+  .mini-head a {
+    font-size: 0.82rem;
+    color: var(--text-faint);
+  }
+
+  .mini-head a:hover {
+    color: var(--accent);
+  }
+
+  /* 最近在写:极简列表 */
+  .post-mini-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .post-mini-list li + li {
+    border-top: 1px dashed var(--border);
+  }
+
+  .post-mini-list a {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 12px 2px;
+    color: var(--text);
+  }
+
+  .post-mini-list a:hover .pm-title {
+    color: var(--accent);
+  }
+
+  .pm-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    transition: color 0.15s ease;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .pm-meta {
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: 0.76rem;
+    color: var(--text-faint);
+  }
+
+  /* 做过的东西:两列 */
+  .work-mini-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 14px;
+  }
+
+  .work-mini {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 16px 18px;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    transition: all 0.18s ease;
+  }
+
+  .work-mini:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    color: var(--text);
+  }
+
+  .wm-title {
+    font-weight: 700;
+    font-size: 0.98rem;
+  }
+
+  .wm-desc {
+    font-size: 0.82rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .wm-tech {
+    font-family: var(--font-mono);
+    font-size: 0.74rem;
+    color: var(--text-faint);
+  }
+
+  /* 光影瞬间:三列 */
+  .photo-mini-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .photo-mini {
+    position: relative;
+    display: block;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    aspect-ratio: 4 / 3;
+    background: var(--bg-soft);
+  }
+
+  .photo-mini img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease;
+  }
+
+  .photo-mini:hover img {
+    transform: scale(1.06);
+  }
+
+  .photo-mini span {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 22px 10px 8px;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.55));
+    color: #fff;
+    font-size: 0.8rem;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+
+  .photo-mini:hover span {
+    opacity: 1;
+  }
+
+  @media (max-width: 640px) {
+    .photo-mini-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .post-mini-list a {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .pm-title {
+      white-space: normal;
+    }
   }
 
   @media (max-width: 640px) {

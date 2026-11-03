@@ -64,7 +64,7 @@ export async function renderMarkdown(md: string): Promise<{ html: string; headin
     try {
       const highlighted = await codeToHtml(job.code.trim(), {
         lang: job.lang,
-        theme: 'github-light',
+        theme: 'github-dark-dimmed',
       });
       html = html.replace(job.block, highlighted);
     } catch {

@@ -16,7 +16,7 @@ export default defineConfig({
   markdown: {
     shikiConfig: {
       // 代码高亮主题(白色主题用浅色系)
-      theme: 'github-light',
+      theme: 'github-dark-dimmed',
       // 让代码块在窄屏上可横向滚动而不是换行
       wrap: true,
     },

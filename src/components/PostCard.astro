@@ -16,7 +16,7 @@ const searchText = `${title} ${description} ${tags.join(' ')}`.toLowerCase();
     <div class="post-meta">
       <span class="post-date">
         <time datetime={post.created_at}>{formatDate(new Date(post.created_at))}</time>
-        <span class="post-views">👁 {post.views}</span>
+        <span class="post-views">{post.views} 浏览</span>
       </span>
       {
         tags.length > 0 && (

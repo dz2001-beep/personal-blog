@@ -20,7 +20,7 @@ const { title, description, tech, demo_url, repo_url } = work;
       <h1>{title}</h1>
       <p class="work-desc">{description}</p>
       <div class="work-meta">
-        <time datetime={work.created_at}>📅 {formatDate(new Date(work.created_at))}</time>
+        <time datetime={work.created_at}>{formatDate(new Date(work.created_at))}</time>
       </div>
       {
         tech.length > 0 && (
@@ -30,8 +30,8 @@ const { title, description, tech, demo_url, repo_url } = work;
         )
       }
       <div class="work-actions">
-        {demo_url && <a class="btn btn-primary" href={demo_url} target="_blank" rel="noopener">🚀 在线演示</a>}
-        {repo_url && <a class="btn" href={repo_url} target="_blank" rel="noopener">💻 查看源码</a>}
+        {demo_url && <a class="btn btn-primary" href={demo_url} target="_blank" rel="noopener">在线演示</a>}
+        {repo_url && <a class="btn" href={repo_url} target="_blank" rel="noopener">查看源码</a>}
         <a class="btn" href="/works">← 返回作品列表</a>
       </div>
     </header>

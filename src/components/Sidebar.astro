@@ -1,27 +1,9 @@
 ---
 import Avatar from './Avatar.astro';
-import { getSiteConfig, getPublishedPosts, getAllWorks, getHotPosts } from '../lib/db';
-import { formatDate } from '../utils/format';
+import { getSiteConfig } from '../lib/db';
 import { QUOTES, FRIEND_LINKS, MUSIC } from '../data/widgets';
 
 const site = getSiteConfig();
-const posts = getPublishedPosts();
-const works = getAllWorks();
-const hotPosts = getHotPosts(5);
-
-const tagCounts = new Map<string, number>();
-for (const p of posts) {
-  for (const t of p.tags) tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1);
-}
-const tags = [...tagCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 16);
-const recent = posts.slice(0, 5);
-
-// 网站统计
-const allTags = tagCounts.size;
-const firstPost = posts.length > 0 ? posts[posts.length - 1] : undefined;
-const days = firstPost
-  ? Math.max(1, Math.floor((Date.now() - new Date(firstPost.created_at).getTime()) / 86400000))
-  : 0;
 
 const socials = [
   { href: site.social.github, label: 'GitHub', show: !!site.social.github },
@@ -41,8 +23,8 @@ const socials = [
       </div>
     </div>
     <div class="side-profile-links">
-      <a href="/about">关于我 →</a>
-      <a href="/about-site">关于本站 →</a>
+      <a href="/about">关于我</a>
+      <a href="/about-site">关于本站</a>
       {
         socials.map((s) => (
           <a href={s.href} target="_blank" rel="noopener">{s.label}</a>
@@ -63,98 +45,14 @@ const socials = [
       frameborder="no"
       allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
     ></iframe>
-    <p class="music-name">♪ {MUSIC.songName}</p>
+    <p class="music-name">{MUSIC.songName}</p>
   </div>
 
-  <!-- 一言(自动轮播) -->
+  <!-- 一言 -->
   <div class="side-card quote-card">
     <h3 class="side-card-title">一言</h3>
     <blockquote class="side-quote" id="quote-text">{QUOTES[0]}</blockquote>
   </div>
-
-  <!-- 网站统计 -->
-  <div class="side-card">
-    <h3 class="side-card-title">网站统计</h3>
-    <div class="stat-grid-side">
-      <div class="stat-cell">
-        <span class="stat-num">{posts.length}</span>
-        <span class="stat-label">文章</span>
-      </div>
-      <div class="stat-cell">
-        <span class="stat-num">{works.length}</span>
-        <span class="stat-label">作品</span>
-      </div>
-      <div class="stat-cell">
-        <span class="stat-num">{allTags}</span>
-        <span class="stat-label">标签</span>
-      </div>
-      <div class="stat-cell">
-        <span class="stat-num">{days || '—'}</span>
-        <span class="stat-label">已建站天数</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- 标签云 -->
-  {
-    tags.length > 0 && (
-      <div class="side-card">
-        <h3 class="side-card-title">标签云</h3>
-        <div class="side-tags">
-          {
-            tags.map(([tag, count]) => (
-              <a class="tag" href={`/blog/tag/${encodeURIComponent(tag)}/`}>
-                {tag} <span class="tag-count">{count}</span>
-              </a>
-            ))
-          }
-        </div>
-      </div>
-    )
-  }
-
-  <!-- 热门文章 -->
-  {
-    hotPosts.length > 0 && (
-      <div class="side-card">
-        <h3 class="side-card-title">热门文章</h3>
-        <ul class="side-list hot-list">
-          {
-            hotPosts.map((p, i) => (
-              <li>
-                <a href={`/blog/${p.slug}/`}>
-                  <span class="hot-rank">{i + 1}</span>
-                  <span class="hot-title">{p.title}</span>
-                  <small>👁 {p.views}</small>
-                </a>
-              </li>
-            ))
-          }
-        </ul>
-      </div>
-    )
-  }
-
-  <!-- 最新文章 -->
-  {
-    recent.length > 0 && (
-      <div class="side-card">
-        <h3 class="side-card-title">最新文章</h3>
-        <ul class="side-list">
-          {
-            recent.map((p) => (
-              <li>
-                <a href={`/blog/${p.slug}/`}>
-                  {p.title}
-                  <small>{formatDate(new Date(p.created_at))}</small>
-                </a>
-              </li>
-            ))
-          }
-        </ul>
-      </div>
-    )
-  }
 
   <!-- 友链 -->
   {
@@ -197,12 +95,6 @@ const socials = [
     min-width: 0;
   }
 
-  .tag-count {
-    opacity: 0.65;
-    font-size: 0.85em;
-  }
-
-  /* 音乐播放器(深色卡片贴合网易云主题) */
   .music-card {
     background: linear-gradient(160deg, #232a35, #161b23);
     border-color: #2d3542;
@@ -210,10 +102,6 @@ const socials = [
 
   .music-card .side-card-title {
     color: #fff;
-  }
-
-  .music-card .side-card-title::before {
-    color: #ff5f8f;
   }
 
   .music-player {
@@ -226,12 +114,11 @@ const socials = [
 
   .music-name {
     margin: 8px 0 0;
-    font-size: 0.78rem;
+    font-size: 0.76rem;
     color: #8b94a3;
     font-family: var(--font-mono);
   }
 
-  /* 一言 */
   .side-quote {
     margin: 0;
     padding: 4px 0 4px 14px;
@@ -239,82 +126,9 @@ const socials = [
     color: var(--text-dim);
     font-size: 0.88rem;
     line-height: 1.7;
-    font-style: italic;
     min-height: 3.2em;
   }
 
-  /* 网站统计 */
-  .stat-grid-side {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-  }
-
-  .stat-cell {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    padding: 10px 6px;
-    background: var(--bg-softer);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-  }
-
-  .stat-num {
-    font-size: 1.25rem;
-    font-weight: 700;
-    font-family: var(--font-mono);
-    color: var(--accent);
-  }
-
-  .stat-label {
-    font-size: 0.74rem;
-    color: var(--text-faint);
-  }
-
-  /* 热门文章(带排名) */
-  .hot-list a {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-  }
-
-  .hot-rank {
-    flex-shrink: 0;
-    width: 20px;
-    height: 20px;
-    border-radius: 6px;
-    background: var(--bg-softer);
-    border: 1px solid var(--border);
-    color: var(--text-faint);
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .hot-list li:nth-child(-n+3) .hot-rank {
-    background: linear-gradient(135deg, var(--accent), var(--accent-2));
-    border-color: transparent;
-    color: #fff;
-    font-weight: 700;
-  }
-
-  .hot-title {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .hot-list small {
-    flex-shrink: 0;
-  }
-
-  /* 友链 */
   .friend-list a {
     display: flex;
     justify-content: space-between;

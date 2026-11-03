@@ -1,18 +1,11 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Avatar from '../components/Avatar.astro';
-import PostCard from '../components/PostCard.astro';
-import WorkCard from '../components/WorkCard.astro';
 import Sidebar from '../components/Sidebar.astro';
-import { getPublishedPosts, getFeaturedWorks, getAllWorks, getSiteConfig } from '../lib/db';
-import { GALLERY } from '../data/gallery';
+import { getSiteConfig } from '../lib/db';
 import { COVER_IMAGE } from '../config';
 
 const site = getSiteConfig();
-const allPosts = getPublishedPosts();
-const allWorks = getAllWorks();
-const posts = allPosts.slice(0, 4);
-const works = getFeaturedWorks().slice(0, 6);
 
 const socialButtons = [
   { href: site.social.github, label: 'GitHub', show: !!site.social.github },
@@ -23,21 +16,22 @@ const socialButtons = [
 ---
 
 <BaseLayout>
-  <!-- ============ 全屏封面(大背景图) ============ -->
+  <!-- ============ 全屏封面 ============ -->
   <section class="cover" id="cover">
     <div class="cover-bg" style={`background-image:url('${COVER_IMAGE}')`}></div>
     <div class="cover-mask"></div>
 
     <div class="cover-inner">
       <div class="cover-avatar">
-        <Avatar size={128} alt={`${site.author} 的头像`} src={site.avatar} fallback={site.avatar} />
+        <Avatar size={120} alt={`${site.author} 的头像`} src={site.avatar} fallback={site.avatar} />
       </div>
       <h1 class="cover-title">{site.author}</h1>
       <p class="cover-sub">{site.heroTagline}</p>
       <p class="cover-desc">{site.description}</p>
       <div class="cover-actions">
-        <a class="btn cover-btn" href="/blog">📝 阅读文章</a>
-        <a class="btn cover-btn" href="/works">🚀 查看作品</a>
+        <a class="cover-link" href="/blog">阅读文章</a>
+        <span class="cover-sep">/</span>
+        <a class="cover-link" href="/works">查看作品</a>
       </div>
       {
         socialButtons.length > 0 && (
@@ -51,112 +45,32 @@ const socialButtons = [
     </div>
 
     <!-- 向下滚动提示 -->
-    <a class="scroll-hint" href="#intro" aria-label="向下滚动查看介绍">
+    <a class="scroll-hint" href="#intro" aria-label="向下滚动查看自我介绍">
       <span class="mouse"><span class="wheel"></span></span>
       <span class="scroll-text">向下滚动</span>
     </a>
   </section>
 
-  <!-- ============ 我的页面介绍(滚动进入) ============ -->
+  <!-- ============ 自我介绍 + 侧栏 ============ -->
   <section class="intro-section" id="intro">
     <div class="container-wide">
-      <div class="intro-head reveal">
-        <p class="intro-kicker">// 关于这个站</p>
-        <h2 class="intro-title">我的页面介绍</h2>
-        <p class="intro-desc">{site.description}</p>
-      </div>
-
-      <div class="intro-grid">
-        <a class="intro-card reveal" href="/blog">
-          <span class="intro-icon">📝</span>
-          <span class="intro-name">技术文章</span>
-          <span class="intro-desc">{allPosts.length} 篇 · DeepSeek Harness 源码解析 / 面试八股 / 学习笔记</span>
-          <span class="intro-arrow">→</span>
-        </a>
-        <a class="intro-card reveal" href="/works">
-          <span class="intro-icon">🚀</span>
-          <span class="intro-name">开源作品</span>
-          <span class="intro-desc">{allWorks.length} 个 · 在线演示与源码仓库</span>
-          <span class="intro-arrow">→</span>
-        </a>
-        <a class="intro-card reveal" href="/gallery">
-          <span class="intro-icon">🖼</span>
-          <span class="intro-name">生活相册</span>
-          <span class="intro-desc">{GALLERY.length} 张 · 风景光影收藏</span>
-          <span class="intro-arrow">→</span>
-        </a>
-        <a class="intro-card reveal" href="/about-site">
-          <span class="intro-icon">🍜</span>
-          <span class="intro-name">关于本站</span>
-          <span class="intro-desc">技术栈 / 改版历史 / 致谢</span>
-          <span class="intro-arrow">→</span>
-        </a>
-      </div>
-
-      <p class="intro-hint reveal">
-        🐱 左下角的小宠物可以点它聊天 · 页面任意处点击会撒樱花 · 键盘依次按 ↑ ↑ ↓ ↓ ← → ← → B A 有惊喜
-      </p>
-    </div>
-  </section>
-
-  <!-- ============ 主内容 + 侧栏(居中) ============ -->
-  <div class="container-wide">
-    <div class="layout-two">
-      <div class="layout-main">
-        <!-- 最近文章(双列网格) -->
-        <section class="section">
-          <h2 class="section-title">最近文章</h2>
-          {
-            posts.length > 0 ? (
-              <div class="post-grid">
-                {posts.map((post) => <PostCard post={post} />)}
-              </div>
-            ) : (
-              <p class="empty">还没有文章,登录后台写第一篇吧!</p>
-            )
-          }
-          <div class="section-more">
-            <a class="btn" href="/blog">全部文章 →</a>
+      <div class="layout-two">
+        <div class="layout-main">
+          <p class="intro-kicker">// 自我介绍</p>
+          <p class="intro-text">{site.homeIntro}</p>
+          <div class="intro-links">
+            <a href="/about">关于我</a>
+            <span>·</span>
+            <a href="/blog">技术文章</a>
+            <span>·</span>
+            <a href="/works">开源作品</a>
+            <span>·</span>
+            <a href="/gallery">生活相册</a>
           </div>
-        </section>
+        </div>
 
-        <!-- 精选作品 -->
-        <section class="section">
-          <h2 class="section-title">精选作品</h2>
-          {
-            works.length > 0 ? (
-              <div class="work-grid">
-                {works.map((work) => <WorkCard work={work} />)}
-              </div>
-            ) : (
-              <p class="empty">还没有作品,登录后台添加第一个作品吧!</p>
-            )
-          }
-          <div class="section-more">
-            <a class="btn" href="/works">全部作品 →</a>
-          </div>
-        </section>
+        <Sidebar />
       </div>
-
-      <Sidebar />
-    </div>
-  </div>
-
-  <!-- ============ 相册精选 ============ -->
-  <section class="section container-wide">
-    <h2 class="section-title">相册精选</h2>
-    <div class="home-photos">
-      {
-        GALLERY.slice(0, 4).map((item) => (
-          <a class="home-photo reveal" href="/gallery">
-            <img src={item.src} alt={item.title} loading="lazy" />
-            <span class="home-photo-title">{item.title}</span>
-          </a>
-        ))
-      }
-    </div>
-    <div class="section-more">
-      <a class="btn" href="/gallery">全部相册 →</a>
     </div>
   </section>
 </BaseLayout>
@@ -172,7 +86,6 @@ const socialButtons = [
     overflow: hidden;
   }
 
-  /* 背景图:入场轻微缩放 + 视差(向下滚动时背景位移更慢) */
   .cover-bg {
     position: absolute;
     inset: 0;
@@ -186,8 +99,12 @@ const socialButtons = [
   .cover-mask {
     position: absolute;
     inset: 0;
-    background:
-      linear-gradient(180deg, rgba(15, 20, 30, 0.35) 0%, rgba(15, 20, 30, 0.5) 60%, rgba(247, 248, 250, 0.96) 100%);
+    background: linear-gradient(
+      180deg,
+      rgba(15, 20, 30, 0.34) 0%,
+      rgba(15, 20, 30, 0.5) 60%,
+      rgba(247, 248, 250, 0.96) 100%
+    );
   }
 
   .cover-inner {
@@ -200,60 +117,65 @@ const socialButtons = [
 
   .cover-avatar {
     display: inline-block;
-    margin-bottom: 22px;
+    margin-bottom: 20px;
     animation: avatarFloat 3.4s ease-in-out infinite alternate;
   }
 
   :global(.cover-avatar .avatar) {
     border-color: rgba(255, 255, 255, 0.9);
-    box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.18), 0 12px 30px rgba(0, 0, 0, 0.35);
+    box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.16), 0 12px 30px rgba(0, 0, 0, 0.32);
   }
 
   .cover-title {
     margin: 0 0 10px;
-    font-size: 3.4rem;
+    font-size: 3.2rem;
     font-weight: 800;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.05em;
     color: #fff;
-    text-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+    text-shadow: 0 4px 24px rgba(0, 0, 0, 0.42);
   }
 
   .cover-sub {
     margin: 0 0 12px;
-    font-size: 1.08rem;
+    font-size: 1.05rem;
     font-weight: 600;
-    color: rgba(255, 255, 255, 0.95);
-    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+    color: rgba(255, 255, 255, 0.94);
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.38);
   }
 
   .cover-desc {
-    margin: 0 auto 26px;
-    max-width: 560px;
-    font-size: 0.95rem;
+    margin: 0 auto 24px;
+    max-width: 540px;
+    font-size: 0.94rem;
     line-height: 1.8;
-    color: rgba(255, 255, 255, 0.86);
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+    color: rgba(255, 255, 255, 0.84);
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.38);
   }
 
   .cover-actions {
     display: flex;
     gap: 12px;
     justify-content: center;
-    flex-wrap: wrap;
+    align-items: center;
+    color: rgba(255, 255, 255, 0.7);
   }
 
-  .cover-btn {
-    background: rgba(255, 255, 255, 0.14);
-    border-color: rgba(255, 255, 255, 0.55);
+  .cover-link {
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 0.94rem;
+    font-weight: 600;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.45);
+    padding-bottom: 2px;
+    transition: all 0.18s ease;
+  }
+
+  .cover-link:hover {
     color: #fff;
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-  }
-
-  .cover-btn:hover {
-    background: rgba(255, 255, 255, 0.26);
     border-color: #fff;
-    color: #fff;
+  }
+
+  .cover-sep {
+    opacity: 0.5;
   }
 
   .cover-social {
@@ -265,16 +187,13 @@ const socialButtons = [
   }
 
   .cover-social a {
-    color: rgba(255, 255, 255, 0.82);
+    color: rgba(255, 255, 255, 0.78);
     font-family: var(--font-mono);
-    font-size: 0.8rem;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-    padding-bottom: 2px;
+    font-size: 0.78rem;
   }
 
   .cover-social a:hover {
     color: #fff;
-    border-color: #fff;
   }
 
   /* 向下滚动提示 */
@@ -293,10 +212,10 @@ const socialButtons = [
   }
 
   .mouse {
-    width: 26px;
-    height: 42px;
+    width: 24px;
+    height: 38px;
     border: 2px solid rgba(255, 255, 255, 0.9);
-    border-radius: 14px;
+    border-radius: 13px;
     position: relative;
     display: block;
   }
@@ -304,9 +223,9 @@ const socialButtons = [
   .wheel {
     position: absolute;
     left: 50%;
-    top: 8px;
+    top: 7px;
     width: 4px;
-    height: 8px;
+    height: 7px;
     margin-left: -2px;
     border-radius: 2px;
     background: #fff;
@@ -314,7 +233,7 @@ const socialButtons = [
   }
 
   .scroll-text {
-    font-size: 0.76rem;
+    font-size: 0.74rem;
     font-family: var(--font-mono);
     letter-spacing: 0.08em;
     color: rgba(255, 255, 255, 0.92);
@@ -342,191 +261,48 @@ const socialButtons = [
     100% { opacity: 0; transform: translateY(14px); }
   }
 
-  /* ============ 我的页面介绍 ============ */
+  /* ============ 自我介绍区 ============ */
   .intro-section {
-    padding: 56px 0 10px;
+    padding: 60px 0 40px;
     margin-top: -70px;
     position: relative;
     z-index: 3;
     background: linear-gradient(180deg, transparent 0%, var(--bg) 70px);
   }
 
-  .intro-head {
-    text-align: center;
-    margin-bottom: 30px;
-  }
-
   .intro-kicker {
-    margin: 0 0 8px;
+    margin: 0 0 14px;
     font-family: var(--font-mono);
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     color: var(--accent);
-    letter-spacing: 0.12em;
+    letter-spacing: 0.06em;
   }
 
-  .intro-title {
-    margin: 0 0 12px;
-    font-size: 2rem;
-    background: linear-gradient(120deg, var(--accent), var(--accent-2));
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+  .intro-text {
+    margin: 0 0 22px;
+    font-size: 1.05rem;
+    line-height: 2;
+    color: var(--text);
+    max-width: 640px;
   }
 
-  .intro-desc {
-    margin: 0 auto;
-    max-width: 620px;
-    color: var(--text-dim);
-    font-size: 0.95rem;
-  }
-
-  .intro-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
-    gap: 14px;
-  }
-
-  .intro-card {
-    position: relative;
+  .intro-links {
     display: flex;
-    flex-direction: column;
-    gap: 4px;
-    padding: 18px 20px;
-    background: var(--bg-soft);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    color: var(--text);
-    transition: all 0.2s ease;
-    overflow: hidden;
-  }
-
-  .intro-card:hover {
-    border-color: var(--accent);
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-sm);
-    color: var(--text);
-  }
-
-  .intro-icon {
-    font-size: 1.5rem;
-    line-height: 1;
-  }
-
-  .intro-name {
-    font-weight: 700;
-    font-size: 1rem;
-  }
-
-  .intro-desc-text,
-  .intro-card .intro-desc {
-    font-size: 0.8rem;
-    color: var(--text-dim);
-  }
-
-  .intro-arrow {
-    position: absolute;
-    right: 16px;
-    bottom: 16px;
-    color: var(--accent);
-    font-size: 0.95rem;
-    opacity: 0;
-    transform: translateX(-4px);
-    transition: all 0.2s ease;
-  }
-
-  .intro-card:hover .intro-arrow {
-    opacity: 1;
-    transform: translateX(0);
-  }
-
-  .intro-hint {
-    margin: 16px 0 0;
-    text-align: center;
-    font-size: 0.78rem;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    font-size: 0.9rem;
     color: var(--text-faint);
   }
 
-  /* ============ 内容区(与原样式一致) ============ */
-  .section {
-    margin-top: 46px;
-  }
-
-  .layout-main .section:first-child {
-    margin-top: 0;
-  }
-
-  .post-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 14px;
-  }
-
-  .work-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 16px;
-  }
-
-  .home-photos {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 16px;
-  }
-
-  .home-photo {
-    position: relative;
-    display: block;
-    border-radius: var(--radius);
-    overflow: hidden;
-    border: 1px solid var(--border);
-    aspect-ratio: 4 / 3;
-    background: var(--bg-soft);
-  }
-
-  .home-photo img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-    transition: transform 0.4s ease;
-  }
-
-  .home-photo:hover img {
-    transform: scale(1.06);
-  }
-
-  .home-photo-title {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    padding: 26px 12px 10px;
-    background: linear-gradient(transparent, rgba(0, 0, 0, 0.6));
-    color: #fff;
-    font-size: 0.88rem;
-    font-weight: 600;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  .home-photo:hover .home-photo-title {
-    opacity: 1;
-  }
-
-  .section-more {
-    margin-top: 20px;
-    text-align: center;
-  }
-
-  .empty {
+  .intro-links a {
     color: var(--text-dim);
-    padding: 24px;
-    border: 1px dashed var(--border-strong);
-    border-radius: var(--radius);
-    text-align: center;
   }
 
-  /* ============ 响应式 ============ */
+  .intro-links a:hover {
+    color: var(--accent);
+  }
+
   @media (max-width: 640px) {
     .cover {
       min-height: calc(100vh - 56px);
@@ -541,11 +317,12 @@ const socialButtons = [
       padding: 24px 16px 80px;
     }
     :global(.cover-avatar .avatar) {
-      width: 100px !important;
-      height: 100px !important;
+      width: 96px !important;
+      height: 96px !important;
     }
-    .intro-title {
-      font-size: 1.5rem;
+    .intro-text {
+      font-size: 0.95rem;
+      line-height: 1.9;
     }
   }
 </style>

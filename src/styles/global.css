@@ -588,6 +588,118 @@ th {
   margin-top: 2px;
 }
 
+/* ---------- 网页小宠物 ---------- */
+#blog-pet {
+  position: fixed;
+  left: 18px;
+  bottom: 18px;
+  width: 64px;
+  height: 64px;
+  z-index: 150;
+  cursor: pointer;
+  animation: petBob 3s ease-in-out infinite alternate;
+  transition: transform 0.2s ease;
+}
+
+#blog-pet:hover {
+  transform: scale(1.08);
+}
+
+#blog-pet.pet-static {
+  animation: none;
+}
+
+#blog-pet.pet-bounce {
+  animation: petBounce 0.42s ease;
+}
+
+.pet-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  transition: filter 0.2s ease;
+}
+
+#blog-pet:hover .pet-svg {
+  filter: drop-shadow(0 6px 14px rgba(124, 58, 237, 0.28));
+}
+
+.pet-pupil {
+  transition: transform 0.08s linear;
+}
+
+.pet-bubble {
+  position: absolute;
+  left: 72px;
+  bottom: 14px;
+  min-width: 150px;
+  max-width: 230px;
+  padding: 9px 13px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  font-size: 0.82rem;
+  color: var(--text);
+  line-height: 1.5;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(6px);
+  transition: all 0.22s ease;
+  pointer-events: none;
+}
+
+.pet-bubble.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.pet-bubble::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  bottom: 14px;
+  width: 10px;
+  height: 10px;
+  background: var(--bg);
+  border-left: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  transform: rotate(45deg);
+}
+
+@keyframes petBob {
+  from { transform: translateY(0); }
+  to { transform: translateY(-7px); }
+}
+
+@keyframes petBounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  40% { transform: translateY(-12px) scale(1.08); }
+  70% { transform: translateY(2px) scale(0.96); }
+}
+
+@keyframes petConfettiFall {
+  0% { transform: translateY(0) rotate(0); opacity: 1; }
+  100% { transform: translateY(105vh) rotate(720deg); opacity: 0.9; }
+}
+
+@media (max-width: 640px) {
+  #blog-pet {
+    width: 52px;
+    height: 52px;
+    left: 12px;
+    bottom: 12px;
+  }
+  .pet-bubble {
+    left: 62px;
+    bottom: 10px;
+    min-width: 130px;
+    max-width: 180px;
+    font-size: 0.76rem;
+  }
+}
+
 /* ---------- 自定义滚动条(渐变紫蓝) ---------- */
 ::-webkit-scrollbar {
   width: 10px;

@@ -253,12 +253,93 @@ function ensureBackground(): void {
     }
   }
 
+  /* 点击特效:樱花花瓣爆散 + 扩散波纹 */
+  interface Burst {
+    x: number; y: number; vx: number; vy: number;
+    life: number; maxLife: number; size: number; rot: number; rotV: number; color: string;
+  }
+  interface Ripple {
+    x: number; y: number; life: number; maxLife: number;
+  }
+  const bursts: Burst[] = [];
+  const ripples: Ripple[] = [];
+  const BURST_COLORS = ['#ffb7c5', '#ffc9d4', '#ff9eb5', '#ffd1dc', '#ffb3c8'];
+
+  window.addEventListener('pointerdown', (e) => {
+    if (reduced || !canvas.isConnected) return;
+    const count = 9 + Math.floor(Math.random() * 4);
+    for (let i = 0; i < count; i++) {
+      const angle = (Math.PI * 2 * i) / count + rand(-0.3, 0.3);
+      const speed = rand(1.2, 3.4);
+      bursts.push({
+        x: e.clientX, y: e.clientY,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - rand(0.2, 1.2),
+        life: 0,
+        maxLife: 34 + Math.floor(rand(0, 22)),
+        size: rand(6, 13),
+        rot: rand(0, Math.PI * 2),
+        rotV: rand(-0.12, 0.12),
+        color: BURST_COLORS[Math.floor(Math.random() * BURST_COLORS.length)],
+      });
+    }
+    ripples.push({ x: e.clientX, y: e.clientY, life: 0, maxLife: 26 });
+  });
+
+  function drawBursts(): void {
+    for (let i = bursts.length - 1; i >= 0; i--) {
+      const b = bursts[i];
+      b.life += 1;
+      b.x += b.vx;
+      b.y += b.vy;
+      b.vy += 0.045; // 重力
+      b.vx *= 0.985;
+      b.rot += b.rotV;
+      const ratio = 1 - b.life / b.maxLife;
+      if (ratio <= 0) {
+        bursts.splice(i, 1);
+        continue;
+      }
+      ctx.save();
+      ctx.globalAlpha = ratio * 0.9;
+      ctx.translate(b.x, b.y);
+      ctx.rotate(b.rot);
+      ctx.fillStyle = b.color;
+      ctx.beginPath();
+      ctx.moveTo(0, -b.size / 2);
+      ctx.quadraticCurveTo(b.size / 2, 0, 0, b.size / 2);
+      ctx.quadraticCurveTo(-b.size / 2, 0, 0, -b.size / 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    for (let i = ripples.length - 1; i >= 0; i--) {
+      const r = ripples[i];
+      r.life += 1;
+      const ratio = 1 - r.life / r.maxLife;
+      if (ratio <= 0) {
+        ripples.splice(i, 1);
+        continue;
+      }
+      ctx.save();
+      ctx.globalAlpha = ratio * 0.45;
+      ctx.strokeStyle = '#ff9eb5';
+      ctx.lineWidth = 2 * ratio;
+      ctx.beginPath();
+      ctx.arc(r.x, r.y, (1 - ratio) * 46 + 6, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+  }
+
   function render(t: number): void {
     ctx.clearRect(0, 0, w, h);
     for (const o of orbs) drawOrb(o);
     for (const s of stars) drawStar(s, t / 1000);
     for (const p of petals) drawPetal(p, t / 1000);
     drawSparkles();
+    drawBursts();
     ctx.globalAlpha = 1;
   }
 

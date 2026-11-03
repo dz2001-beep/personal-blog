@@ -4,15 +4,15 @@
 
 export const SITE = {
   /** 站点标题(浏览器标签页、首页标题) */
-  title: '我的个人博客',
+  title: 'DZ-Vanguard 的博客',
   /** 站点一句话描述 */
-  description: '记录技术思考、分享开源作品、书写个人成长。',
+  description: '记录技术思考、分享开源作品、收藏风景光影 —— 一个程序员的小小数字空间。',
   /** 部署域名(用于 RSS / Sitemap / SEO,上线前改成你的真实域名) */
   url: 'https://example.com',
   /** 站点作者 */
   author: 'DZ-Vanguard',
   /** 首页大标题 */
-  heroTitle: '你好,我是 DZ-Vanguard',
+  heroTitle: '欢迎来到 DZ-Vanguard 的博客',
   /** 首页副标题(一句话介绍) */
   heroTagline: '全栈工程师 · 热爱开源与写作',
   /** 导航栏/页脚显示的博客名 */

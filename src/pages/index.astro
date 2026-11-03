@@ -4,11 +4,13 @@ import Avatar from '../components/Avatar.astro';
 import PostCard from '../components/PostCard.astro';
 import WorkCard from '../components/WorkCard.astro';
 import Sidebar from '../components/Sidebar.astro';
-import { getPublishedPosts, getFeaturedWorks, getSiteConfig } from '../lib/db';
+import { getPublishedPosts, getFeaturedWorks, getAllWorks, getSiteConfig } from '../lib/db';
 import { GALLERY } from '../data/gallery';
 
 const site = getSiteConfig();
-const posts = getPublishedPosts().slice(0, 4);
+const allPosts = getPublishedPosts();
+const allWorks = getAllWorks();
+const posts = allPosts.slice(0, 4);
 const works = getFeaturedWorks().slice(0, 6);
 
 const socialButtons = [
@@ -52,6 +54,40 @@ const socialButtons = [
     </div>
     <!-- 右侧装饰符号 -->
     <span class="hero-deco" aria-hidden="true">&lt;/&gt;</span>
+
+    <!-- 网站自我介绍:功能入口卡片 -->
+    <div class="site-intro container-wide fade-up">
+      <p class="intro-lead">这个站点都装了什么 ↓</p>
+      <div class="intro-grid">
+        <a class="intro-card" href="/blog">
+          <span class="intro-icon">📝</span>
+          <span class="intro-name">技术文章</span>
+          <span class="intro-desc">{allPosts.length} 篇 · 源码解析 / 面试八股 / 学习笔记</span>
+          <span class="intro-arrow">→</span>
+        </a>
+        <a class="intro-card" href="/works">
+          <span class="intro-icon">🚀</span>
+          <span class="intro-name">开源作品</span>
+          <span class="intro-desc">{allWorks.length} 个 · 在线演示与源码</span>
+          <span class="intro-arrow">→</span>
+        </a>
+        <a class="intro-card" href="/gallery">
+          <span class="intro-icon">🖼</span>
+          <span class="intro-name">生活相册</span>
+          <span class="intro-desc">{GALLERY.length} 张 · 风景光影收藏</span>
+          <span class="intro-arrow">→</span>
+        </a>
+        <a class="intro-card" href="/about-site">
+          <span class="intro-icon">🍜</span>
+          <span class="intro-name">关于本站</span>
+          <span class="intro-desc">技术栈 / 改版历史 / 致谢</span>
+          <span class="intro-arrow">→</span>
+        </a>
+      </div>
+      <p class="intro-hint">
+        🐱 左下角的小宠物可以点它聊天 · 页面任意处点击会撒樱花 · 键盘依次按 ↑ ↑ ↓ ↓ ← → ← → B A 有惊喜
+      </p>
+    </div>
   </section>
 
   <!-- ============ 主内容 + 侧栏(居中) ============ -->
@@ -203,6 +239,82 @@ const socialButtons = [
     pointer-events: none;
     user-select: none;
     line-height: 1;
+  }
+
+  /* ---------- 网站自我介绍 ---------- */
+  .site-intro {
+    margin-top: 36px;
+  }
+
+  .intro-lead {
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
+    color: var(--text-faint);
+    margin: 0 0 12px;
+  }
+
+  .intro-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 14px;
+  }
+
+  .intro-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 16px 18px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    transition: all 0.2s ease;
+    overflow: hidden;
+  }
+
+  .intro-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-sm);
+    color: var(--text);
+  }
+
+  .intro-icon {
+    font-size: 1.4rem;
+    line-height: 1;
+  }
+
+  .intro-name {
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  .intro-desc {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+  }
+
+  .intro-arrow {
+    position: absolute;
+    right: 16px;
+    bottom: 14px;
+    color: var(--accent);
+    font-size: 0.95rem;
+    opacity: 0;
+    transform: translateX(-4px);
+    transition: all 0.2s ease;
+  }
+
+  .intro-card:hover .intro-arrow {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .intro-hint {
+    margin: 14px 0 0;
+    font-size: 0.78rem;
+    color: var(--text-faint);
   }
 
   /* ---------- 主区 ---------- */

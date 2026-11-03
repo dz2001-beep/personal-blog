@@ -500,10 +500,13 @@ th {
 
 /* ---------- 侧栏卡片 ---------- */
 .side-card {
-  background: var(--bg-soft);
+  background: rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 18px 20px;
+  box-shadow: 0 2px 12px rgba(31, 35, 40, 0.04);
 }
 
 .side-card-title {

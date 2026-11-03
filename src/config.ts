@@ -38,3 +38,6 @@ export const AVATAR = '/touxiang.jpg';
 
 /** 首页全屏封面背景图(可换成 public/ 下的任意图片) */
 export const COVER_IMAGE = '/gallery/foggy-peaks.jpg';
+
+/** 首页下半部分(自我介绍区)的背景图,会叠加白色蒙层淡化显示 */
+export const BODY_IMAGE = '/gallery/forest.jpg';

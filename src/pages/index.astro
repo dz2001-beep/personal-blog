@@ -5,7 +5,7 @@ import Sidebar from '../components/Sidebar.astro';
 import { getSiteConfig, getPublishedPosts, getFeaturedWorks, getAllWorks } from '../lib/db';
 import { GALLERY } from '../data/gallery';
 import { formatDate } from '../utils/format';
-import { COVER_IMAGE } from '../config';
+import { COVER_IMAGE, BODY_IMAGE } from '../config';
 
 const site = getSiteConfig();
 const allPosts = getPublishedPosts();
@@ -63,12 +63,12 @@ const socialButtons = [
   </section>
 
   <!-- ============ 自我介绍 + 精选内容 + 侧栏 ============ -->
-  <section class="intro-section" id="intro">
+  <section class="intro-section" id="intro" style={`background-image: linear-gradient(rgba(255,255,255,0.93), rgba(255,255,255,0.97)), url('${BODY_IMAGE}')`}>
     <div class="container-wide">
       <div class="layout-two">
         <div class="layout-main">
           <!-- 自我介绍 -->
-          <div class="intro-head reveal">
+          <div class="block intro-head reveal">
             <p class="intro-kicker">// 自我介绍</p>
             <p class="intro-text">{site.homeIntro}</p>
             <div class="intro-stats">
@@ -94,7 +94,7 @@ const socialButtons = [
           <!-- 最近在写 -->
           {
             posts.length > 0 && (
-              <section class="mini-section reveal">
+              <section class="block mini-section reveal">
                 <div class="mini-head">
                   <h2>最近在写</h2>
                   <a href="/blog">全部文章 →</a>
@@ -118,7 +118,7 @@ const socialButtons = [
           <!-- 做过的东西 -->
           {
             works.length > 0 && (
-              <section class="mini-section reveal">
+              <section class="block mini-section reveal">
                 <div class="mini-head">
                   <h2>做过的东西</h2>
                   <a href="/works">全部作品 →</a>
@@ -137,7 +137,7 @@ const socialButtons = [
           }
 
           <!-- 光影瞬间 -->
-          <section class="mini-section reveal">
+          <section class="block mini-section reveal">
             <div class="mini-head">
               <h2>光影瞬间</h2>
               <a href="/gallery">全部相册 →</a>
@@ -347,11 +347,26 @@ const socialButtons = [
 
   /* ============ 自我介绍区 ============ */
   .intro-section {
-    padding: 60px 0 40px;
+    padding: 64px 0 54px;
     margin-top: -70px;
     position: relative;
     z-index: 3;
-    background: linear-gradient(180deg, transparent 0%, var(--bg) 70px);
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+  }
+
+  /* 分块卡片(玻璃拟态) */
+  .block {
+    position: relative;
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 24px 26px;
+    margin-bottom: 18px;
+    box-shadow: 0 2px 18px rgba(31, 35, 40, 0.05);
   }
 
   .intro-kicker {
@@ -411,9 +426,9 @@ const socialButtons = [
 
   /* ---------- 首页迷你板块 ---------- */
   .mini-section {
-    margin-top: 44px;
-    padding-top: 30px;
-    border-top: 1px solid var(--border);
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
   }
 
   .mini-head {
@@ -589,6 +604,9 @@ const socialButtons = [
       min-height: calc(100vh - 56px);
     }
     .cover-bg {
+      background-attachment: scroll;
+    }
+    .intro-section {
       background-attachment: scroll;
     }
     .cover-title {

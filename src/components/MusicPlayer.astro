@@ -1,0 +1,573 @@
+---
+/**
+ * 网络歌单播放器
+ * 歌单数据由 /api/music 在服务端抓取并缓存(见 src/lib/music.ts)
+ * ↓ 关键:transition:persist → 切换页面时播放器节点不重建,音乐不断
+ */
+---
+
+<div class="side-card music-card" id="music-player" transition:persist="music-player">
+  <div class="music-head">
+    <h3 class="side-card-title">音乐<span class="music-count" id="mt-count"></span></h3>
+    <div class="music-head-actions">
+      <button type="button" class="music-retry" id="mt-retry" hidden>重试</button>
+      <button type="button" class="music-toggle" id="mt-toggle" aria-label="展开歌单">歌单</button>
+    </div>
+  </div>
+
+  <div class="music-now">
+    <div class="music-cover is-empty" id="mt-cover">
+      <img id="mt-pic" alt="" loading="lazy" decoding="async" />
+      <span class="music-spinner" aria-hidden="true"></span>
+    </div>
+    <div class="music-meta">
+      <p class="music-title" id="mt-title">正在加载歌单…</p>
+      <p class="music-artist" id="mt-artist">请稍候</p>
+    </div>
+  </div>
+
+  <div class="music-progress">
+    <span class="music-time" id="mt-cur">0:00</span>
+    <input
+      class="music-seek"
+      id="mt-seek"
+      type="range"
+      min="0"
+      max="0"
+      value="0"
+      step="0.1"
+      aria-label="播放进度"
+    />
+    <span class="music-time" id="mt-dur">0:00</span>
+  </div>
+
+  <div class="music-controls">
+    <button type="button" class="music-btn" id="mt-prev" aria-label="上一首">⏮</button>
+    <button type="button" class="music-btn music-play" id="mt-play" aria-label="播放">▶</button>
+    <button type="button" class="music-btn" id="mt-next" aria-label="下一首">⏭</button>
+    <div class="music-volume">
+      <button type="button" class="music-btn music-mute" id="mt-mute" aria-label="静音">🔊</button>
+      <input
+        class="music-vol"
+        id="mt-vol"
+        type="range"
+        min="0"
+        max="1"
+        step="0.01"
+        value="0.8"
+        aria-label="音量"
+      />
+    </div>
+  </div>
+
+  <div class="music-list-wrap" id="mt-list-wrap" hidden>
+    <p class="music-list-name" id="mt-list-name">网络歌单</p>
+    <input class="music-search" id="mt-search" type="search" placeholder="搜索歌名 / 歌手" />
+    <ul class="music-list" id="mt-list">
+      <li class="music-list-empty">加载中…</li>
+    </ul>
+  </div>
+
+  <audio id="mt-audio" preload="none"></audio>
+</div>
+
+<script>
+  // 客户端脚本:DOM 相关逻辑只能在浏览器里跑(不能用 frontmatter import)
+  import '../scripts/music';
+</script>
+
+<style>
+  .music-card {
+    background: linear-gradient(160deg, #232a35, #161b23);
+    border-color: #2d3542;
+    padding: 16px 16px 14px;
+  }
+
+  .music-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .music-card .side-card-title {
+    margin: 0;
+    color: #fff;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: baseline;
+    gap: 9px;
+  }
+
+  .music-count {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 400;
+    color: #7d879b;
+  }
+
+  .music-head-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .music-toggle,
+  .music-retry {
+    font: inherit;
+    font-size: 0.7rem;
+    line-height: 1;
+    padding: 5px 9px;
+    border-radius: 999px;
+    border: 1px solid #38404f;
+    background: rgba(255, 255, 255, 0.04);
+    color: #b9c2d0;
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+
+  .music-toggle:hover,
+  .music-retry:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border-color: #4c586b;
+  }
+
+  .music-toggle.is-open {
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+  }
+
+  /* ---------- 当前歌曲 ---------- */
+  .music-now {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-width: 0;
+  }
+
+  .music-cover {
+    position: relative;
+    width: 52px;
+    height: 52px;
+    flex: 0 0 52px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #2f3846, #1d232c);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+  }
+
+  .music-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.6s ease;
+  }
+
+  .music-cover.is-empty img {
+    display: none;
+  }
+
+  .music-cover.is-empty::after {
+    content: '♪';
+    font-size: 1.25rem;
+    color: #6c7789;
+  }
+
+  .music-card.is-playing .music-cover img {
+    animation: music-spin 14s linear infinite;
+  }
+
+  @keyframes music-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  /* 加载中:封面盖一层转圈 */
+  .music-spinner {
+    position: absolute;
+    inset: 0;
+    display: none;
+    border-radius: 10px;
+    background: rgba(14, 18, 24, 0.62);
+  }
+
+  .music-spinner::after {
+    content: '';
+    position: absolute;
+    inset: 50% auto auto 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    border-top-color: #fff;
+    animation: music-spin 0.8s linear infinite;
+  }
+
+  .music-card.is-loading .music-spinner {
+    display: block;
+  }
+
+  .music-meta {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .music-title {
+    margin: 0;
+    font-size: 0.84rem;
+    color: #eef2f8;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .music-artist {
+    margin: 3px 0 0;
+    font-size: 0.72rem;
+    color: #8b94a3;
+    font-family: var(--font-mono);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* ---------- 进度条 ---------- */
+  .music-progress {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 12px 0 8px;
+  }
+
+  .music-time {
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    color: #7d879b;
+    flex: 0 0 auto;
+    min-width: 30px;
+    text-align: center;
+  }
+
+  /* ---------- 控制按钮 ---------- */
+  .music-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .music-btn {
+    font: inherit;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid #343d4c;
+    background: rgba(255, 255, 255, 0.05);
+    color: #cdd5e1;
+    font-size: 0.72rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: all 0.16s ease;
+    flex: 0 0 auto;
+  }
+
+  .music-btn:hover {
+    background: rgba(255, 255, 255, 0.13);
+    color: #fff;
+    transform: translateY(-1px);
+  }
+
+  .music-btn:active {
+    transform: translateY(0) scale(0.95);
+  }
+
+  .music-play {
+    width: 38px;
+    height: 38px;
+    font-size: 0.82rem;
+    background: #eef2f8;
+    border-color: #eef2f8;
+    color: #131820;
+    box-shadow: 0 3px 12px rgba(238, 242, 248, 0.18);
+  }
+
+  .music-play:hover {
+    background: #fff;
+    color: #0d1117;
+  }
+
+  .music-volume {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+    min-width: 0;
+  }
+
+  .music-mute {
+    width: 26px;
+    height: 26px;
+    font-size: 0.7rem;
+    border-color: transparent;
+    background: transparent;
+  }
+
+  /* ---------- 滑块通用 ---------- */
+  .music-seek,
+  .music-vol {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 3px;
+    border-radius: 3px;
+    background: #333c4b;
+    cursor: pointer;
+    outline: none;
+  }
+
+  .music-seek {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .music-vol {
+    width: 52px;
+    flex: 0 0 auto;
+  }
+
+  .music-seek::-webkit-slider-thumb,
+  .music-vol::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #eef2f8;
+    border: 0;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+    transition: transform 0.15s ease;
+  }
+
+  .music-seek:hover::-webkit-slider-thumb,
+  .music-vol:hover::-webkit-slider-thumb {
+    transform: scale(1.25);
+  }
+
+  .music-seek::-moz-range-thumb,
+  .music-vol::-moz-range-thumb {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #eef2f8;
+    border: 0;
+  }
+
+  .music-seek::-moz-range-track,
+  .music-vol::-moz-range-track {
+    height: 3px;
+    border-radius: 3px;
+    background: #333c4b;
+  }
+
+  /* ---------- 歌单面板 ---------- */
+  .music-list-wrap {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #2c3441;
+  }
+
+  .music-list-name {
+    margin: 0 0 8px;
+    font-size: 0.7rem;
+    color: #7d879b;
+    font-family: var(--font-mono);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .music-search {
+    width: 100%;
+    box-sizing: border-box;
+    font: inherit;
+    font-size: 0.74rem;
+    padding: 6px 9px;
+    margin-bottom: 8px;
+    border-radius: 8px;
+    border: 1px solid #343d4c;
+    background: rgba(0, 0, 0, 0.25);
+    color: #dfe5ee;
+    outline: none;
+    transition: border-color 0.16s ease;
+  }
+
+  .music-search::placeholder {
+    color: #667085;
+  }
+
+  .music-search:focus {
+    border-color: #55617a;
+  }
+
+  .music-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    max-height: 236px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .music-list::-webkit-scrollbar {
+    width: 5px;
+  }
+
+  .music-list::-webkit-scrollbar-thumb {
+    background: #39424f;
+    border-radius: 3px;
+  }
+
+  /*
+   * 注意:歌单列表项由 JS 动态创建,拿不到 Astro 的作用域标记(data-astro-cid-*),
+   * 所以它们和正在播放的跳动条样式放在文件末尾的 <style is:global> 里。
+   */
+
+
+  @media (prefers-reduced-motion: reduce) {
+    .music-card.is-playing .music-cover img {
+      animation: none;
+    }
+  }
+</style>
+
+<style is:global>
+  /* ===== 动态生成的歌单列表项(必须用全局样式) =====
+     统一加 #music-player 前缀,避免污染站内其它列表 */
+  #music-player .music-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 7px;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background 0.14s ease;
+  }
+
+  #music-player .music-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  #music-player .music-item.is-active {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  #music-player .music-item-idx {
+    flex: 0 0 20px;
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    color: #5f6a7d;
+    text-align: right;
+  }
+
+  #music-player .music-item.is-active .music-item-idx {
+    color: #cfd7e3;
+  }
+
+  #music-player .music-item-text {
+    min-width: 0;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+  }
+
+  #music-player .music-item-name {
+    font-size: 0.76rem;
+    color: #dbe2ec;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  #music-player .music-item.is-active .music-item-name {
+    color: #fff;
+    font-weight: 500;
+  }
+
+  #music-player .music-item-artist {
+    font-size: 0.66rem;
+    color: #77839a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* 正在播放的小跳动条 */
+  #music-player .music-item-eq {
+    display: none;
+    align-items: flex-end;
+    gap: 2px;
+    height: 11px;
+    flex: 0 0 auto;
+  }
+
+  #music-player .music-item.is-active .music-item-eq {
+    display: flex;
+  }
+
+  #music-player .music-item-eq i {
+    width: 2px;
+    border-radius: 1px;
+    background: #e3e8ef;
+    animation: music-eq 0.9s ease-in-out infinite;
+  }
+
+  #music-player .music-item-eq i:nth-child(1) {
+    height: 40%;
+    animation-delay: 0s;
+  }
+
+  #music-player .music-item-eq i:nth-child(2) {
+    height: 100%;
+    animation-delay: 0.22s;
+  }
+
+  #music-player .music-item-eq i:nth-child(3) {
+    height: 62%;
+    animation-delay: 0.44s;
+  }
+
+  @keyframes music-eq {
+    0%,
+    100% {
+      transform: scaleY(0.35);
+    }
+    50% {
+      transform: scaleY(1);
+    }
+  }
+
+  #music-player .music-list-empty {
+    padding: 10px 4px;
+    font-size: 0.72rem;
+    color: #6e7889;
+    text-align: center;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    #music-player .music-item-eq i {
+      animation: none;
+    }
+  }
+</style>

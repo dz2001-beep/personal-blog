@@ -9,7 +9,8 @@ npm-debug.log*
 # npm cache (local, used to work around global cache permission issues)
 .npm-cache/
 # SQLite 数据库与上传文件(生产数据,不入库)
-data/
+# 注意:必须写 /data/ 而不是 data/,否则会把 src/data/ 下的源码一起忽略掉
+/data/
 public/uploads/
 # environment variables
 .env

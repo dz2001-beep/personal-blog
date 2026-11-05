@@ -85,9 +85,9 @@ const allTags = [...new Set(posts.flatMap((p) => p.tags))].sort();
 
   .filter-tag:hover,
   .filter-tag.active {
-    background: var(--accent);
-    color: #fff;
-    border-color: var(--accent);
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
   }
 
   .post-list {

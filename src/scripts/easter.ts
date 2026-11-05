@@ -5,7 +5,7 @@
  */
 
 const SEQUENCE = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
-const COLORS = ['#2563eb', '#7c3aed', '#ff5f8f', '#ffb347', '#9ece6a', '#22d3ee', '#ff9ec4'];
+const COLORS = ['#e8ecf2', '#cfd6e0', '#b9c2cf', '#a8b3c2', '#dfe4ea', '#c4ccd6', '#9aa5b3'];
 
 let bound = false;
 let progress = 0;
@@ -37,7 +37,7 @@ function fireConfetti(): void {
   msg.textContent = '🎉 彩蛋解锁!你发现了 Konami 秘技';
   msg.style.cssText = `
     position:fixed;left:50%;top:38%;transform:translate(-50%,-50%);
-    background:linear-gradient(120deg,rgba(37,99,235,.95),rgba(124,58,237,.95));
+    background:rgba(24,29,37,.95);border:1px solid rgba(255,255,255,.16);
     color:#fff;padding:14px 26px;border-radius:999px;
     font-size:0.95rem;font-weight:600;box-shadow:0 10px 30px rgba(31,35,40,.25);
     z-index:9999;animation:fadeUp .4s ease both;white-space:nowrap;

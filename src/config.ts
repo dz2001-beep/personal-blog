@@ -4,21 +4,21 @@
 
 export const SITE = {
   /** 站点标题(浏览器标签页、首页标题) */
-  title: 'DZ-Vanguard 的博客',
+  title: 'DZ-Star 的博客',
   /** 站点一句话描述 */
   description: '记录技术思考、分享开源作品、收藏风景光影 —— 一个程序员的小小数字空间。',
   /** 部署域名(用于 RSS / Sitemap / SEO,上线前改成你的真实域名) */
   url: 'https://example.com',
   /** 站点作者 */
-  author: 'DZ-Vanguard',
+  author: 'DZ-Star',
   /** 首页大标题 */
-  heroTitle: '欢迎来到 DZ-Vanguard 的博客',
+  heroTitle: '欢迎来到 DZ-Star 的博客',
   /** 首页副标题(一句话介绍) */
   heroTagline: '全栈工程师 · 热爱开源与写作',
   /** 导航栏/页脚显示的博客名 */
   shortName: 'DZ Blog',
   /** 首页「自我介绍」段落(简约风格,直接展示这段文字) */
-  homeIntro: '你好,我是 DZ-Vanguard,一名全栈工程师。这个博客用来记录技术思考、分享开源作品、收藏风景光影。没有花哨的装饰,只有认真写下的内容 —— 欢迎随意逛逛。',
+  homeIntro: '你好,我是 DZ-Star,一名全栈工程师。这个博客用来记录技术思考、分享开源作品、收藏风景光影。没有花哨的装饰,只有认真写下的内容 —— 欢迎随意逛逛。',
   /** 语言 */
   lang: 'zh-CN',
 };

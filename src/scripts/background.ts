@@ -6,7 +6,7 @@
  * - 页面隐藏时暂停,节省性能
  */
 
-const PETAL_COLORS = ['#ffb6c1', '#ffc2d1', '#ff9eb5', '#ffd1dc'];
+const PETAL_COLORS = ['#dfe4ea', '#e8ecf2', '#cfd6e0', '#d7dde6'];
 const PETAL_COUNT = 26;
 const STAR_COUNT = 46;
 const ORB_COUNT = 3;
@@ -238,9 +238,9 @@ function ensureBackground(): void {
       ctx.save();
       ctx.translate(sp.x, sp.y);
       ctx.rotate(Math.PI / 4);
-      // 彩虹拖尾:按粒子的 hue 取色,并随生命周期渐淡
-      ctx.fillStyle = `hsla(${sp.hue}, 95%, 66%, ${0.75 * ratio})`;
-      ctx.shadowColor = `hsla(${sp.hue}, 95%, 66%, ${0.6 * ratio})`;
+      // 中性拖尾:浅灰白,随生命周期渐淡
+      ctx.fillStyle = `rgba(226, 232, 240, ${0.55 * ratio})`;
+      ctx.shadowColor = `rgba(226, 232, 240, ${0.35 * ratio})`;
       ctx.shadowBlur = 6;
       ctx.beginPath();
       ctx.moveTo(0, -sp.size * ratio);
@@ -263,7 +263,7 @@ function ensureBackground(): void {
   }
   const bursts: Burst[] = [];
   const ripples: Ripple[] = [];
-  const BURST_COLORS = ['#ffb7c5', '#ffc9d4', '#ff9eb5', '#ffd1dc', '#ffb3c8'];
+  const BURST_COLORS = ['#cfd6e0', '#dfe4ea', '#e8ecf2', '#c4ccd6', '#d7dde6'];
 
   window.addEventListener('pointerdown', (e) => {
     if (reduced || !canvas.isConnected) return;
@@ -323,7 +323,7 @@ function ensureBackground(): void {
       }
       ctx.save();
       ctx.globalAlpha = ratio * 0.45;
-      ctx.strokeStyle = '#ff9eb5';
+      ctx.strokeStyle = '#c4ccd6';
       ctx.lineWidth = 2 * ratio;
       ctx.beginPath();
       ctx.arc(r.x, r.y, (1 - ratio) * 46 + 6, 0, Math.PI * 2);

@@ -4,15 +4,15 @@
 
 export const PROFILE = {
   /** 姓名 */
-  name: 'DZ-Vanguard',
+  name: 'DZ-Star',
   /** 英文名 / ID(可选) */
-  handle: 'DZ-Vanguard',
+  handle: 'DZ-Star',
   /** 职位头衔 */
   title: '全栈工程师',
   /** 一句话定位 */
   tagline: '写代码、写文章、做开源。',
   /** 个人简介(支持 Markdown 语法,换行用 \n\n) */
-  bio: `你好,我是**DZ-Vanguard**,一名热爱技术的前端/全栈工程师。
+  bio: `你好,我是**DZ-Star**,一名热爱技术的前端/全栈工程师。
 
 这个博客用来记录我的技术思考、踩坑经验与开源作品。我相信最好的学习方式是输出 —— 把遇到的问题和解决方案写下来,既帮助自己沉淀,也希望能帮到同样在路上的你。
 

@@ -7,7 +7,7 @@
  */
 
 const LINES = [
-  '你好呀!这里是 DZ-Vanguard 的博客~',
+  '你好呀!这里是 DZ-Star 的博客~',
   '悄悄告诉你:按 ↑ ↑ ↓ ↓ ← → ← → B A 有惊喜 🎉',
   '写代码累了就看看文章吧 ☕',
   '今天也要开开心心呀 ✨',
@@ -26,14 +26,14 @@ const PET_SVG = `
 <svg viewBox="0 0 96 96" class="pet-svg" aria-hidden="true">
   <defs>
     <linearGradient id="petBody" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#7aa2f7"/>
-      <stop offset="100%" stop-color="#bb9af7"/>
+      <stop offset="0%" stop-color="#c9d1db"/>
+      <stop offset="100%" stop-color="#9aa5b3"/>
     </linearGradient>
   </defs>
   <ellipse cx="48" cy="86" rx="24" ry="5" fill="rgba(31,35,40,0.12)"/>
   <path d="M48 8 C68 8 82 24 82 46 C82 68 70 80 48 80 C26 80 14 68 14 46 C14 24 28 8 48 8 Z" fill="url(#petBody)"/>
-  <ellipse cx="30" cy="58" rx="7" ry="4" fill="#ff9ec4" opacity="0.45"/>
-  <ellipse cx="66" cy="58" rx="7" ry="4" fill="#ff9ec4" opacity="0.45"/>
+  <ellipse cx="30" cy="58" rx="7" ry="4" fill="#8d97a5" opacity="0.35"/>
+  <ellipse cx="66" cy="58" rx="7" ry="4" fill="#8d97a5" opacity="0.35"/>
   <g class="pet-eye">
     <ellipse cx="36" cy="44" rx="9" ry="10" fill="#fff"/>
     <ellipse cx="60" cy="44" rx="9" ry="10" fill="#fff"/>
@@ -43,7 +43,7 @@ const PET_SVG = `
     <circle cx="58" cy="42" r="1.8" fill="#fff" opacity="0.9"/>
   </g>
   <path d="M43 58 Q48 63 53 58" stroke="#2b2f3a" stroke-width="2.4" fill="none" stroke-linecap="round"/>
-  <path d="M48 10 Q52 0 60 0 Q53 4 52 12 Z" fill="#9ece6a"/>
+  <path d="M48 10 Q52 0 60 0 Q53 4 52 12 Z" fill="#8d97a5"/>
 </svg>`;
 
 function showBubble(text: string): void {

@@ -62,7 +62,7 @@ const allTags = [...new Set(getPublishedPosts().flatMap((p) => p.tags))].sort();
   }
 
   .accent-tag {
-    color: var(--accent);
+    color: var(--text);
     font-family: var(--font-mono);
   }
 
@@ -80,9 +80,9 @@ const allTags = [...new Set(getPublishedPosts().flatMap((p) => p.tags))].sort();
 
   .filter-tag:hover,
   .filter-tag.active {
-    background: var(--accent);
-    color: #fff;
-    border-color: var(--accent);
+    background: var(--text);
+    color: var(--bg);
+    border-color: var(--text);
   }
 
   .post-list {

@@ -60,12 +60,10 @@ npm start          # 运行生产服务(需先 build)
 ## 📁 项目结构
 
 ```
-├── deploy/                  # 部署套件
-│   ├── setup-server.sh      # 服务器一键初始化(Ubuntu)
-│   ├── ecosystem.config.cjs # PM2 配置
-│   ├── Caddyfile            # 反向代理 + 自动 HTTPS
-│   └── backup.sh            # 定时备份(DB+头像,保留7份)
-├── .github/workflows/       # GitHub Actions 自动部署
+├── DEPLOY.md                # ⭐ 部署手册(从零到上线,含故障排查与已知限制)
+├── deploy/                  # 部署脚本目录(⚠️ 当前为空,脚本在 926c8cc 被误删)
+│                            #    恢复: git checkout 926c8cc^ -- deploy/
+├── .github/workflows/       # GitHub Actions 自动部署(push main 触发)
 ├── src/
 │   ├── lib/                 # 核心逻辑
 │   │   ├── db.ts            # SQLite 数据层(node:sqlite,零依赖)
@@ -91,16 +89,26 @@ npm start          # 运行生产服务(需先 build)
 
 ## ☁️ 部署到服务器
 
-见 `deploy/setup-server.sh`(一键脚本)与 `.github/workflows/deploy.yml`(push 自动部署)。
+**完整步骤见 [`DEPLOY.md`](./DEPLOY.md)**,包含从装 Node 到配 HTTPS 的每条命令、验收清单与故障排查表。
 
-**流程概述**(详见交付文档):
-1. 购买服务器(阿里云/腾讯云轻量 2核2G)+ 域名
-2. 域名 ICP 备案(国内服务器必需,约 1–3 周)
-3. 控制台安全组放行 80/443
-4. `bash setup-server.sh <仓库地址> <域名>`
-5. 配置 GitHub Actions 密钥,之后 `git push` 自动上线
+**流程概览**:
 
-**数据安全**:SQLite + 上传头像每天凌晨自动备份到服务器,保留 7 份;建议定期把 `backups/` 下载到本地。
+1. 租服务器:2 核 2G / Ubuntu 24.04 / 磁盘 40G+(2G 内存建议开 swap)
+2. 安全组放行 22 / 80 / 443,出站放行(首页音乐歌单要访问第三方接口)
+3. 装 **Node ≥ 22.5**(代码用内置 `node:sqlite`)+ PM2
+4. `git clone` 到 `/var/www/blog`,配置 `ecosystem.config.cjs`(含 `DB_PATH`、首次用的 `ADMIN_PASSWORD`)
+5. `npm ci && npm run build` → `pm2 start` → `pm2 save && pm2 startup`
+6. Caddy 反代:`:80`(纯 IP)或域名自动 HTTPS
+7. 后台 `/admin` 登录 → 立即改密码 → 把「设置」里的站点 URL 改成实际地址
+8. GitHub Actions 配 `SSH_HOST` / `SSH_USER` / `SSH_KEY` 三个 Secret,之后 `git push` 自动上线
+
+**三条实测限制**(详见 DEPLOY.md「已知限制」):
+
+- 后台上传的头像写在 `dist/client/uploads`,**每次部署会被清空**;临时改用仓库内 `public/touxiang.jpg`
+- `deploy/` 下的脚本在 `926c8cc` 被误删,手册用等价手工命令替代
+- 生产构建的会话 Cookie 带 `Secure`,**纯 HTTP 访问时后台登不进去**(访客浏览不受影响),需 HTTPS 或 SSH 隧道
+
+**数据安全**:SQLite 位于 `/var/www/blog/data/blog.db`,不在 git 中;建议每日 cron 备份并定期下载到本地。
 
 ## 🎨 个性化
 
@@ -115,6 +123,12 @@ npm start          # 运行生产服务(需先 build)
 | 默认管理员密码 | 环境变量 `ADMIN_PASSWORD`(首启时) |
 
 ## 🗓 更新记录
+
+### v2.4.1(2025-11)· 部署文档
+
+- 新增 [`DEPLOY.md`](./DEPLOY.md):从零部署到上线的完整手册(服务器、Node、PM2、Caddy、备份、自动部署、故障排查)
+- README 部署章节重写,修正对已被删除的 `deploy/` 脚本的引用
+- 记录三条实测限制:头像上传会被构建清空、`deploy/` 脚本缺失、HTTP 下 `Secure` Cookie 导致后台无法登录
 
 ### v2.4(2025-11)· 音乐挂件升级为网络歌单
 

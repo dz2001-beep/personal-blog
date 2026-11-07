@@ -1,14 +1,13 @@
 ---
 /**
- * 厨房列表页
+ * 厨房列表页 —— 瑞士国际主义风格(白底 / 巨大字 / 蓝色小方块 / 发丝线)
  *
- * 交互设计(核心要求:点开不跳页、不来回返回)
- * - 桌面端:左侧列表 + 右侧常驻详情面板,点卡片只切换右侧内容,URL 用 replaceState 同步
- * - 移动端:同一个面板变成底部抽屉,点卡片弹出、下滑或点关闭收起
- * - 每张卡片仍是真链接,JS 不可用 / 分享 / 直链时可打开 /kitchen/[slug]/ 独立页
+ * 交互设计(核心要求不变):点开不跳页、不来回返回
+ * - 桌面端:左侧行列表 + 右侧常驻详情面板,点行只切换右侧内容,URL 用 replaceState 同步
+ * - 移动端:同一个面板变成底部抽屉,点行弹出、下滑或点关闭收起
+ * - 每行仍是真链接,JS 不可用 / 分享 / 直链时可打开 /kitchen/[slug]/ 独立页
  */
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import Mascot from '../../components/Mascot.astro';
 import DishCard from '../../components/DishCard.astro';
 import DishDetail from '../../components/DishDetail.astro';
 import { DISHES, hasCover } from '../../data/kitchen';
@@ -17,80 +16,81 @@ const cookedCount = DISHES.filter((d) => d.type === 'cooked').length;
 const wishCount = DISHES.filter((d) => d.type === 'wish').length;
 ---
 
-<BaseLayout
-  title="下厨"
-  description="做饭研究笔记:做过的记下翻车与改良,想学的先记着为什么想做。"
-  bgImage="/gallery/sunset-field.jpg"
-  bgTint="rgba(226, 178, 132, 0.18)"
->
-  <section class="container-wide kitchen-page">
-    <header class="page-head fade-up">
-      <span class="page-kicker">Kitchen</span>
-      <h1>下厨</h1>
-      <p>研究做饭的地方。做过的记下翻车和改良,想学的先记着为什么想做——做成之后就从右边搬到左边。</p>
-      <Mascot />
-    </header>
+<BaseLayout title="下厨" description="做饭研究笔记:做过的记下翻车与改良,想学的先记着为什么想做。">
+  <section class="swiss">
+    <div class="wrap">
+      <!-- ================= 页首 ================= -->
+      <header class="head">
+        <p class="kicker">
+          <span class="sq" aria-hidden="true"></span>
+          <span>Kitchen / 下厨 · {DISHES.length} 道</span>
+        </p>
 
-    <div class="kitchen-layout">
-      {/* ---------------- 左:列表 ---------------- */}
-      <div class="kitchen-list-col">
-        <div class="kitchen-filters" role="group" aria-label="筛选">
-          <button type="button" class="filter-chip is-active" data-filter="all">
-            全部 <b>{DISHES.length}</b>
-          </button>
-          <button type="button" class="filter-chip" data-filter="cooked">
-            做过的 <b>{cookedCount}</b>
-          </button>
-          <button type="button" class="filter-chip" data-filter="wish">
-            想学的 <b>{wishCount}</b>
-          </button>
-          <span class="filter-hint">点开不跳页,右侧直接看</span>
-        </div>
+        <h1 class="mega">下厨<span class="mega-sq" aria-hidden="true"></span></h1>
 
-        {
-          DISHES.length > 0 ? (
-            <div class="kitchen-list" data-dish-list>
-              {DISHES.map((dish) => (
-                <DishCard dish={dish} />
-              ))}
-            </div>
-          ) : (
-            <p class="kitchen-empty">
-              还没有菜品。在 <code>src/data/kitchen.ts</code> 里加一道菜,照片放进 <code>public/kitchen/</code>。
-            </p>
-          )
-        }
+        <p class="lede">
+          研究做饭的地方。做过的记下翻车和改良,想学的先记着为什么想做——
+          做成之后就从「想学的」搬到「做过的」。
+        </p>
+      </header>
+
+      <!-- ================= 筛选 ================= -->
+      <div class="filters" role="group" aria-label="筛选">
+        <button type="button" class="flt is-active" data-filter="all">
+          <span class="sq" aria-hidden="true"></span>全部<span class="num">{DISHES.length}</span>
+        </button>
+        <button type="button" class="flt" data-filter="cooked">
+          <span class="sq" aria-hidden="true"></span>做过的<span class="num">{cookedCount}</span>
+        </button>
+        <button type="button" class="flt" data-filter="wish">
+          <span class="sq" aria-hidden="true"></span>想学的<span class="num">{wishCount}</span>
+        </button>
+        <span class="flt-hint">点开在右侧看,不跳页 · 键盘 ← → 可翻</span>
       </div>
 
-      {/* ---------------- 右:详情面板 / 移动端抽屉 ---------------- */}
-      <aside class="kitchen-panel" data-dish-panel aria-label="菜品详情" aria-live="polite">
-        <div class="sheet-handle" data-sheet-handle aria-hidden="true"><span /></div>
-
-        <div class="panel-toolbar">
-          <div class="panel-nav">
-            <button type="button" class="panel-btn" data-dish-prev aria-label="上一道">←</button>
-            <span class="panel-count" data-dish-count>—</span>
-            <button type="button" class="panel-btn" data-dish-next aria-label="下一道">→</button>
+      <!-- ================= 双栏 ================= -->
+      <div class="cols">
+        <!-- 左:列表 -->
+        <div class="col-list">
+          <p class="col-head"><span class="sq" aria-hidden="true"></span>Index</p>
+          <div class="list" data-dish-list>
+            {
+              DISHES.map((dish, i) => (
+                <DishCard dish={dish} index={i} />
+              ))
+            }
           </div>
-          <button type="button" class="panel-btn panel-close" data-dish-close aria-label="收起详情">✕</button>
         </div>
 
-        <div class="panel-scroll" data-dish-scroll>
-          <div class="panel-placeholder" data-dish-placeholder>
-            <span class="panel-placeholder-glyph" aria-hidden="true">◍</span>
-            <p>点左边的菜,这里直接展开</p>
-            <small>不跳页、不开新窗口,看完接着往下翻</small>
+        <!-- 右:详情面板 / 移动端抽屉 -->
+        <aside class="col-detail" data-dish-panel aria-label="菜品详情" aria-live="polite">
+          <div class="handle" data-sheet-handle aria-hidden="true"><span /></div>
+
+          <div class="bar">
+            <div class="bar-nav">
+              <button type="button" class="bar-btn" data-dish-prev aria-label="上一道">←</button>
+              <span class="bar-count" data-dish-count>—</span>
+              <button type="button" class="bar-btn" data-dish-next aria-label="下一道">→</button>
+            </div>
+            <button type="button" class="bar-btn bar-close" data-dish-close aria-label="收起详情">✕</button>
           </div>
 
-          {
-            DISHES.map((dish) => (
-              <div class="panel-dish" data-dish-detail data-dish-slug={dish.slug} hidden>
-                <DishDetail dish={dish} hero={hasCover(dish)} />
-              </div>
-            ))
-          }
-        </div>
-      </aside>
+          <div class="scroll" data-dish-scroll>
+            <div class="ph" data-dish-placeholder>
+              <p class="ph-line">从左边选一道菜</p>
+              <p class="ph-sub">右侧原地展开 · 不跳页、不开新窗口</p>
+            </div>
+
+            {
+              DISHES.map((dish) => (
+                <div class="panel-dish" data-dish-detail data-dish-slug={dish.slug} hidden>
+                  <DishDetail dish={dish} hero={hasCover(dish)} />
+                </div>
+              ))
+            }
+          </div>
+        </aside>
+      </div>
     </div>
   </section>
 
@@ -103,232 +103,271 @@ const wishCount = DISHES.filter((d) => d.type === 'wish').length;
 </script>
 
 <style>
-  .kitchen-page {
-    padding-bottom: 40px;
+  /* ============================================================
+     瑞士国际主义:白底 / 黑字 / 蓝色方块 / 发丝线 / 无圆角无阴影
+     ============================================================ */
+  .swiss {
+    background: #ffffff;
+    color: #0a0a0a;
+    min-height: calc(100vh - 60px);
+    padding: 54px 0 84px;
   }
 
-  .kitchen-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 400px) minmax(0, 1fr);
-    gap: 24px;
-    align-items: start;
-    margin-top: 4px;
+  .wrap {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 40px;
   }
 
-  /* ---------------- 筛选 ---------------- */
-  .kitchen-filters {
+  /* 蓝色小方块:全页统一的强调标记 */
+  .sq {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    background: #1e40ff;
+    flex: 0 0 auto;
+  }
+
+  /* ---------- 页首 ---------- */
+  .kicker {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #6f6f6f;
+  }
+
+  .mega {
+    position: relative;
+    margin: 20px 0 0;
+    font-size: clamp(4rem, 10.5vw, 9rem);
+    font-weight: 700;
+    letter-spacing: -0.055em;
+    line-height: 0.84;
+    color: #0a0a0a;
+  }
+
+  /* 巨大字后面跟一个蓝色方块,像句号 */
+  .mega-sq {
+    display: inline-block;
+    width: 0.16em;
+    height: 0.16em;
+    margin-left: 0.1em;
+    background: #1e40ff;
+    vertical-align: baseline;
+  }
+
+  .lede {
+    max-width: 46ch;
+    margin: 26px 0 0;
+    font-size: 0.98rem;
+    line-height: 1.8;
+    color: #444;
+  }
+
+  .head {
+    padding-bottom: 26px;
+    border-bottom: 2px solid #0a0a0a;
+  }
+
+  /* ---------- 筛选 ---------- */
+  .filters {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 8px;
-    margin-bottom: 14px;
+    gap: 10px;
+    padding: 22px 0 0;
   }
 
-  .filter-chip {
+  .flt {
     display: inline-flex;
-    align-items: baseline;
-    gap: 6px;
+    align-items: center;
+    gap: 8px;
     font: inherit;
-    font-size: 0.78rem;
-    padding: 6px 13px;
-    border-radius: 999px;
-    border: 1px solid var(--border);
-    background: rgba(255, 255, 255, 0.04);
-    color: var(--text-dim);
+    font-size: 0.8rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    padding: 9px 14px;
+    border: 1px solid #0a0a0a;
+    border-radius: 0;
+    background: transparent;
+    color: #0a0a0a;
     cursor: pointer;
-    transition: all 0.18s ease;
+    transition: background-color 0.15s ease, color 0.15s ease;
   }
 
-  .filter-chip b {
+  .flt:hover {
+    background: #0a0a0a;
+    color: #fff;
+  }
+
+  .flt:hover .sq {
+    background: #fff;
+  }
+
+  .flt.is-active {
+    background: #0a0a0a;
+    color: #fff;
+  }
+
+  .flt .num {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    opacity: 0.6;
+  }
+
+  .flt-hint {
+    margin-left: auto;
     font-family: var(--font-mono);
     font-size: 0.66rem;
-    font-weight: 400;
-    color: var(--text-faint);
+    letter-spacing: 0.06em;
+    color: #9b9b9b;
   }
 
-  .filter-chip:hover {
-    color: var(--text);
-    border-color: var(--border-strong);
+  /* ---------- 双栏 ---------- */
+  .cols {
+    display: grid;
+    grid-template-columns: minmax(0, 500px) minmax(0, 1fr);
+    gap: 0;
+    margin-top: 26px;
   }
 
-  .filter-chip.is-active {
-    color: #f0d9bd;
-    border-color: rgba(226, 178, 132, 0.5);
-    background: rgba(226, 178, 132, 0.12);
-  }
-
-  .filter-chip.is-active b {
-    color: #e2b284;
-  }
-
-  .filter-hint {
-    margin-left: auto;
-    font-size: 0.68rem;
-    color: var(--text-faint);
-    font-family: var(--font-mono);
-  }
-
-  /* ---------------- 列表 ---------------- */
-  .kitchen-list {
+  .col-head {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
-    max-height: calc(100vh - 210px);
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 10px;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: #9b9b9b;
+  }
+
+  .list {
+    max-height: calc(100vh - 330px);
     overflow-y: auto;
-    padding-right: 4px;
     overscroll-behavior: contain;
+    padding-right: 6px;
   }
 
-  .kitchen-list::-webkit-scrollbar {
-    width: 5px;
+  .list::-webkit-scrollbar {
+    width: 4px;
   }
 
-  .kitchen-list::-webkit-scrollbar-thumb {
-    background: #39424f;
-    border-radius: 3px;
+  .list::-webkit-scrollbar-thumb {
+    background: #cfcfcf;
   }
 
-  .kitchen-empty {
-    padding: 24px;
-    border: 1px dashed var(--border);
-    border-radius: var(--radius);
-    color: var(--text-faint);
-    font-size: 0.82rem;
-  }
-
-  .kitchen-empty code {
-    color: var(--text-dim);
-  }
-
-  /* ---------------- 详情面板 ---------------- */
-  .kitchen-panel {
+  /* ---------- 详情面板 ---------- */
+  .col-detail {
     position: sticky;
     top: 84px;
-    max-height: calc(100vh - 108px);
     display: flex;
     flex-direction: column;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--glass-gradient), var(--glass-solid);
-    backdrop-filter: blur(12px);
-    overflow: hidden;
+    max-height: calc(100vh - 120px);
+    padding-left: 34px;
+    border-left: 1px solid #e0e0e0;
   }
 
-  .sheet-handle {
+  .handle {
     display: none;
   }
 
-  .panel-toolbar {
+  .bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--border);
-    background: rgba(255, 255, 255, 0.02);
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #0a0a0a;
   }
 
-  .panel-nav {
+  .bar-nav {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
   }
 
-  .panel-btn {
-    font: inherit;
+  .bar-btn {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 30px;
+    height: 30px;
     padding: 0;
-    border-radius: 50%;
-    border: 1px solid var(--border);
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--text-dim);
-    font-size: 0.76rem;
+    font: inherit;
+    font-size: 0.78rem;
+    border: 1px solid #0a0a0a;
+    border-radius: 0;
+    background: transparent;
+    color: #0a0a0a;
     cursor: pointer;
-    transition: all 0.16s ease;
+    transition: background-color 0.15s ease, color 0.15s ease;
   }
 
-  .panel-btn:hover {
-    color: var(--text);
-    border-color: var(--border-strong);
-    background: rgba(255, 255, 255, 0.11);
+  .bar-btn:hover {
+    background: #0a0a0a;
+    color: #fff;
   }
 
-  .panel-count {
+  .bar-count {
     font-family: var(--font-mono);
     font-size: 0.68rem;
-    color: var(--text-faint);
-    min-width: 44px;
+    letter-spacing: 0.08em;
+    color: #6f6f6f;
+    min-width: 46px;
     text-align: center;
   }
 
-  .panel-scroll {
+  .scroll {
     overflow-y: auto;
-    padding: 18px 20px 24px;
+    padding: 24px 4px 20px 0;
     overscroll-behavior: contain;
   }
 
-  .panel-scroll::-webkit-scrollbar {
-    width: 6px;
+  .scroll::-webkit-scrollbar {
+    width: 4px;
   }
 
-  .panel-scroll::-webkit-scrollbar-thumb {
-    background: #3a4452;
-    border-radius: 3px;
+  .scroll::-webkit-scrollbar-thumb {
+    background: #cfcfcf;
   }
 
   /* 空状态 */
-  .panel-placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    min-height: 320px;
-    text-align: center;
-    color: var(--text-faint);
+  .ph {
+    padding: 34px 0 40px;
   }
 
-  .panel-placeholder-glyph {
-    font-size: 2rem;
-    color: rgba(226, 178, 132, 0.5);
-    animation: pulseGlyph 3.4s ease-in-out infinite;
-  }
-
-  .panel-placeholder p {
+  .ph-line {
     margin: 0;
-    font-size: 0.9rem;
-    color: var(--text-dim);
+    font-size: 1.5rem;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    color: #0a0a0a;
   }
 
-  .panel-placeholder small {
-    font-size: 0.72rem;
+  .ph-sub {
+    margin: 10px 0 0;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.06em;
+    color: #8d8d8d;
   }
 
-  @keyframes pulseGlyph {
-    0%,
-    100% {
-      opacity: 0.45;
-      transform: translateY(0);
-    }
-    50% {
-      opacity: 1;
-      transform: translateY(-3px);
-    }
-  }
-
-  /* 切换动画 */
+  /* 切换时的一点动作(不加淡入,保持瑞士的干脆) */
   .panel-dish {
-    animation: dishIn 0.28s ease both;
+    animation: swissIn 0.18s ease-out both;
   }
 
-  @keyframes dishIn {
+  @keyframes swissIn {
     from {
       opacity: 0;
-      transform: translateY(6px);
+      transform: translateY(4px);
     }
     to {
       opacity: 1;
@@ -340,20 +379,38 @@ const wishCount = DISHES.filter((d) => d.type === 'wish').length;
     display: none;
   }
 
-  /* ---------------- 移动端:改成底部抽屉 ---------------- */
+  /* ============================================================
+     移动端:面板变抽屉
+     ============================================================ */
   @media (max-width: 1024px) {
-    .kitchen-layout {
-      grid-template-columns: 1fr;
-      gap: 16px;
+    .swiss {
+      padding: 38px 0 56px;
     }
 
-    .kitchen-list {
+    .wrap {
+      padding: 0 20px;
+    }
+
+    .mega {
+      font-size: clamp(3.4rem, 15vw, 6rem);
+    }
+
+    .cols {
+      grid-template-columns: 1fr;
+      margin-top: 20px;
+    }
+
+    .list {
       max-height: none;
       overflow: visible;
       padding-right: 0;
     }
 
-    .kitchen-panel {
+    .flt-hint {
+      display: none;
+    }
+
+    .col-detail {
       position: fixed;
       left: 0;
       right: 0;
@@ -361,31 +418,33 @@ const wishCount = DISHES.filter((d) => d.type === 'wish').length;
       top: auto;
       max-height: 88vh;
       height: 88vh;
-      border-radius: 18px 18px 0 0;
-      border-bottom: 0;
+      padding-left: 20px;
+      padding-right: 20px;
+      border-left: 0;
+      border-top: 2px solid #0a0a0a;
+      background: #fff;
       z-index: 320;
       transform: translateY(102%);
-      transition: transform 0.34s cubic-bezier(0.22, 0.82, 0.28, 1);
+      transition: transform 0.32s cubic-bezier(0.22, 0.82, 0.28, 1);
       will-change: transform;
     }
 
-    .kitchen-panel.is-open {
+    .col-detail.is-open {
       transform: translateY(0);
     }
 
-    .sheet-handle {
+    .handle {
       display: flex;
       justify-content: center;
-      padding: 8px 0 2px;
+      padding: 10px 0 2px;
       cursor: grab;
       touch-action: none;
     }
 
-    .sheet-handle span {
-      width: 38px;
-      height: 4px;
-      border-radius: 2px;
-      background: rgba(255, 255, 255, 0.22);
+    .handle span {
+      width: 40px;
+      height: 3px;
+      background: #cfcfcf;
     }
 
     .sheet-backdrop {
@@ -393,9 +452,9 @@ const wishCount = DISHES.filter((d) => d.type === 'wish').length;
       position: fixed;
       inset: 0;
       z-index: 310;
-      background: rgba(8, 10, 14, 0.6);
+      background: rgba(10, 10, 10, 0.5);
       opacity: 0;
-      transition: opacity 0.3s ease;
+      transition: opacity 0.28s ease;
       pointer-events: none;
     }
 
@@ -408,23 +467,27 @@ const wishCount = DISHES.filter((d) => d.type === 'wish').length;
       display: none;
     }
 
-    .filter-hint {
-      display: none;
-    }
-
-    /* 抽屉打开时锁住背景滚动 */
     :global(html.sheet-open),
     :global(html.sheet-open body) {
       overflow: hidden;
     }
   }
 
+  @media (max-width: 560px) {
+    .wrap {
+      padding: 0 14px;
+    }
+
+    .lede {
+      font-size: 0.92rem;
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .kitchen-panel,
-    .panel-dish,
-    .panel-placeholder-glyph {
-      animation: none;
+    .col-detail,
+    .panel-dish {
       transition: none;
+      animation: none;
     }
   }
 </style>

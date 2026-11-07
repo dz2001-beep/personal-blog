@@ -3,7 +3,7 @@
 > **给下一个 AI / 新协作者看的项目说明书。** 读完这一份就能上手改代码,不用重新摸一遍。
 >
 > 项目:个人博客「DZ Blog」(DZ-Star),全栈 SSR 站点,内容存在自己的 SQLite 里,自带网页后台。
-> 当前版本 **2.6.6** ｜ 最近更新 2026-11 ｜ 仓库 `dz2001-beep/personal-blog`(public) ｜ 分支 `main`
+> 当前版本 **2.6.7** ｜ 最近更新 2026-11 ｜ 仓库 `dz2001-beep/personal-blog`(public) ｜ 分支 `main`
 
 ---
 
@@ -111,7 +111,7 @@ npm start              # 跑构建产物(node dist/server/entry.mjs,默认 4321)
 | 路径 | 文件 | 说明 |
 | --- | --- | --- |
 | `/` | `pages/index.astro` | 首页:整屏封面 + 简介 + 统计 + 最近文章/作品/相册 + 侧栏(§5.5/5.6) |
-| `/about` | `pages/about.astro` | 关于我:头像卡 + 简介 + 技能/经历 + 小组件条 |
+| `/about` | `pages/about.astro` | 关于我:**贴纸剪贴画风**(米白纸 + 拍立得 + 彩色贴纸),见 §6.4 |
 | `/about-site` | `pages/about-site.astro` | 关于本站:站点信息 + 技术栈 + 改版记录(changelog 数组)+ 致谢 |
 | `/blog` | `pages/blog/index.astro` | 文章列表:标签筛选 + 搜索 + 侧栏(音乐/一言/友链) |
 | `/blog/[slug]` | `pages/blog/[...slug].astro` | 文章详情:左侧 TOC + 正文 + 浏览量自增 + 上下篇 |
@@ -244,7 +244,7 @@ npm start              # 跑构建产物(node dist/server/entry.mjs,默认 4321)
 | 文章列表 | `foggy-peaks` | 冷蓝 |
 | 文章详情 | `sunset-field` | 暖橙 |
 | 作品列表 / 详情 | `mountain-river` / `snow-mountain` | 青绿 / 冷蓝 |
-| 关于我 | `forest` | 苔绿 |
+| 关于我 | `sunset-field` | **暖沙**(浅色纸张特例,见 §6.4) |
 | 关于本站 | `waterfall` | 湖蓝 |
 | 相册 | `starry-night` | 紫罗兰 |
 | 下厨 | `sunset-field` | **灶火暖色 `rgba(226,178,132,.18)`** |
@@ -256,6 +256,18 @@ npm start              # 跑构建产物(node dist/server/entry.mjs,默认 4321)
 - 统一 hover:上浮 2–3px + 边框变亮 + 阴影加深
 - z-index 栈:页面背景 `-3` < 动效 canvas `-2` < 内容 `auto` < 回到顶部 `150` < 宠物 `590` < 移动抽屉 `320`/遮罩 `310` < 头部 `100`(sticky) < 光标 `9998`
 - 页面头部统一结构:`.page-head > .page-kicker(英文小标签) + h1 + p + <Mascot />`
+
+### 6.4 「关于我」是唯一的浅色特例(贴纸剪贴画风)
+
+**其他页面都是深色**,只有 `/about` 是一张**米白纸**(`#f7f2e6` + 纤维纹理),像把一页剪贴簿钉在深色站点里。
+
+- 实现全在 `src/pages/about.astro` 一个文件里(局部 CSS 变量 `--paper/--ink/--c1..--c4`,不污染全局主题)
+- 装饰语言:**胶带(.tape)、图钉(.pin)、手绘箭头 SVG(.doodle)、荧光笔高亮(.marker)**——刻意**不用**渐变光晕/玻璃卡
+- 照片做成拍立得(白框 + 手写说明 + 胶带 + 轻微旋转);技术栈做成彩色贴纸(白描边 + 投影)
+- 手写感靠字体栈 `'Kaiti SC','STKaiti','KaiTi','楷体'`(macOS/iOS 生效,其他平台回退系统无衬线)
+- 该页**不再使用** `<Mascot />`(它的描边是浅色,在米白纸上会看不见)与 `PageWidgets`(深色玻璃卡风格冲突)
+- 版式:12 栏 grid;`<=900px` 6 栏;`<=560px` 两列且去掉所有旋转
+- 若要新增"贴纸/便签",复用 `.note` / `.sticker` / `.polaroid` 三个类即可
 
 ---
 
@@ -372,6 +384,7 @@ node -e "console.log('用 CDP 脚本驱动 http://localhost:4321')"
 | 菜品内容/字段 | `src/data/kitchen.ts` |
 | 菜品封面图 | `src/assets/kitchen/<slug>.webp`(或 jpg/png) |
 | 全站颜色/圆角/卡片质感 | `src/styles/global.css`(`:root` token) |
+| 「关于我」的贴纸剪贴画风 | `src/pages/about.astro`(局部变量 + 该文件内的 style) |
 | 内页背景图与色调 | 各页面 `<BaseLayout bgImage=… bgTint=…>` |
 | 导航项 | `src/components/Header.astro` 的 `navItems` |
 | 页脚 | `src/components/Footer.astro` |

@@ -14,7 +14,12 @@ const { html } = await renderMarkdown(work.content);
 const { title, description, tech, demo_url, repo_url } = work;
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout
+  title={title}
+  description={description}
+  bgImage="/gallery/snow-mountain.jpg"
+  bgTint="rgba(148, 178, 214, 0.16)"
+>
   <article class="container prose work-page">
     <header class="work-head fade-up">
       <h1>{title}</h1>

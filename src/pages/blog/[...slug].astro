@@ -23,7 +23,12 @@ const prevPost = idx > 0 ? allPosts[idx - 1] : undefined;
 const nextPost = idx < allPosts.length - 1 ? allPosts[idx + 1] : undefined;
 ---
 
-<BaseLayout title={title} description={description}>
+<BaseLayout
+  title={title}
+  description={description}
+  bgImage="/gallery/sunset-field.jpg"
+  bgTint="rgba(212, 168, 122, 0.14)"
+>
   <div class="container-wide article-layout">
     <!-- 左侧固定目录 -->
     {

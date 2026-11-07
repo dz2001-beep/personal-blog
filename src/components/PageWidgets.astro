@@ -1,0 +1,199 @@
+---
+/**
+ * 内页小组件条:现在时间 / 一言 / 热门文章 / 随便看看
+ * 数据在服务端取(SSR),交互在 src/scripts/pageWidgets.ts
+ */
+import { getHotPosts, getPublishedPosts } from '../lib/db';
+import { QUOTES } from '../data/widgets';
+
+interface Props {
+  /** 是否显示热门文章(文章很少的页面上观感一般,可关掉) */
+  hot?: boolean;
+  /** 随机文章池:默认取全部已发布文章 */
+  randomFrom?: string[];
+}
+
+const { hot = true, randomFrom } = Astro.props;
+
+const hotPosts = hot ? getHotPosts(3) : [];
+const slugs = randomFrom ?? getPublishedPosts().map((post) => post.slug);
+---
+
+<section class="widget-row" aria-label="页面小组件">
+  <!-- 实时时间 -->
+  <div class="widget-card widget-clock">
+    <span class="widget-label">现在时间</span>
+    <strong class="widget-time" data-clock-time>--:--:--</strong>
+    <span class="widget-sub" data-clock-date>正在校对…</span>
+  </div>
+
+  <!-- 一言 -->
+  <div class="widget-card widget-quote">
+    <span class="widget-label">一言</span>
+    <p class="widget-quote-text" data-quote>{QUOTES[0]}</p>
+  </div>
+
+  <!-- 热门文章 -->
+  {
+    hotPosts.length > 0 && (
+      <div class="widget-card widget-hot">
+        <span class="widget-label">热门文章</span>
+        <ul class="widget-list">
+          {hotPosts.map((post, i) => (
+            <li>
+              <span class="widget-rank">{i + 1}</span>
+              <a href={`/blog/${post.slug}/`} title={post.title}>{post.title}</a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    )
+  }
+
+  <!-- 随便看看 -->
+  <div class="widget-card widget-random">
+    <span class="widget-label">随便看看</span>
+    <button type="button" class="widget-btn" data-random-post data-slugs={JSON.stringify(slugs)}>
+      随机来一篇
+      <span aria-hidden="true">→</span>
+    </button>
+    <span class="widget-sub">{slugs.length} 篇文章里挑</span>
+  </div>
+</section>
+
+<script>
+  import '../scripts/pageWidgets';
+</script>
+
+<style>
+  .widget-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(196px, 1fr));
+    gap: 14px;
+    margin: 6px 0 34px;
+  }
+
+  .widget-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background:
+      linear-gradient(160deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.012) 50%, rgba(0, 0, 0, 0.14)),
+      rgba(24, 30, 39, 0.78);
+    backdrop-filter: blur(8px);
+    transition: transform 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease;
+  }
+
+  .widget-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--border-strong);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.3);
+  }
+
+  .widget-label {
+    font-family: var(--font-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  .widget-sub {
+    font-size: 0.68rem;
+    color: var(--text-faint);
+    font-family: var(--font-mono);
+  }
+
+  /* 时钟 */
+  .widget-time {
+    font-family: var(--font-mono);
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: 0.02em;
+    color: var(--text);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* 一言 */
+  .widget-quote-text {
+    margin: 0;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    color: var(--text-dim);
+    min-height: 2.6em;
+    transition: opacity 0.3s ease;
+  }
+
+  .widget-quote-text.swap {
+    opacity: 0;
+  }
+
+  /* 热门文章 */
+  .widget-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .widget-list li {
+    display: flex;
+    align-items: baseline;
+    gap: 7px;
+    min-width: 0;
+  }
+
+  .widget-rank {
+    flex: 0 0 auto;
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    color: var(--text-faint);
+  }
+
+  .widget-list a {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    transition: color 0.16s ease;
+  }
+
+  .widget-list a:hover {
+    color: var(--text);
+  }
+
+  /* 随机文章按钮 */
+  .widget-btn {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font: inherit;
+    font-size: 0.78rem;
+    padding: 6px 13px;
+    border-radius: 999px;
+    border: 1px solid var(--border-strong);
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.18s ease;
+  }
+
+  .widget-btn:hover {
+    background: rgba(255, 255, 255, 0.14);
+    transform: translateX(2px);
+  }
+
+  .widget-btn:active {
+    transform: translateX(0) scale(0.97);
+  }
+</style>

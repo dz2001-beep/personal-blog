@@ -1,14 +1,25 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { GALLERY } from '../data/gallery';
+import PageWidgets from '../components/PageWidgets.astro';
+import Mascot from '../components/Mascot.astro';
 ---
 
-<BaseLayout title="相册" description="自然风景摄影收藏">
+<BaseLayout
+  title="相册"
+  description="自然风景摄影收藏"
+  bgImage="/gallery/starry-night.jpg"
+  bgTint="rgba(150, 142, 220, 0.18)"
+>
   <section class="container-wide">
     <header class="page-head fade-up">
+      <span class="page-kicker">Gallery</span>
       <h1>相册</h1>
       <p>一些喜欢的自然风景,图片来自 Unsplash 免费授权。</p>
+      <Mascot />
     </header>
+
+    <PageWidgets hot={false} />
 
     <div class="gallery-masonry">
       {

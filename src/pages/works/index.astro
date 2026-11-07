@@ -1,17 +1,28 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import WorkCard from '../../components/WorkCard.astro';
+import PageWidgets from '../../components/PageWidgets.astro';
+import Mascot from '../../components/Mascot.astro';
 import { getAllWorks } from '../../lib/db';
 
 const works = getAllWorks();
 ---
 
-<BaseLayout title="作品" description="个人作品集">
+<BaseLayout
+  title="作品"
+  description="个人作品集"
+  bgImage="/gallery/mountain-river.jpg"
+  bgTint="rgba(118, 196, 186, 0.16)"
+>
   <section class="container-wide">
     <header class="page-head fade-up">
+      <span class="page-kicker">Projects</span>
       <h1>我的作品</h1>
       <p>业余时间折腾的一些项目,欢迎 Star 和提 issue。</p>
+      <Mascot />
     </header>
+
+    <PageWidgets hot={false} />
 
     {
       works.length > 0 ? (

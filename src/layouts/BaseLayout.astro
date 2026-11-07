@@ -8,6 +8,13 @@ import { getSiteConfig } from '../lib/db';
 interface Props {
   title?: string;
   description?: string;
+  /**
+   * 页面背景图(内页使用;首页有自己的一套封面/背景,不传)
+   * 传 public 下的路径,例如 '/gallery/forest.jpg'
+   */
+  bgImage?: string;
+  /** 背景色调(强调色),用于页面上方的光晕,让各页有各自的氛围 */
+  bgTint?: string;
 }
 
 const site = getSiteConfig();
@@ -15,6 +22,8 @@ const site = getSiteConfig();
 const {
   title = site.title,
   description = site.description,
+  bgImage,
+  bgTint = 'rgba(120, 156, 210, 0.16)',
 } = Astro.props;
 
 const pageTitle = title === site.title ? site.title : `${title} | ${site.title}`;
@@ -43,6 +52,17 @@ const pageTitle = title === site.title ? site.title : `${title} | ${site.title}`
     <ClientRouter />
   </head>
   <body>
+    <!-- 内页背景层(首页自带封面,不渲染这一层) -->
+    {
+      bgImage && (
+        <div class="page-bg" aria-hidden="true" style={`--page-tint:${bgTint}`}>
+          <div class="page-bg-img" style={`background-image:url('${bgImage}')`} />
+          <div class="page-bg-veil" />
+          <div class="page-bg-glow" />
+        </div>
+      )
+    }
+
     <!-- 阅读进度条 -->
     <div id="progress-bar" aria-hidden="true"></div>
 

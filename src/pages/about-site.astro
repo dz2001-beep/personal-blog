@@ -1,5 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import PageWidgets from '../components/PageWidgets.astro';
+import Mascot from '../components/Mascot.astro';
 import { getSiteConfig, getPublishedPosts } from '../lib/db';
 import { formatDate } from '../utils/format';
 
@@ -20,6 +22,15 @@ const stack = [
 
 const changelog = [
   {
+    version: 'v2.5',
+    date: '2025-11',
+    items: [
+      '内页全部换主题背景图 + 色调光晕,不再是纯色底',
+      '模块统一为玻璃质感卡片,页面头部与区块标题重做',
+      '新增页面小人物(会眨眼、点它说话)与内页小组件条',
+    ],
+  },
+  {
     version: 'v2.4',
     date: '2025-11',
     items: [
@@ -37,12 +48,21 @@ const changelog = [
 ];
 ---
 
-<BaseLayout title="关于本站" description="这个博客是怎么搭建的:技术栈、改版历史与致谢">
+<BaseLayout
+  title="关于本站"
+  description="这个博客是怎么搭建的:技术栈、改版历史与致谢"
+  bgImage="/gallery/waterfall.jpg"
+  bgTint="rgba(126, 170, 214, 0.16)"
+>
   <section class="container-wide">
     <header class="page-head fade-up">
+      <span class="page-kicker">Meta</span>
       <h1>关于本站</h1>
       <p>这个博客是怎么搭起来的,以及一路走来的改版记录。</p>
+      <Mascot />
     </header>
+
+    <PageWidgets hot={false} />
 
     <!-- 站点简介 -->
     <section class="block">

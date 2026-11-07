@@ -1,6 +1,8 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Avatar from '../components/Avatar.astro';
+import PageWidgets from '../components/PageWidgets.astro';
+import Mascot from '../components/Mascot.astro';
 import { PROFILE } from '../data/profile';
 import { getSiteConfig } from '../lib/db';
 import { mdInline } from '../utils/md';
@@ -17,7 +19,12 @@ const socialContact = [
 ].filter((s) => s.show);
 ---
 
-<BaseLayout title="关于我" description={`${site.author} 的个人简介、技能与经历`}>
+<BaseLayout
+  title="关于我"
+  description={`${site.author} 的个人简介、技能与经历`}
+  bgImage="/gallery/forest.jpg"
+  bgTint="rgba(136, 194, 152, 0.16)"
+>
   <!-- 个人信息头部 -->
   <section class="profile-head">
     <div class="container profile-card fade-up">
@@ -33,7 +40,12 @@ const socialContact = [
           }
         </div>
       </div>
+      <Mascot />
     </div>
+  </section>
+
+  <section class="container">
+    <PageWidgets hot={false} />
   </section>
 
   <!-- 个人简介(后台「设置」可在线修改) -->
@@ -118,9 +130,11 @@ const socialContact = [
   }
 
   .profile-card {
+    position: relative;
     display: flex;
     align-items: center;
     gap: 32px;
+    padding-right: 104px;
     background: var(--bg-soft);
     border: 1px solid var(--border);
     border-radius: var(--radius);

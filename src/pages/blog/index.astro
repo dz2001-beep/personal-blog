@@ -2,18 +2,29 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import PostCard from '../../components/PostCard.astro';
 import Sidebar from '../../components/Sidebar.astro';
+import PageWidgets from '../../components/PageWidgets.astro';
+import Mascot from '../../components/Mascot.astro';
 import { getPublishedPosts } from '../../lib/db';
 
 const posts = getPublishedPosts();
 const allTags = [...new Set(posts.flatMap((p) => p.tags))].sort();
 ---
 
-<BaseLayout title="文章" description="技术文章列表">
+<BaseLayout
+  title="文章"
+  description="技术文章列表"
+  bgImage="/gallery/foggy-peaks.jpg"
+  bgTint="rgba(120, 156, 210, 0.18)"
+>
   <section class="container-wide">
     <header class="page-head fade-up">
+      <span class="page-kicker">Writing</span>
       <h1>技术文章</h1>
       <p>记录技术思考、踩坑经验与学习笔记。</p>
+      <Mascot />
     </header>
+
+    <PageWidgets randomFrom={posts.map((p) => p.slug)} />
 
     <div class="layout-two">
       <div class="layout-main">

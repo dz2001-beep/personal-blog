@@ -3,7 +3,7 @@
 > **给下一个 AI / 新协作者看的项目说明书。** 读完这一份就能上手改代码,不用重新摸一遍。
 >
 > 项目:个人博客「DZ Blog」(DZ-Star),全栈 SSR 站点,内容存在自己的 SQLite 里,自带网页后台。
-> 当前版本 **2.6.7** ｜ 最近更新 2026-11 ｜ 仓库 `dz2001-beep/personal-blog`(public) ｜ 分支 `main`
+> 当前版本 **2.6.8** ｜ 最近更新 2026-11 ｜ 仓库 `dz2001-beep/personal-blog`(public) ｜ 分支 `main`
 
 ---
 
@@ -262,6 +262,11 @@ npm start              # 跑构建产物(node dist/server/entry.mjs,默认 4321)
 **其他页面都是深色**,只有 `/about` 是一张**米白纸**(`#f7f2e6` + 纤维纹理),像把一页剪贴簿钉在深色站点里。
 
 - 实现全在 `src/pages/about.astro` 一个文件里(局部 CSS 变量 `--paper/--ink/--c1..--c4`,不污染全局主题)
+- **边缘处理(重点)**:纸不是硬矩形,而是用 `clip-path: polygon(...)`(约 40 个抖动点)裁出**手撕纸边**;
+  外层 `.sheet` 用 `filter: drop-shadow(...)` 沿撕边投影(不是 `box-shadow`,否则会被 clip 裁掉),
+  再用 `.scrap` 背后一层暖色 radial-gradient 把纸和深色背景"接"起来,避免明暗硬切
+- 结构:`.scrap` > `.sheet`(旋转 -0.35deg + 投影)> `.sheet-paper`(纸背景 + 撕边 clip-path);
+  **胶带必须放在 `.sheet-paper` 之外的 `.sheet` 里**,否则会被 clip-path 裁掉
 - 装饰语言:**胶带(.tape)、图钉(.pin)、手绘箭头 SVG(.doodle)、荧光笔高亮(.marker)**——刻意**不用**渐变光晕/玻璃卡
 - 照片做成拍立得(白框 + 手写说明 + 胶带 + 轻微旋转);技术栈做成彩色贴纸(白描边 + 投影)
 - 手写感靠字体栈 `'Kaiti SC','STKaiti','KaiTi','楷体'`(macOS/iOS 生效,其他平台回退系统无衬线)

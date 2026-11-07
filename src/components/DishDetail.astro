@@ -1,9 +1,7 @@
 ---
 /**
- * 菜品详情内容(瑞士国际主义风格)
+ * 菜品详情内容
  * 同时用于:列表页右侧常驻面板(桌面)、移动端抽屉、独立详情页 /kitchen/[slug]/
- *
- * 设计要点:白底 / 巨大标题 / 蓝色小方块标记 / 黑色发丝线分隔 / 无圆角无阴影无渐变
  */
 import { coverOf, extraPhotosOf, type Dish } from '../data/kitchen';
 
@@ -11,11 +9,9 @@ interface Props {
   dish: Dish;
   /** 是否显示顶部的大图(面板里显示,独立页显示) */
   hero?: boolean;
-  /** 标题尺寸:panel = 右侧面板里用;page = 独立页当主标题用 */
-  variant?: 'panel' | 'page';
 }
 
-const { dish, hero = true, variant = 'panel' } = Astro.props;
+const { dish, hero = true } = Astro.props;
 const cover = coverOf(dish);
 const extraPhotos = extraPhotosOf(dish);
 
@@ -30,29 +26,24 @@ const facts = [
 ].filter(Boolean) as { label: string; value: string }[];
 ---
 
-<div class:list={['dd', `dd--${variant}`]}>
-  <!-- 类型标记 -->
-  <div class="dd-type">
-    <span class="sq" aria-hidden="true"></span>
-    <span>{typeLabel}</span>
-  </div>
-
-  <!-- 标题 -->
-  <h2 class="dd-title">{dish.name}</h2>
-  {dish.tagline && <p class="dd-tagline">{dish.tagline}</p>}
-
-  <!-- 大图:硬边矩形,无圆角 -->
+<div class="dish-detail">
   {
-    hero && cover && (
-      <figure class="dd-hero">
-        <img src={cover} alt={dish.name} loading="lazy" decoding="async" />
-      </figure>
+    hero && (
+      <div class:list={['dish-hero', { 'is-empty': !cover }]}>
+        {cover ? <img src={cover} alt={dish.name} loading="lazy" decoding="async" /> : null}
+        <div class="dish-hero-mask" />
+        <div class="dish-hero-text">
+          <span class:list={['dish-badge', `is-${dish.type}`]}>{typeLabel}</span>
+          <h2>{dish.name}</h2>
+          {dish.tagline && <p>{dish.tagline}</p>}
+        </div>
+      </div>
     )
   }
 
   {
     extraPhotos.length > 0 && (
-      <div class="dd-extra">
+      <div class="dish-extra">
         {extraPhotos.map((src) => (
           <img src={src} alt={`${dish.name} 的另一张`} loading="lazy" decoding="async" />
         ))}
@@ -60,32 +51,42 @@ const facts = [
     )
   }
 
-  <!-- 数据条:发丝线网格 -->
-  <dl class="dd-facts">
+  {
+    !hero && (
+      <header class="dish-head">
+        <span class:list={['dish-badge', `is-${dish.type}`]}>{typeLabel}</span>
+        <h2>{dish.name}</h2>
+        {dish.tagline && <p>{dish.tagline}</p>}
+      </header>
+    )
+  }
+
+  {/* 关键数据 */}
+  <div class="dish-facts">
     {
       facts.map((f) => (
-        <div class="dd-fact">
-          <dt>{f.label}</dt>
-          <dd>{f.value}</dd>
+        <div class="dish-fact">
+          <span class="dish-fact-label">{f.label}</span>
+          <strong class="dish-fact-value">{f.value}</strong>
         </div>
       ))
     }
-  </dl>
+  </div>
 
   {/* 想学的:为什么想学 */}
   {dish.reason?.trim() && (
-    <section class="dd-sec">
-      <h3 class="dd-sec-title"><span class="sq" aria-hidden="true" />为什么想学这道</h3>
-      <p class="dd-text">{dish.reason}</p>
+    <section class="dish-section">
+      <h3 class="dish-section-title">为什么想学这道</h3>
+      <p class="dish-text">{dish.reason}</p>
     </section>
   )}
 
   {/* 食材 */}
   {
     dish.ingredients && dish.ingredients.length > 0 && (
-      <section class="dd-sec">
-        <h3 class="dd-sec-title"><span class="sq" aria-hidden="true" />食材</h3>
-        <ul class="dd-ing">
+      <section class="dish-section">
+        <h3 class="dish-section-title">食材</h3>
+        <ul class="dish-ingredients">
           {dish.ingredients.map((item) => (
             <li>
               <span class="ing-name">{item.name}</span>
@@ -97,18 +98,18 @@ const facts = [
     )
   }
 
-  {/* 做法 */}
+  {/* 步骤 */}
   {
     dish.steps && dish.steps.length > 0 && (
-      <section class="dd-sec">
-        <h3 class="dd-sec-title"><span class="sq" aria-hidden="true" />做法</h3>
-        <ol class="dd-steps">
+      <section class="dish-section">
+        <h3 class="dish-section-title">做法</h3>
+        <ol class="dish-steps">
           {dish.steps.map((step, i) => (
-            <li class="dd-step">
-              <span class="step-no">{String(i + 1).padStart(2, '0')}</span>
+            <li class="dish-step">
+              <span class="step-index">{String(i + 1).padStart(2, '0')}</span>
               <div class="step-body">
                 <p class="step-text">{step.text}</p>
-                {step.minutes ? <span class="step-min">{step.minutes}′</span> : null}
+                {step.minutes ? <span class="step-minutes">{step.minutes} 分钟</span> : null}
                 {step.tip ? <p class="step-tip">关键:{step.tip}</p> : null}
               </div>
             </li>
@@ -118,12 +119,12 @@ const facts = [
     )
   }
 
-  {/* 翻车记录 */}
+  {/* 翻车记录:故意做得朴素一点,和成品图形成对比 */}
   {
     dish.failures && dish.failures.length > 0 && (
-      <section class="dd-sec">
-        <h3 class="dd-sec-title"><span class="sq sq-dark" aria-hidden="true" />翻车记录</h3>
-        <ul class="dd-fail">
+      <section class="dish-section dish-failures">
+        <h3 class="dish-section-title">翻车记录</h3>
+        <ul>
           {dish.failures.map((f) => <li>{f}</li>)}
         </ul>
       </section>
@@ -131,232 +132,274 @@ const facts = [
   }
 
   {/* 心得 */}
-  {dish.note?.trim() && (
-    <section class="dd-sec">
-      <h3 class="dd-sec-title"><span class="sq" aria-hidden="true" />心得</h3>
-      <p class="dd-text">{dish.note}</p>
-    </section>
-  )}
-
-  {/* 结论:蓝色色块 */}
   {
-    dish.verdict?.trim() && (
-      <section class="dd-verdict">
-        <span class="dd-verdict-label">结论</span>
+    dish.note && (
+      <section class="dish-section">
+        <h3 class="dish-section-title">心得</h3>
+        <p class="dish-text">{dish.note}</p>
+      </section>
+    )
+  }
+
+  {/* 结论 */}
+  {
+    dish.verdict && (
+      <section class="dish-verdict">
+        <span class="dish-verdict-label">结论</span>
         <p>{dish.verdict}</p>
       </section>
     )
   }
 
-  <!-- 页脚 -->
-  <footer class="dd-foot">
-    <div class="dd-tags">
-      {dish.tags.map((tag) => <span class="dd-tag">{tag}</span>)}
+  {/* 标签 + 来源 */}
+  <footer class="dish-foot">
+    <div class="dish-tags">
+      {dish.tags.map((tag) => <span class="dish-tag">{tag}</span>)}
     </div>
-    {dish.source && <p class="dd-source">图片来源:{dish.source}</p>}
+    {dish.source && <p class="dish-source">图片来源:{dish.source}</p>}
   </footer>
 </div>
 
 <style>
-  .dd {
-    color: #0a0a0a;
-  }
-
-  /* ---------- 类型标记 ---------- */
-  .dd-type {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 10px;
-    font-family: var(--font-mono);
-    font-size: 0.66rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: #6f6f6f;
-  }
-
-  /* 蓝色小方块:全页统一的强调标记 */
-  .sq {
-    display: inline-block;
-    width: 9px;
-    height: 9px;
-    background: #1e40ff;
-    flex: 0 0 auto;
-  }
-
-  .sq-dark {
-    background: #0a0a0a;
-  }
-
-  /* ---------- 标题 ---------- */
-  .dd-title {
-    margin: 0;
-    font-size: clamp(1.9rem, 3.4vw, 2.9rem);
-    font-weight: 700;
-    letter-spacing: -0.035em;
-    line-height: 1.02;
-    color: #0a0a0a;
-  }
-
-  /* 独立页:标题当主标题,字号拉到与页面 mega 一致 */
-  .dd--page .dd-title {
-    font-size: clamp(2.6rem, 7vw, 4.6rem);
-    letter-spacing: -0.05em;
-    line-height: 0.94;
-  }
-
-  .dd-tagline {
-    margin: 10px 0 0;
-    font-size: 0.94rem;
-    line-height: 1.6;
-    color: #565656;
+  .dish-detail {
+    --warm: #e2b284;
   }
 
   /* ---------- 大图 ---------- */
-  .dd-hero {
-    margin: 20px 0 0;
-    aspect-ratio: 16 / 9;
+  .dish-hero {
+    position: relative;
+    border-radius: var(--radius);
     overflow: hidden;
-    background: #ededed;
-    border: 1px solid #e0e0e0;
+    aspect-ratio: 16 / 9;
+    background: linear-gradient(150deg, #3a2b24, #1b1815);
   }
 
-  .dd-hero img {
+  .dish-hero img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
   }
 
-  .dd-extra {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 8px;
-    margin-top: 8px;
+  .dish-hero.is-empty {
+    background:
+      radial-gradient(110% 90% at 15% 0%, rgba(226, 178, 132, 0.28), transparent 62%),
+      linear-gradient(150deg, #3d2c24, #191614);
   }
 
-  .dd-extra img {
+  .dish-hero-mask {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(12, 10, 9, 0.05) 30%, rgba(12, 10, 9, 0.82) 100%);
+  }
+
+  .dish-hero-text {
+    position: absolute;
+    left: 18px;
+    right: 18px;
+    bottom: 16px;
+  }
+
+  .dish-hero-text h2 {
+    margin: 6px 0 0;
+    font-size: 1.7rem;
+    line-height: 1.25;
+    color: #fff;
+    text-shadow: 0 2px 14px rgba(0, 0, 0, 0.5);
+  }
+
+  .dish-hero-text p {
+    margin: 4px 0 0;
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.72);
+  }
+
+  /* ---------- 补充照片 ---------- */
+  .dish-extra {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .dish-extra img {
     width: 100%;
     aspect-ratio: 4 / 3;
     object-fit: cover;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
     display: block;
-    border: 1px solid #e0e0e0;
+  }
+
+  /* ---------- 无大图时的标题 ---------- */
+  .dish-head h2 {
+    margin: 8px 0 0;
+    font-size: 1.7rem;
+  }
+
+  .dish-head p {
+    margin: 5px 0 0;
+    color: var(--text-dim);
+    font-size: 0.86rem;
+  }
+
+  .dish-badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    letter-spacing: 0.08em;
+    padding: 3px 9px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: rgba(0, 0, 0, 0.35);
+    color: var(--text-dim);
+  }
+
+  .dish-badge.is-cooked {
+    color: #d3ddcb;
+    border-color: rgba(150, 180, 140, 0.4);
+    background: rgba(60, 74, 56, 0.55);
+  }
+
+  .dish-badge.is-wish {
+    color: #e7cbac;
+    border-color: rgba(226, 178, 132, 0.45);
+    background: rgba(74, 58, 44, 0.6);
   }
 
   /* ---------- 数据条 ---------- */
-  .dd-facts {
+  .dish-facts {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
-    margin: 22px 0 0;
-    border-top: 2px solid #0a0a0a;
-    border-bottom: 1px solid #e6e6e6;
+    grid-template-columns: repeat(auto-fit, minmax(104px, 1fr));
+    gap: 1px;
+    margin: 16px 0 4px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--border);
   }
 
-  .dd-fact {
-    padding: 10px 12px 12px 0;
-    border-right: 1px solid #ededed;
+  .dish-fact {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    padding: 10px 12px;
+    background: rgba(22, 26, 32, 0.9);
   }
 
-  .dd-fact:last-child {
-    border-right: 0;
-  }
-
-  .dd-fact dt {
+  .dish-fact-label {
     font-family: var(--font-mono);
     font-size: 0.6rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: #9b9b9b;
-    margin-bottom: 4px;
+    letter-spacing: 0.05em;
+    color: var(--text-faint);
   }
 
-  .dd-fact dd {
-    margin: 0;
+  .dish-fact-value {
     font-size: 0.82rem;
-    font-weight: 600;
-    color: #0a0a0a;
-    letter-spacing: -0.01em;
+    color: var(--text);
+    font-weight: 500;
   }
 
   /* ---------- 小节 ---------- */
-  .dd-sec {
-    margin-top: 28px;
+  .dish-section {
+    margin-top: 24px;
   }
 
-  .dd-sec-title {
+  .dish-section-title {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin: 0 0 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #e6e6e6;
-    font-size: 0.8rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    color: #0a0a0a;
+    margin: 0 0 10px;
+    font-size: 0.86rem;
+    color: var(--text);
+    letter-spacing: 0.02em;
   }
 
-  .dd-text {
+  .dish-section-title::before {
+    content: '';
+    width: 3px;
+    height: 12px;
+    border-radius: 2px;
+    background: var(--warm);
+    opacity: 0.75;
+  }
+
+  .dish-text {
     margin: 0;
-    font-size: 0.9rem;
-    line-height: 1.9;
-    color: #333;
+    font-size: 0.86rem;
+    line-height: 1.8;
+    color: var(--text-dim);
   }
 
   /* ---------- 食材 ---------- */
-  .dd-ing {
+  .dish-ingredients {
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 0 24px;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 6px 16px;
   }
 
-  .dd-ing li {
+  .dish-ingredients li {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-    gap: 12px;
-    padding: 7px 0;
-    border-bottom: 1px solid #f0f0f0;
-    font-size: 0.86rem;
+    gap: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.08);
+    font-size: 0.82rem;
   }
 
   .ing-name {
-    color: #0a0a0a;
+    color: var(--text);
   }
 
   .ing-amount {
     font-family: var(--font-mono);
     font-size: 0.72rem;
-    color: #8d8d8d;
+    color: var(--text-faint);
     text-align: right;
-    white-space: nowrap;
   }
 
   /* ---------- 步骤 ---------- */
-  .dd-steps {
+  .dish-steps {
     list-style: none;
     margin: 0;
     padding: 0;
+    counter-reset: step;
   }
 
-  .dd-step {
+  .dish-step {
+    position: relative;
     display: flex;
-    gap: 16px;
-    padding: 12px 0;
-    border-bottom: 1px solid #f0f0f0;
+    gap: 12px;
+    padding-bottom: 18px;
   }
 
-  .step-no {
-    flex: 0 0 26px;
+  /* 时间线竖线 */
+  .dish-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 12px;
+    top: 26px;
+    bottom: 2px;
+    width: 1px;
+    background: linear-gradient(180deg, rgba(226, 178, 132, 0.35), rgba(255, 255, 255, 0.04));
+  }
+
+  .step-index {
+    flex: 0 0 25px;
+    width: 25px;
+    height: 25px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    border: 1px solid rgba(226, 178, 132, 0.35);
+    background: rgba(226, 178, 132, 0.1);
+    color: var(--warm);
     font-family: var(--font-mono);
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: #1e40ff;
-    padding-top: 2px;
-    font-variant-numeric: tabular-nums;
+    font-size: 0.62rem;
   }
 
   .step-body {
@@ -365,103 +408,115 @@ const facts = [
   }
 
   .step-text {
-    margin: 0;
-    font-size: 0.88rem;
-    line-height: 1.75;
-    color: #1a1a1a;
+    margin: 1px 0 0;
+    font-size: 0.85rem;
+    line-height: 1.7;
+    color: var(--text);
   }
 
-  .step-min {
+  .step-minutes {
     display: inline-block;
-    margin-top: 5px;
+    margin-top: 4px;
     font-family: var(--font-mono);
     font-size: 0.66rem;
-    letter-spacing: 0.06em;
-    color: #9b9b9b;
+    color: var(--text-faint);
   }
 
   .step-tip {
-    margin: 8px 0 0;
-    padding: 7px 10px;
-    border-left: 2px solid #1e40ff;
-    background: #f4f5ff;
-    font-size: 0.78rem;
+    margin: 6px 0 0;
+    padding: 6px 10px;
+    border-left: 2px solid rgba(226, 178, 132, 0.5);
+    border-radius: 0 6px 6px 0;
+    background: rgba(226, 178, 132, 0.07);
+    font-size: 0.76rem;
     line-height: 1.65;
-    color: #2a2f4a;
+    color: #e7d3bd;
   }
 
   /* ---------- 翻车记录 ---------- */
-  .dd-fail {
+  .dish-failures ul {
     list-style: none;
     margin: 0;
     padding: 0;
     display: flex;
     flex-direction: column;
-    gap: 1px;
-    border-left: 2px solid #0a0a0a;
+    gap: 8px;
   }
 
-  .dd-fail li {
-    padding: 9px 12px;
-    background: #f7f7f7;
-    font-size: 0.82rem;
+  .dish-failures li {
+    position: relative;
+    padding: 9px 12px 9px 30px;
+    border-radius: var(--radius-sm);
+    border: 1px dashed rgba(176, 138, 146, 0.4);
+    background: rgba(70, 44, 48, 0.22);
+    font-size: 0.8rem;
     line-height: 1.7;
-    color: #333;
+    color: #d8c4c6;
+  }
+
+  .dish-failures li::before {
+    content: '×';
+    position: absolute;
+    left: 11px;
+    top: 8px;
+    color: #b08a92;
+    font-size: 0.9rem;
   }
 
   /* ---------- 结论 ---------- */
-  .dd-verdict {
-    margin-top: 28px;
-    padding: 16px 18px;
-    background: #1e40ff;
-    color: #fff;
+  .dish-verdict {
+    margin-top: 24px;
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    border: 1px solid rgba(226, 178, 132, 0.28);
+    background:
+      radial-gradient(120% 100% at 0% 0%, rgba(226, 178, 132, 0.14), transparent 62%),
+      rgba(30, 26, 22, 0.72);
   }
 
-  .dd-verdict-label {
+  .dish-verdict-label {
     font-family: var(--font-mono);
-    font-size: 0.6rem;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    opacity: 0.75;
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    color: var(--warm);
   }
 
-  .dd-verdict p {
-    margin: 6px 0 0;
-    font-size: 0.92rem;
+  .dish-verdict p {
+    margin: 5px 0 0;
+    font-size: 0.88rem;
     line-height: 1.7;
-    font-weight: 500;
+    color: var(--text);
   }
 
   /* ---------- 页脚 ---------- */
-  .dd-foot {
+  .dish-foot {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    margin-top: 24px;
+    margin-top: 22px;
     padding-top: 14px;
-    border-top: 1px solid #e6e6e6;
+    border-top: 1px solid var(--border);
   }
 
-  .dd-tags {
+  .dish-tags {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
   }
 
-  .dd-tag {
-    font-family: var(--font-mono);
-    font-size: 0.62rem;
-    letter-spacing: 0.06em;
-    padding: 3px 8px;
-    border: 1px solid #dcdcdc;
-    color: #6f6f6f;
+  .dish-tag {
+    font-size: 0.68rem;
+    padding: 3px 9px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    color: var(--text-faint);
   }
 
-  .dd-source {
+  .dish-source {
     margin: 0;
-    font-size: 0.64rem;
-    color: #9b9b9b;
+    font-size: 0.66rem;
+    color: var(--text-faint);
   }
 </style>

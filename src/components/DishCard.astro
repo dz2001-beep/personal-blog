@@ -1,30 +1,29 @@
 ---
 /**
- * 菜品行(瑞士国际主义风格)
- * - 不是卡片,而是一行:序号 / 方形缩略图 / 菜名 / 类型,行间用发丝线分隔
- * - 选中态用左侧 4px 蓝条 + 蓝色序号标记
- * - 保留 data-dish-* 钩子,交互逻辑不变
+ * 菜品卡片
+ * - 有照片:用照片做背景 + 渐变压暗 + 数据角标
+ * - 没照片:退化成文字版式卡片(不显示破图)
+ * 卡片本身是真链接(SEO / 无 JS 可直达),JS 可用时由 kitchen.ts 接管为原地展开
  */
 import { coverOf, type Dish } from '../data/kitchen';
 
 interface Props {
   dish: Dish;
-  /** 序号(从 1 开始) */
-  index: number;
 }
 
-const { dish, index } = Astro.props;
-const cover = coverOf(dish);
+const { dish } = Astro.props;
+
 const typeLabel = dish.type === 'cooked' ? '做过的' : '想学的';
+const cover = coverOf(dish);
 const meta = [
   dish.date,
-  dish.attempts ? `第 ${dish.attempts} 次` : '',
-  dish.duration ? `${dish.duration}′` : '',
+  dish.attempts ? `第 ${dish.attempts} 次成功` : '',
+  dish.duration ? `${dish.duration} 分钟` : '',
 ].filter(Boolean);
 ---
 
 <a
-  class="dish-row"
+  class:list={['dish-card', { 'no-cover': !cover }]}
   href={`/kitchen/${dish.slug}/`}
   data-dish-card
   data-dish-slug={dish.slug}
@@ -32,151 +31,202 @@ const meta = [
   data-dish-name={dish.name}
   aria-label={`${dish.name} — ${typeLabel}`}
 >
-  <span class="row-idx">{String(index + 1).padStart(2, '0')}</span>
-
-  <span class="row-thumb">
-    {
-      cover ? (
+  {
+    cover ? (
+      <div class="dish-cover">
         <img src={cover} alt={dish.name} loading="lazy" decoding="async" />
-      ) : (
-        <span class="row-thumb-empty" />
-      )
-    }
-  </span>
+      </div>
+    ) : (
+      <div class="dish-cover dish-cover-text" aria-hidden="true">
+        <span class="dish-cover-glyph">{dish.name.slice(0, 1)}</span>
+      </div>
+    )
+  }
 
-  <span class="row-body">
-    <span class="row-name">{dish.name}</span>
-    <span class="row-meta">{meta.join(' · ')}</span>
-  </span>
+  <div class="dish-card-body">
+    <div class="dish-card-top">
+      <span class:list={['dish-type', `is-${dish.type}`]}>{typeLabel}</span>
+      {dish.rating ? <span class="dish-rating">{'★'.repeat(dish.rating)}</span> : null}
+    </div>
 
-  <span class="row-tag">{typeLabel}</span>
+    <h3 class="dish-card-name">{dish.name}</h3>
+    {dish.tagline && <p class="dish-card-tagline">{dish.tagline}</p>}
+
+    <div class="dish-card-meta">
+      {meta.map((item) => <span>{item}</span>)}
+    </div>
+  </div>
+
+  <span class="dish-card-arrow" aria-hidden="true">→</span>
 </a>
 
 <style>
-  .dish-row {
+  .dish-card {
     position: relative;
+    /* 列表是 flex 列 + max-height 滚动容器,不加这行卡片会被 flex 压缩 */
+    flex: 0 0 auto;
     display: grid;
-    grid-template-columns: 34px 92px minmax(0, 1fr) auto;
+    grid-template-columns: 96px minmax(0, 1fr) auto;
+    gap: 14px;
     align-items: center;
-    gap: 16px;
-    padding: 13px 12px 13px 10px;
-    border-top: 1px solid #e6e6e6;
-    color: inherit;
-    text-decoration: none;
-    transition: background-color 0.15s ease, box-shadow 0.15s ease;
-  }
-
-  .dish-row:last-child {
-    border-bottom: 1px solid #e6e6e6;
-  }
-
-  .dish-row:hover {
-    background: #f6f6f6;
-  }
-
-  /* 选中:左侧蓝条 + 淡蓝底 */
-  .dish-row.is-active {
-    background: #f2f4ff;
-    box-shadow: inset 4px 0 0 #1e40ff;
-  }
-
-  .row-idx {
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    font-variant-numeric: tabular-nums;
-    color: #9b9b9b;
-    letter-spacing: 0.04em;
-  }
-
-  .dish-row.is-active .row-idx {
-    color: #1e40ff;
-  }
-
-  .row-thumb {
-    display: block;
-    width: 92px;
-    height: 62px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--glass-gradient), var(--glass-solid);
+    backdrop-filter: blur(10px);
+    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
     overflow: hidden;
-    background: #ededed;
   }
 
-  .row-thumb img {
+  .dish-card:hover {
+    border-color: var(--border-strong);
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.34);
+  }
+
+  /* 被选中的卡片:左侧一道暖色标记 */
+  .dish-card.is-active {
+    border-color: rgba(226, 178, 132, 0.55);
+    box-shadow: 0 0 0 1px rgba(226, 178, 132, 0.25), 0 14px 30px rgba(0, 0, 0, 0.34);
+  }
+
+  .dish-card.is-active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 14px;
+    bottom: 14px;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: linear-gradient(180deg, #e2b284, rgba(226, 178, 132, 0.2));
+  }
+
+  .dish-cover {
+    width: 96px;
+    height: 76px;
+    border-radius: 9px;
+    overflow: hidden;
+    background: #1b1f26;
+  }
+
+  .dish-cover img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
-    filter: grayscale(0.12) contrast(1.02);
-    transition: filter 0.3s ease, transform 0.4s ease;
+    transition: transform 0.4s ease;
   }
 
-  .dish-row:hover .row-thumb img,
-  .dish-row.is-active .row-thumb img {
-    filter: grayscale(0) contrast(1.04);
-    transform: scale(1.04);
+  .dish-card:hover .dish-cover img {
+    transform: scale(1.06);
   }
 
-  .row-thumb-empty {
-    display: block;
-    width: 100%;
-    height: 100%;
-    background: repeating-linear-gradient(45deg, #eee 0 6px, #e4e4e4 6px 12px);
-  }
-
-  .row-body {
+  /* 没照片时的文字版式 */
+  .dish-cover-text {
     display: flex;
-    flex-direction: column;
-    gap: 3px;
+    align-items: center;
+    justify-content: center;
+    background:
+      radial-gradient(120% 90% at 20% 0%, rgba(226, 178, 132, 0.22), transparent 60%),
+      linear-gradient(150deg, #3a2b24, #1d1a18);
+    border: 1px solid rgba(226, 178, 132, 0.16);
+  }
+
+  .dish-cover-glyph {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: rgba(240, 214, 186, 0.9);
+    text-shadow: 0 2px 14px rgba(226, 178, 132, 0.45);
+  }
+
+  .dish-card-body {
     min-width: 0;
   }
 
-  .row-name {
-    font-size: 1.06rem;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    color: #0a0a0a;
+  .dish-card-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .dish-type {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+    padding: 2px 7px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    color: var(--text-faint);
+  }
+
+  .dish-type.is-cooked {
+    color: #c9d4c2;
+    border-color: rgba(150, 180, 140, 0.35);
+    background: rgba(150, 180, 140, 0.1);
+  }
+
+  .dish-type.is-wish {
+    color: #dec4a6;
+    border-color: rgba(226, 178, 132, 0.35);
+    background: rgba(226, 178, 132, 0.1);
+  }
+
+  .dish-rating {
+    font-size: 0.62rem;
+    color: #e2b284;
+    letter-spacing: 0.06em;
+  }
+
+  .dish-card-name {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.35;
+    color: var(--text);
+  }
+
+  .dish-card-tagline {
+    margin: 3px 0 0;
+    font-size: 0.76rem;
+    color: var(--text-dim);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
 
-  .dish-row.is-active .row-name {
-    font-weight: 700;
-  }
-
-  .row-meta {
+  .dish-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 6px;
     font-family: var(--font-mono);
-    font-size: 0.66rem;
-    letter-spacing: 0.05em;
-    color: #8d8d8d;
+    font-size: 0.64rem;
+    color: var(--text-faint);
   }
 
-  .row-tag {
-    font-family: var(--font-mono);
-    font-size: 0.62rem;
-    letter-spacing: 0.08em;
-    color: #6f6f6f;
-    white-space: nowrap;
+  .dish-card-arrow {
+    color: var(--text-faint);
+    font-size: 0.9rem;
+    transition: transform 0.2s ease, color 0.2s ease;
   }
 
-  .dish-row.is-active .row-tag {
-    color: #1e40ff;
-    font-weight: 700;
+  .dish-card:hover .dish-card-arrow {
+    color: var(--text);
+    transform: translateX(3px);
+  }
+
+  .dish-card.is-active .dish-card-arrow {
+    color: #e2b284;
   }
 
   @media (max-width: 560px) {
-    .dish-row {
-      grid-template-columns: 26px 68px minmax(0, 1fr);
-      gap: 12px;
-      padding: 12px 8px;
+    .dish-card {
+      grid-template-columns: 78px minmax(0, 1fr) auto;
+      gap: 11px;
     }
-
-    .row-thumb {
-      width: 68px;
-      height: 50px;
-    }
-
-    .row-tag {
-      display: none;
+    .dish-cover {
+      width: 78px;
+      height: 64px;
     }
   }
 </style>

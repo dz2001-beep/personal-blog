@@ -3,7 +3,7 @@
 > **给下一个 AI / 新协作者看的项目说明书。** 读完这一份就能上手改代码,不用重新摸一遍。
 >
 > 项目:个人博客「DZ Blog」(DZ-Star),全栈 SSR 站点,内容存在自己的 SQLite 里,自带网页后台。
-> 当前版本 **2.7.0** ｜ 最近更新 2026-11 ｜ 仓库 `dz2001-beep/personal-blog`(public) ｜ 分支 `main`
+> 当前版本 **2.6.8** ｜ 最近更新 2026-11 ｜ 仓库 `dz2001-beep/personal-blog`(public) ｜ 分支 `main`
 
 ---
 
@@ -170,9 +170,6 @@ npm start              # 跑构建产物(node dist/server/entry.mjs,默认 4321)
 
 **设计目标(用户明确要求):点开菜品不跳页、不来回返回。**
 
-**视觉风格:瑞士国际主义**(白底 / 巨大标题 / 蓝色小方块 `#1e40ff` / 黑色发丝线 / 无圆角无阴影无渐变)。
-该页**不传 `bgImage`**(铺纯白底)、**不用 `<Mascot />`**;详见 §6.5。
-
 - 桌面(>1024px):左侧列表 + 右侧 `position: sticky` 常驻详情面板;点卡片只切换右侧 DOM
 - 移动(≤1024px):同一个面板变成底部抽屉(88vh),带拖拽手柄下滑关闭 + 遮罩 + 滚动锁(`html.sheet-open`)
 - URL 用 `history.replaceState` 同步 `?dish=slug`:可分享/深链恢复,但**不污染返回键**
@@ -183,8 +180,6 @@ npm start              # 跑构建产物(node dist/server/entry.mjs,默认 4321)
 1. 点击拦截**必须用捕获阶段**(`addEventListener('click', fn, true)`)——Astro `ClientRouter` 也在 `document` 注册 click 且更早,冒泡阶段拦不住,会被它当成站内跳转
 2. 详情内容全部由 SSR 渲染进页面并 `hidden`,前端只切换显隐 → 零请求、SEO 可读
 3. 列表是 flex 列 + `max-height` 滚动容器,**卡片必须 `flex: 0 0 auto`**,否则会被压扁(实测 123px→45px)
-4. 选中态 class 是 `is-active`,挂在 `[data-dish-card]` 上;**不是** `.dish-card.is-active`(样式类名已改为 `.dish-row`),
-   写测试时用 `[data-dish-card].is-active` 选择
 
 **数据模型**(`src/data/kitchen.ts`):`slug / type(cooked|wish) / name / tagline / date / attempts / duration / difficulty / rating / tags / ingredients[] / steps[]{text,minutes,tip} / failures[] / verdict / note / reason / source / cover`
 
@@ -252,7 +247,7 @@ npm start              # 跑构建产物(node dist/server/entry.mjs,默认 4321)
 | 关于我 | `sunset-field` | **暖沙**(浅色纸张特例,见 §6.4) |
 | 关于本站 | `waterfall` | 湖蓝 |
 | 相册 | `starry-night` | 紫罗兰 |
-| 下厨 | **无**(纯白页) | 瑞士风:白底黑字 + 蓝色方块,见 §6.5 |
+| 下厨 | `sunset-field` | **灶火暖色 `rgba(226,178,132,.18)`** |
 | 404 | `beach` | 暖沙 |
 
 ### 6.3 卡片与层级
@@ -262,9 +257,9 @@ npm start              # 跑构建产物(node dist/server/entry.mjs,默认 4321)
 - z-index 栈:页面背景 `-3` < 动效 canvas `-2` < 内容 `auto` < 回到顶部 `150` < 宠物 `590` < 移动抽屉 `320`/遮罩 `310` < 头部 `100`(sticky) < 光标 `9998`
 - 页面头部统一结构:`.page-head > .page-kicker(英文小标签) + h1 + p + <Mascot />`
 
-### 6.4 「关于我」= 贴纸剪贴画风(浅色页之一)
+### 6.4 「关于我」是唯一的浅色特例(贴纸剪贴画风)
 
-**全站有两个浅色页**:`/about`(米白纸)和 `/kitchen`(瑞士白底,见 §6.5)。这里说 `/about`:它是一张**米白纸**(`#f7f2e6` + 纤维纹理),像把一页剪贴簿钉在深色站点里。
+**其他页面都是深色**,只有 `/about` 是一张**米白纸**(`#f7f2e6` + 纤维纹理),像把一页剪贴簿钉在深色站点里。
 
 - 实现全在 `src/pages/about.astro` 一个文件里(局部 CSS 变量 `--paper/--ink/--c1..--c4`,不污染全局主题)
 - **边缘处理(重点)**:纸不是硬矩形,而是用 `clip-path: polygon(...)`(约 40 个抖动点)裁出**手撕纸边**;
@@ -278,18 +273,6 @@ npm start              # 跑构建产物(node dist/server/entry.mjs,默认 4321)
 - 该页**不再使用** `<Mascot />`(它的描边是浅色,在米白纸上会看不见)与 `PageWidgets`(深色玻璃卡风格冲突)
 - 版式:12 栏 grid;`<=900px` 6 栏;`<=560px` 两列且去掉所有旋转
 - 若要新增"贴纸/便签",复用 `.note` / `.sticker` / `.polaroid` 三个类即可
-
-### 6.5 「下厨」= 瑞士国际主义(第二个浅色页)
-
-- 白底黑字:`#ffffff` / `#0a0a0a`,强调色**只有一个**——蓝色小方块 `#1e40ff`(9px,方角)
-- 巨大标题:`clamp(4rem, 10.5vw, 9rem)`、`letter-spacing: -0.055em`、`line-height: 0.84`,标题末尾跟一个蓝色方块当句号
-- 分隔只用**黑色发丝线**:标题下 2px、行间 1px `#e6e6e6`、栏间 1px
-- **无圆角、无阴影、无渐变、无玻璃**;按钮是方角描边,active/hover 反白(黑底白字)
-- 左侧列表是"行"不是"卡片":序号(mono)+ 方形缩略图(硬边)+ 菜名 + 类型
-- 右侧详情:类型标记(蓝方块+小字)、巨大菜名、发丝线数据表、蓝色编号步骤、结论用蓝底白字块
-- 组件:`DishCard.astro`(行)、`DishDetail.astro`(详情,`variant: panel | page` 控制标题字号);
-  独立页 `/kitchen/[slug]` 用 `variant="page"`,**页面本身不再重复渲染标题**
-- 页头深色 + 内容纯白 + 页脚深色:黑白对照是这套风格的组成部分
 
 ---
 
@@ -407,7 +390,6 @@ node -e "console.log('用 CDP 脚本驱动 http://localhost:4321')"
 | 菜品封面图 | `src/assets/kitchen/<slug>.webp`(或 jpg/png) |
 | 全站颜色/圆角/卡片质感 | `src/styles/global.css`(`:root` token) |
 | 「关于我」的贴纸剪贴画风 | `src/pages/about.astro`(局部变量 + 该文件内的 style) |
-| 「下厨」的瑞士风样式 | `src/pages/kitchen/index.astro` + `DishCard.astro` + `DishDetail.astro` |
 | 内页背景图与色调 | 各页面 `<BaseLayout bgImage=… bgTint=…>` |
 | 导航项 | `src/components/Header.astro` 的 `navItems` |
 | 页脚 | `src/components/Footer.astro` |

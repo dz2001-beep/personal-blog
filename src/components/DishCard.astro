@@ -5,7 +5,7 @@
  * - 没照片:退化成文字版式卡片(不显示破图)
  * 卡片本身是真链接(SEO / 无 JS 可直达),JS 可用时由 kitchen.ts 接管为原地展开
  */
-import type { Dish } from '../data/kitchen';
+import { coverOf, type Dish } from '../data/kitchen';
 
 interface Props {
   dish: Dish;
@@ -14,6 +14,7 @@ interface Props {
 const { dish } = Astro.props;
 
 const typeLabel = dish.type === 'cooked' ? '做过的' : '想学的';
+const cover = coverOf(dish);
 const meta = [
   dish.date,
   dish.attempts ? `第 ${dish.attempts} 次成功` : '',
@@ -22,7 +23,7 @@ const meta = [
 ---
 
 <a
-  class:list={['dish-card', { 'no-cover': !dish.cover }]}
+  class:list={['dish-card', { 'no-cover': !cover }]}
   href={`/kitchen/${dish.slug}/`}
   data-dish-card
   data-dish-slug={dish.slug}
@@ -31,9 +32,9 @@ const meta = [
   aria-label={`${dish.name} — ${typeLabel}`}
 >
   {
-    dish.cover ? (
+    cover ? (
       <div class="dish-cover">
-        <img src={dish.cover} alt={dish.name} loading="lazy" decoding="async" />
+        <img src={cover} alt={dish.name} loading="lazy" decoding="async" />
       </div>
     ) : (
       <div class="dish-cover dish-cover-text" aria-hidden="true">
@@ -62,6 +63,8 @@ const meta = [
 <style>
   .dish-card {
     position: relative;
+    /* 列表是 flex 列 + max-height 滚动容器,不加这行卡片会被 flex 压缩 */
+    flex: 0 0 auto;
     display: grid;
     grid-template-columns: 96px minmax(0, 1fr) auto;
     gap: 14px;

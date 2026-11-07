@@ -3,7 +3,7 @@
  * 菜品详情内容
  * 同时用于:列表页右侧常驻面板(桌面)、移动端抽屉、独立详情页 /kitchen/[slug]/
  */
-import type { Dish } from '../data/kitchen';
+import { coverOf, type Dish } from '../data/kitchen';
 
 interface Props {
   dish: Dish;
@@ -12,6 +12,7 @@ interface Props {
 }
 
 const { dish, hero = true } = Astro.props;
+const cover = coverOf(dish);
 
 const typeLabel = dish.type === 'cooked' ? '做过的' : '想学的';
 
@@ -27,8 +28,8 @@ const facts = [
 <div class="dish-detail">
   {
     hero && (
-      <div class:list={['dish-hero', { 'is-empty': !dish.cover }]}>
-        {dish.cover ? <img src={dish.cover} alt={dish.name} loading="lazy" decoding="async" /> : null}
+      <div class:list={['dish-hero', { 'is-empty': !cover }]}>
+        {cover ? <img src={cover} alt={dish.name} loading="lazy" decoding="async" /> : null}
         <div class="dish-hero-mask" />
         <div class="dish-hero-text">
           <span class:list={['dish-badge', `is-${dish.type}`]}>{typeLabel}</span>
@@ -62,7 +63,7 @@ const facts = [
   </div>
 
   {/* 想学的:为什么想学 */}
-  {dish.reason && (
+  {dish.reason?.trim() && (
     <section class="dish-section">
       <h3 class="dish-section-title">为什么想学这道</h3>
       <p class="dish-text">{dish.reason}</p>

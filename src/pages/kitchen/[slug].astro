@@ -6,7 +6,7 @@
  */
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import DishDetail from '../../components/DishDetail.astro';
-import { DISHES } from '../../data/kitchen';
+import { DISHES, hasCover } from '../../data/kitchen';
 
 const { slug } = Astro.params;
 const index = DISHES.findIndex((d) => d.slug === slug);
@@ -34,7 +34,7 @@ const next = index < DISHES.length - 1 ? DISHES[index + 1] : undefined;
     </nav>
 
     <article class="dish-sheet">
-      <DishDetail dish={dish} hero={Boolean(dish.cover)} />
+      <DishDetail dish={dish} hero={hasCover(dish)} />
     </article>
 
     <nav class="dish-pager">

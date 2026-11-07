@@ -11,7 +11,7 @@ import BaseLayout from '../../layouts/BaseLayout.astro';
 import Mascot from '../../components/Mascot.astro';
 import DishCard from '../../components/DishCard.astro';
 import DishDetail from '../../components/DishDetail.astro';
-import { DISHES } from '../../data/kitchen';
+import { DISHES, hasCover } from '../../data/kitchen';
 
 const cookedCount = DISHES.filter((d) => d.type === 'cooked').length;
 const wishCount = DISHES.filter((d) => d.type === 'wish').length;
@@ -85,7 +85,7 @@ const wishCount = DISHES.filter((d) => d.type === 'wish').length;
           {
             DISHES.map((dish) => (
               <div class="panel-dish" data-dish-detail data-dish-slug={dish.slug} hidden>
-                <DishDetail dish={dish} hero={Boolean(dish.cover)} />
+                <DishDetail dish={dish} hero={hasCover(dish)} />
               </div>
             ))
           }

@@ -1,0 +1,106 @@
+---
+/**
+ * 菜品独立页
+ * 用途:分享直链、搜索引擎收录、没有 JS 时的兜底入口。
+ * 站内浏览默认走列表页的右侧面板(不跳页),这里是"单独打开一道菜"的情况。
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import DishDetail from '../../components/DishDetail.astro';
+import { DISHES } from '../../data/kitchen';
+
+const { slug } = Astro.params;
+const index = DISHES.findIndex((d) => d.slug === slug);
+
+if (index < 0) {
+  return Astro.rewrite('/404');
+}
+
+const dish = DISHES[index]!;
+const prev = index > 0 ? DISHES[index - 1] : undefined;
+const next = index < DISHES.length - 1 ? DISHES[index + 1] : undefined;
+---
+
+<BaseLayout
+  title={dish.name}
+  description={dish.tagline || `${dish.name} 的做法与研究记录`}
+  bgImage="/gallery/sunset-field.jpg"
+  bgTint="rgba(226, 178, 132, 0.18)"
+>
+  <section class="container dish-page">
+    <nav class="dish-crumb">
+      <a href="/kitchen">← 返回下厨</a>
+      <span class="dish-crumb-sep">/</span>
+      <a href={`/kitchen?dish=${dish.slug}`} class="dish-crumb-hint">在列表里查看</a>
+    </nav>
+
+    <article class="dish-sheet">
+      <DishDetail dish={dish} hero={Boolean(dish.cover)} />
+    </article>
+
+    <nav class="dish-pager">
+      {prev ? <a href={`/kitchen/${prev.slug}/`} class="dish-pager-link">← {prev.name}</a> : <span />}
+      {next ? <a href={`/kitchen/${next.slug}/`} class="dish-pager-link">{[next.name]} →</a> : <span />}
+    </nav>
+  </section>
+</BaseLayout>
+
+<style>
+  .dish-page {
+    padding: 26px 0 60px;
+  }
+
+  .dish-crumb {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+  }
+
+  .dish-crumb a {
+    color: var(--text-dim);
+  }
+
+  .dish-crumb a:hover {
+    color: var(--text);
+  }
+
+  .dish-crumb-sep {
+    color: var(--text-faint);
+  }
+
+  .dish-crumb-hint {
+    color: var(--text-faint) !important;
+  }
+
+  .dish-sheet {
+    padding: 22px 24px 26px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--glass-gradient), var(--glass-solid);
+    backdrop-filter: blur(10px);
+  }
+
+  .dish-pager {
+    display: flex;
+    justify-content: space-between;
+    gap: 14px;
+    margin-top: 20px;
+    font-size: 0.82rem;
+  }
+
+  .dish-pager-link {
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    color: var(--text-dim);
+    transition: all 0.18s ease;
+  }
+
+  .dish-pager-link:hover {
+    color: var(--text);
+    border-color: var(--border-strong);
+    background: rgba(255, 255, 255, 0.06);
+  }
+</style>

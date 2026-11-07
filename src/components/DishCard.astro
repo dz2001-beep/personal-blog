@@ -1,0 +1,229 @@
+---
+/**
+ * 菜品卡片
+ * - 有照片:用照片做背景 + 渐变压暗 + 数据角标
+ * - 没照片:退化成文字版式卡片(不显示破图)
+ * 卡片本身是真链接(SEO / 无 JS 可直达),JS 可用时由 kitchen.ts 接管为原地展开
+ */
+import type { Dish } from '../data/kitchen';
+
+interface Props {
+  dish: Dish;
+}
+
+const { dish } = Astro.props;
+
+const typeLabel = dish.type === 'cooked' ? '做过的' : '想学的';
+const meta = [
+  dish.date,
+  dish.attempts ? `第 ${dish.attempts} 次成功` : '',
+  dish.duration ? `${dish.duration} 分钟` : '',
+].filter(Boolean);
+---
+
+<a
+  class:list={['dish-card', { 'no-cover': !dish.cover }]}
+  href={`/kitchen/${dish.slug}/`}
+  data-dish-card
+  data-dish-slug={dish.slug}
+  data-dish-type={dish.type}
+  data-dish-name={dish.name}
+  aria-label={`${dish.name} — ${typeLabel}`}
+>
+  {
+    dish.cover ? (
+      <div class="dish-cover">
+        <img src={dish.cover} alt={dish.name} loading="lazy" decoding="async" />
+      </div>
+    ) : (
+      <div class="dish-cover dish-cover-text" aria-hidden="true">
+        <span class="dish-cover-glyph">{dish.name.slice(0, 1)}</span>
+      </div>
+    )
+  }
+
+  <div class="dish-card-body">
+    <div class="dish-card-top">
+      <span class:list={['dish-type', `is-${dish.type}`]}>{typeLabel}</span>
+      {dish.rating ? <span class="dish-rating">{'★'.repeat(dish.rating)}</span> : null}
+    </div>
+
+    <h3 class="dish-card-name">{dish.name}</h3>
+    {dish.tagline && <p class="dish-card-tagline">{dish.tagline}</p>}
+
+    <div class="dish-card-meta">
+      {meta.map((item) => <span>{item}</span>)}
+    </div>
+  </div>
+
+  <span class="dish-card-arrow" aria-hidden="true">→</span>
+</a>
+
+<style>
+  .dish-card {
+    position: relative;
+    display: grid;
+    grid-template-columns: 96px minmax(0, 1fr) auto;
+    gap: 14px;
+    align-items: center;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--glass-gradient), var(--glass-solid);
+    backdrop-filter: blur(10px);
+    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    overflow: hidden;
+  }
+
+  .dish-card:hover {
+    border-color: var(--border-strong);
+    transform: translateY(-2px);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.34);
+  }
+
+  /* 被选中的卡片:左侧一道暖色标记 */
+  .dish-card.is-active {
+    border-color: rgba(226, 178, 132, 0.55);
+    box-shadow: 0 0 0 1px rgba(226, 178, 132, 0.25), 0 14px 30px rgba(0, 0, 0, 0.34);
+  }
+
+  .dish-card.is-active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 14px;
+    bottom: 14px;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: linear-gradient(180deg, #e2b284, rgba(226, 178, 132, 0.2));
+  }
+
+  .dish-cover {
+    width: 96px;
+    height: 76px;
+    border-radius: 9px;
+    overflow: hidden;
+    background: #1b1f26;
+  }
+
+  .dish-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.4s ease;
+  }
+
+  .dish-card:hover .dish-cover img {
+    transform: scale(1.06);
+  }
+
+  /* 没照片时的文字版式 */
+  .dish-cover-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background:
+      radial-gradient(120% 90% at 20% 0%, rgba(226, 178, 132, 0.22), transparent 60%),
+      linear-gradient(150deg, #3a2b24, #1d1a18);
+    border: 1px solid rgba(226, 178, 132, 0.16);
+  }
+
+  .dish-cover-glyph {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: rgba(240, 214, 186, 0.9);
+    text-shadow: 0 2px 14px rgba(226, 178, 132, 0.45);
+  }
+
+  .dish-card-body {
+    min-width: 0;
+  }
+
+  .dish-card-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+
+  .dish-type {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.06em;
+    padding: 2px 7px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    color: var(--text-faint);
+  }
+
+  .dish-type.is-cooked {
+    color: #c9d4c2;
+    border-color: rgba(150, 180, 140, 0.35);
+    background: rgba(150, 180, 140, 0.1);
+  }
+
+  .dish-type.is-wish {
+    color: #dec4a6;
+    border-color: rgba(226, 178, 132, 0.35);
+    background: rgba(226, 178, 132, 0.1);
+  }
+
+  .dish-rating {
+    font-size: 0.62rem;
+    color: #e2b284;
+    letter-spacing: 0.06em;
+  }
+
+  .dish-card-name {
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.35;
+    color: var(--text);
+  }
+
+  .dish-card-tagline {
+    margin: 3px 0 0;
+    font-size: 0.76rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .dish-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.64rem;
+    color: var(--text-faint);
+  }
+
+  .dish-card-arrow {
+    color: var(--text-faint);
+    font-size: 0.9rem;
+    transition: transform 0.2s ease, color 0.2s ease;
+  }
+
+  .dish-card:hover .dish-card-arrow {
+    color: var(--text);
+    transform: translateX(3px);
+  }
+
+  .dish-card.is-active .dish-card-arrow {
+    color: #e2b284;
+  }
+
+  @media (max-width: 560px) {
+    .dish-card {
+      grid-template-columns: 78px minmax(0, 1fr) auto;
+      gap: 11px;
+    }
+    .dish-cover {
+      width: 78px;
+      height: 64px;
+    }
+  }
+</style>

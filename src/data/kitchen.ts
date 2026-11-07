@@ -71,25 +71,29 @@ const coverModules = import.meta.glob('../assets/kitchen/*.{jpg,jpeg,png,webp,sv
   import: 'default',
 }) as Record<string, string>;
 
-const coverBySlug: Record<string, string> = {};
+/** slug → { url, vector } —— 记录是否矢量插画,便于让真照片优先 */
+const coverMap: Record<string, { url: string; vector: boolean }> = {};
+
 for (const [filePath, url] of Object.entries(coverModules)) {
   const file = filePath.split('/').pop() ?? '';
   const slug = file.replace(/\.[^.]+$/, '');
   if (!slug) continue;
-  const isVector = file.endsWith('.svg');
-  const existing = coverBySlug[slug];
-  // 真照片(jpg/png/webp)优先于自带插画;同类型按文件名排序保证结果稳定
-  if (!existing || (existing.endsWith('.svg') && !isVector) || (!existing.endsWith('.svg') && isVector && false)) {
-    coverBySlug[slug] = url;
+
+  const vector = /\.svg$/i.test(file);
+  const current = coverMap[slug];
+
+  // 真照片(jpg/png/webp)永远优先于矢量插画;同类以先出现者为准
+  if (!current || (current.vector && !vector)) {
+    coverMap[slug] = { url, vector };
   }
 }
 
-/** 取某道菜的封面:目录图片优先,其次数据里写的 cover */
+/** 取某道菜的封面:assets 目录(照片优先) > 数据里写的 cover */
 export function coverOf(dish: Dish): string | undefined {
-  return coverBySlug[dish.slug] ?? dish.cover;
+  return coverMap[dish.slug]?.url ?? dish.cover;
 }
 
-/** 这道菜是否有可用的照片 */
+/** 这道菜是否有可用的照片/插画 */
 export function hasCover(dish: Dish): boolean {
   return Boolean(coverOf(dish));
 }
@@ -153,13 +157,21 @@ export const DISHES: Dish[] = [
   },
   {
     slug: 'suantaichaorou',
-    type: 'wish',
+    type: 'cooked',
     name: '蒜苔炒肉',
     tagline: '蒜苔要断生又脆,肉要嫩',
     date: '2026-11',
     tags: ['家常', '快手', '下饭'],
-    reason: '',
-    verdict: '',
+    note: '这是我自己做的。',
+  },
+  {
+    slug: 'yuxiangrousi',
+    type: 'cooked',
+    name: '鱼香肉丝',
+    tagline: '酸甜咸辣,一勺汁决定成败',
+    date: '2026-11',
+    tags: ['川菜', '下饭', '家常'],
+    note: '这是我自己做的。',
   },
   {
     slug: 'koushuiqiezi',

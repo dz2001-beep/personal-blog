@@ -5,31 +5,36 @@
 
 :root {
   /* 配色(深色主题) */
-  --bg: #12161d;            /* 页面背景 */
-  --bg-soft: #1a2029;       /* 卡片/区块背景 */
-  --bg-softer: #232b37;     /* 悬浮/hover 背景 */
-  --border: #2b3442;        /* 边框 */
-  --border-strong: #3b4657;
+  --bg: #0f1318;            /* 页面背景(比原来再深一点,让金色更跳) */
+  --bg-soft: #171c24;       /* 卡片/区块背景 */
+  --bg-softer: #1f2631;     /* 悬浮/hover 背景 */
+  --border: #262e3a;        /* 边框 */
+  --border-strong: #3a4557;
 
   --text: #e6ebf2;          /* 正文 */
   --text-dim: #a8b3c2;      /* 次要文字 */
   --text-faint: #77839a;    /* 更弱文字 */
 
-  --accent: #e3e8ef;        /* 强调色(中性浅灰白) */
-  --accent-2: #c6cfda;      /* 次强调色(更中性的灰) */
-  --accent-soft: rgba(255, 255, 255, 0.06);
-  --green: #9aa7b5;
-  --red: #b08a92;
-  --yellow: #b3a58a;
+  /* 强调色:琥珀金(全站唯一的彩色强调,原来几乎是白色 = 等于没有) */
+  --accent: #e8b06b;
+  --accent-2: #d99a55;
+  --accent-soft: rgba(232, 176, 107, 0.1);
+  /* 状态色:原来是灰的,改成真正的语义色 */
+  --green: #6fbf9b;
+  --red: #d97a6c;
+  --yellow: #e0b166;
 
   /* 字体 */
   --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
     'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Arial, sans-serif;
   --font-mono: 'SF Mono', 'JetBrains Mono', 'Fira Code', Menlo, Consolas,
     'Liberation Mono', monospace;
+  /* 展示用衬线:标题走宋体,正文仍是无衬线 —— 编辑感更强 */
+  --font-display: 'Songti SC', 'Source Han Serif SC', 'Noto Serif SC', 'STSong',
+    'SimSun', Georgia, 'Times New Roman', serif;
 
   /* 圆角与阴影 */
-  --radius: 12px;
+  --radius: 14px;
   --radius-sm: 8px;
   --shadow: 0 12px 38px rgba(0, 0, 0, 0.45);
   --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.3);
@@ -41,11 +46,11 @@
   /* 玻璃质感卡片(内页模块统一用这套) */
   --glass-gradient: linear-gradient(
     160deg,
-    rgba(255, 255, 255, 0.06),
-    rgba(255, 255, 255, 0.015) 45%,
-    rgba(0, 0, 0, 0.16)
+    rgba(255, 246, 232, 0.075),
+    rgba(255, 255, 255, 0.012) 45%,
+    rgba(0, 0, 0, 0.2)
   );
-  --glass-solid: rgba(24, 30, 39, 0.78);
+  --glass-solid: rgba(23, 28, 36, 0.8);
 }
 
 * {
@@ -1065,4 +1070,99 @@ html.has-custom-cursor * {
   width: 2px;
   border-radius: 2px;
   background: linear-gradient(180deg, var(--accent-2), rgba(198, 207, 218, 0.1));
+}
+
+/* ============================================================
+   主题 v2:换字体 / 换框(在深色体系内做微调,不改整体调性)
+   ============================================================ */
+
+/* ---------- 1. 标题走衬线,字距收紧 ---------- */
+h1,
+h2,
+h3,
+.section-title,
+.page-head h1,
+.profile-info h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.022em;
+}
+
+h1 {
+  line-height: 1.18;
+}
+
+/* 数字统一等宽,避免跳动 */
+.stat-num,
+.timeline-period,
+.music-time,
+.widget-time,
+.panel-count,
+.dish-card-meta {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- 2. 链接:不再靠降透明度,改用强调色 ---------- */
+a:hover {
+  opacity: 1;
+  color: var(--accent);
+}
+
+/* 键盘可达性:焦点环用强调色 */
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ---------- 3. 框:更利落的边框 + 顶部微光 + 悬停泛金光 ---------- */
+.side-card,
+.panel,
+.panel-tight {
+  border-color: var(--border);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 246, 232, 0.05),
+    0 10px 26px rgba(0, 0, 0, 0.26);
+  backdrop-filter: blur(8px);
+}
+
+.side-card:hover,
+.panel:hover {
+  border-color: color-mix(in srgb, var(--accent) 34%, var(--border));
+}
+
+/* 区块标题的竖条改成强调色渐变 */
+.section-title::before {
+  background: linear-gradient(180deg, var(--accent), rgba(232, 176, 107, 0.12));
+}
+
+/* 页面小标签:圆点用强调色并带一点光晕 */
+.page-kicker {
+  color: var(--text-dim);
+}
+
+.page-kicker::before {
+  background: var(--accent);
+  box-shadow: 0 0 10px rgba(232, 176, 107, 0.7);
+}
+
+/* 按钮:悬停时描边与文字泛金 */
+.btn:hover {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--border-strong));
+}
+
+.btn-primary:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #171207;
+  opacity: 1;
+}
+
+/* 标签/胶囊:悬停泛金 */
+.tag:hover,
+.skill-chip:hover,
+.filter-chip:hover {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
 }

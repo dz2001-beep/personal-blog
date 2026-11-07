@@ -3,7 +3,7 @@
 > **给下一个 AI / 新协作者看的项目说明书。** 读完这一份就能上手改代码,不用重新摸一遍。
 >
 > 项目:个人博客「DZ Blog」(DZ-Star),全栈 SSR 站点,内容存在自己的 SQLite 里,自带网页后台。
-> 当前版本 **2.6.6** ｜ 最近更新 2026-11 ｜ 仓库 `dz2001-beep/personal-blog`(public) ｜ 分支 `main`
+> 当前版本 **2.8.0** ｜ 最近更新 2026-11 ｜ 仓库 `dz2001-beep/personal-blog`(public) ｜ 分支 `main`
 
 ---
 
@@ -223,13 +223,15 @@ npm start              # 跑构建产物(node dist/server/entry.mjs,默认 4321)
 
 | token | 值 | 用途 |
 | --- | --- | --- |
-| `--bg` | `#12161d` | 页面底色(深蓝灰) |
-| `--bg-soft` / `--bg-softer` | `#1a2029` / `#232b37` | 卡片 / hover |
-| `--border` / `--border-strong` | `#2b3442` / `#3b4657` | 边框 |
+| `--bg` | `#0f1318` | 页面底色(深蓝黑,比 v1 更深) |
+| `--bg-soft` / `--bg-softer` | `#171c24` / `#1f2631` | 卡片 / hover |
+| `--border` / `--border-strong` | `#262e3a` / `#3a4557` | 边框 |
 | `--text` / `--text-dim` / `--text-faint` | `#e6ebf2` / `#a8b3c2` / `#77839a` | 三级文字 |
-| `--accent` / `--accent-2` | `#e3e8ef` / `#c6cfda` | 中性浅灰白强调 |
-| `--glass-gradient` / `--glass-solid` | 渐变 + `rgba(24,30,39,.78)` | **所有卡片统一用这两个变量** |
-| `--radius` / `--radius-sm` | 12px / 8px | 圆角 |
+| **`--accent` / `--accent-2`** | **`#e8b06b` / `#d99a55`** | **琥珀金:全站唯一彩色强调**(v1 时是近白色=等于没有) |
+| `--green` / `--red` / `--yellow` | `#6fbf9b` / `#d97a6c` / `#e0b166` | 语义状态色(v1 时是灰的) |
+| `--glass-gradient` / `--glass-solid` | 暖白高光渐变 + `rgba(23,28,36,.8)` | **所有卡片统一用这两个变量** |
+| `--radius` / `--radius-sm` | 14px / 8px | 圆角 |
+| **`--font-display`** | `'Songti SC','Source Han Serif SC','Noto Serif SC','STSong','SimSun',Georgia,serif` | **标题专用衬线**(v2 新增) |
 | `--container` / `--container-wide` | 860px / 1400px | 正文宽 / 列表宽 |
 | `--font-sans` / `--font-mono` | 系统字体栈 | 时间戳、序号用 mono |
 
@@ -256,6 +258,13 @@ npm start              # 跑构建产物(node dist/server/entry.mjs,默认 4321)
 - 统一 hover:上浮 2–3px + 边框变亮 + 阴影加深
 - z-index 栈:页面背景 `-3` < 动效 canvas `-2` < 内容 `auto` < 回到顶部 `150` < 宠物 `590` < 移动抽屉 `320`/遮罩 `310` < 头部 `100`(sticky) < 光标 `9998`
 - 页面头部统一结构:`.page-head > .page-kicker(英文小标签) + h1 + p + <Mascot />`
+
+**主题 v2(2026-11)**:在 `global.css` 末尾追加了一段覆盖块,只做三件事——
+1. **换字体**:`h1/h2/h3/.section-title/.page-head h1` 走 `--font-display`(宋体),正文仍是系统无衬线,形成"衬线标题 + 无衬线正文"的编辑感对比
+2. **换色**:`--accent` 从近白色改成琥珀金 `#e8b06b`;链接 hover 不再靠降透明度,改成变强调色;焦点环 `:focus-visible` 用强调色(无障碍)
+3. **换框**:卡片加 `inset 0 1px 0` 顶部微光 + 更柔和投影,`backdrop-filter` 12px→8px;悬停边框用 `color-mix()` 泛金
+
+改主题色只需动 `--accent / --accent-2 / --accent-soft` 三个变量(试过:青玉 `#6fbf9b`、珊瑚 `#d9807a` 都能直接换)。
 
 ---
 

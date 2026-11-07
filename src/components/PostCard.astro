@@ -55,6 +55,32 @@ const searchText = `${title} ${description} ${tags.join(' ')}`.toLowerCase();
     pointer-events: none;
   }
 
+  /* 右上角折角(dog-ear) */
+  .post-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 22px;
+    height: 22px;
+    background: linear-gradient(
+      225deg,
+      color-mix(in srgb, var(--accent) 85%, #fff) 0 40%,
+      var(--accent) 40% 48%,
+      color-mix(in srgb, var(--accent) 35%, #000) 48% 54%,
+      transparent 54%
+    );
+    opacity: 0.6;
+    transition: width 0.24s ease, height 0.24s ease, opacity 0.24s ease;
+    pointer-events: none;
+  }
+
+  .post-card:hover::after {
+    width: 30px;
+    height: 30px;
+    opacity: 0.9;
+  }
+
   .post-card:hover {
     border-color: var(--border-strong);
     transform: translateY(-3px);

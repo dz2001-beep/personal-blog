@@ -78,6 +78,33 @@ const meta = [
     overflow: hidden;
   }
 
+  /* 右上角折角,和下厨以外页面的卡片保持同一套小装饰 */
+  .dish-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    background: linear-gradient(
+      225deg,
+      color-mix(in srgb, var(--accent) 85%, #fff) 0 40%,
+      var(--accent) 40% 48%,
+      color-mix(in srgb, var(--accent) 35%, #000) 48% 54%,
+      transparent 54%
+    );
+    opacity: 0.5;
+    transition: width 0.24s ease, height 0.24s ease, opacity 0.24s ease;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .dish-card:hover::after {
+    width: 27px;
+    height: 27px;
+    opacity: 0.85;
+  }
+
   .dish-card:hover {
     border-color: var(--border-strong);
     transform: translateY(-2px);

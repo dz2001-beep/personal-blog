@@ -49,6 +49,33 @@ const { title, description, tech, slug, demo_url, repo_url } = work;
     overflow: hidden;
   }
 
+  /* 右上角折角(dog-ear);柔光占用 ::after,这里用 ::before */
+  .work-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 22px;
+    height: 22px;
+    background: linear-gradient(
+      225deg,
+      color-mix(in srgb, var(--accent) 85%, #fff) 0 40%,
+      var(--accent) 40% 48%,
+      color-mix(in srgb, var(--accent) 35%, #000) 48% 54%,
+      transparent 54%
+    );
+    opacity: 0.6;
+    transition: width 0.24s ease, height 0.24s ease, opacity 0.24s ease;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .work-card:hover::before {
+    width: 30px;
+    height: 30px;
+    opacity: 0.9;
+  }
+
   /* 卡片右上角的柔光,给扁平卡片一点层次 */
   .work-card::after {
     content: '';

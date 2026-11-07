@@ -3,7 +3,7 @@
 > **给下一个 AI / 新协作者看的项目说明书。** 读完这一份就能上手改代码,不用重新摸一遍。
 >
 > 项目:个人博客「DZ Blog」(DZ-Star),全栈 SSR 站点,内容存在自己的 SQLite 里,自带网页后台。
-> 当前版本 **2.8.0** ｜ 最近更新 2026-11 ｜ 仓库 `dz2001-beep/personal-blog`(public) ｜ 分支 `main`
+> 当前版本 **2.8.1** ｜ 最近更新 2026-11 ｜ 仓库 `dz2001-beep/personal-blog`(public) ｜ 分支 `main`
 
 ---
 
@@ -263,6 +263,14 @@ npm start              # 跑构建产物(node dist/server/entry.mjs,默认 4321)
 1. **换字体**:`h1/h2/h3/.section-title/.page-head h1` 走 `--font-display`(宋体),正文仍是系统无衬线,形成"衬线标题 + 无衬线正文"的编辑感对比
 2. **换色**:`--accent` 从近白色改成琥珀金 `#e8b06b`;链接 hover 不再靠降透明度,改成变强调色;焦点环 `:focus-visible` 用强调色(无障碍)
 3. **换框**:卡片加 `inset 0 1px 0` 顶部微光 + 更柔和投影,`backdrop-filter` 12px→8px;悬停边框用 `color-mix()` 泛金
+
+**卡片边角装饰(2026-11)**:全部用伪元素实现,不改组件结构——
+- `.side-card` / `.panel` / `.widget-card`:`::after` 做成右上角一枚 11px **菱形贴纸**(琥珀金 + 白描边 + 投影),
+  悬停旋转 `135deg` 并放大;`.side-card::before` 是左下角那颗 5px 小圆点
+- `.post-card::after` / `.work-card::before` / `.dish-card::after`:右上角**折角(dog-ear)**,
+  用三色 `linear-gradient(225deg)` 做出「亮面 → 折痕 → 透明」,悬停时从 22px 长到 30px
+- 注意:`work-card` 的 `::after` 已被柔光占用,折角只好用 `::before`;`dish-card` 的 `::before` 是选中态左条,折角用 `::after`
+- 贴纸用负偏移(`-5px`)探出卡片边,这些卡片**不能有 `overflow: hidden`**,否则会被裁掉
 
 改主题色只需动 `--accent / --accent-2 / --accent-soft` 三个变量(试过:青玉 `#6fbf9b`、珊瑚 `#d9807a` 都能直接换)。
 

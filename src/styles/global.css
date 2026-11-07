@@ -1166,3 +1166,55 @@ a:hover {
   color: var(--accent);
   border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
 }
+
+/* ============================================================
+   卡片边角小贴纸 / 折角
+   - 侧栏卡片、面板、小组件卡:右上角一枚小小的菱形贴纸
+   - 文章卡、作品卡、菜品卡:右上角一个折角(dog-ear)
+   只用伪元素,不改任何组件结构
+   ============================================================ */
+
+/* ---------- 1. 角落菱形贴纸 ---------- */
+.side-card,
+.panel,
+.widget-card {
+  position: relative;
+}
+
+.side-card::after,
+.panel::after,
+.widget-card::after {
+  content: '';
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  width: 11px;
+  height: 11px;
+  background: var(--accent);
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  box-shadow: 0 2px 7px rgba(0, 0, 0, 0.45);
+  transform: rotate(45deg);
+  transform-origin: center;
+  transition: transform 0.26s cubic-bezier(0.3, 1.4, 0.5, 1), background-color 0.2s ease;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.side-card:hover::after,
+.panel:hover::after,
+.widget-card:hover::after {
+  transform: rotate(135deg) scale(1.18);
+}
+
+/* 次级贴纸:左下角一颗更小的暗色圆点,别让对角太单一 */
+.side-card::before {
+  content: '';
+  position: absolute;
+  left: 16px;
+  bottom: -2.5px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--accent) 55%, transparent);
+  pointer-events: none;
+}

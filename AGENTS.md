@@ -3,7 +3,7 @@
 > **给下一个 AI / 新协作者看的项目说明书。** 读完这一份就能上手改代码,不用重新摸一遍。
 >
 > 项目:个人博客「DZ Blog」(DZ-Star),全栈 SSR 站点,内容存在自己的 SQLite 里,自带网页后台。
-> 当前版本 **2.6.5** ｜ 最近更新 2026-11 ｜ 仓库 `dz2001-beep/personal-blog`(public) ｜ 分支 `main`
+> 当前版本 **2.6.6** ｜ 最近更新 2026-11 ｜ 仓库 `dz2001-beep/personal-blog`(public) ｜ 分支 `main`
 
 ---
 
@@ -273,7 +273,7 @@ npm start              # 跑构建产物(node dist/server/entry.mjs,默认 4321)
 | 友链 | 4 条 | Astro / MDN / GitHub / 掘金 |
 | Profile | — | 经历、教育、技能分组(结构化,`src/data/profile.ts`) |
 
-**内容态真实性提醒**:13 道菜目前都只有菜名/标签/日期,`reason`(为什么想学)、`verdict`、`failures`、`ingredients`、`steps` 全部为空;仅蒜苔炒肉与鱼香肉丝写了 `note: 这是我自己做的`。照片分辨率偏低(约 300px),详情大图会偏软,想要清晰需用户提供原图。
+**内容态真实性提醒**:13 道菜都已有 `ingredients`+`steps`(含每步分钟数与关键提示)和错开的 `date`(2025-12 ~ 2026-11);但 `reason`(为什么想学)、`verdict`(值不值得再做)、`failures`(翻车记录)仍全空,只有蒜苔炒肉/鱼香肉丝写了 `note: 这是我自己做的`。步骤是按通用做法整理的,**不是用户的真实操作记录**,用户实际做过之后再替换。照片分辨率偏低(约 300px),详情大图会偏软。
 
 ---
 
@@ -352,7 +352,7 @@ node -e "console.log('用 CDP 脚本驱动 http://localhost:4321')"
 
 **内容待补**:
 - 13 道菜的真实照片原图(当前是网页缩略图,约 300px)
-- 每道菜的 `reason` / `verdict` / `failures` / 步骤与食材(全为空)
+- 每道菜的 `reason` / `verdict` / `failures`(仍空)
 - 用户自己做的菜(目前只标记了蒜苔炒肉、鱼香肉丝)
 
 **功能债**:厨房后台 CRUD(现在只能改代码加菜)、头像上传持久化、`deploy/` 恢复、显式声明 shiki/js-yaml。

@@ -2,35 +2,30 @@
 
 把照片放进这个目录,**文件名 = 菜品的 slug**,页面自动把它当封面,不需要改任何代码。
 
-> 目录里现在的 `.svg` 是我画的占位插画(无版权问题)。你放进同名的 `.jpg` 后,**照片会自动盖过插画**,插画不用删。
-
-支持 .jpg / .jpeg / .png / .webp。
+支持 `.jpg` `.jpeg` `.png` `.webp`(照片)与 `.svg`(手绘插画)。**照片永远优先于插画**,所以你放一张同名 jpg 就会自动盖掉插画,插画不用删。
 
 ## 文件名对照表
 
-| 菜名 | 文件名 | 状态 |
-| --- | --- | --- |
-| 红烧肉 | `hongshaorou.jpg` | 想学的 |
-| 辣子鸡 | `laziji.jpg` | 想学的 |
-| 西红柿炒蛋 | `xihongshichaodan.jpg` | 想学的 |
-| 醋溜土豆丝 | `tudousi.jpg` | 想学的 |
-| 炸小酥肉 | `xiaosurou.jpg` | 想学的 |
-| 蒜苔炒肉 | `suantaichaorou.jpg` | 想学的 |
-| 口水茄子 | `koushuiqiezi.jpg` | 想学的 |
-| 红烧排骨 | `hongshaopaigu.jpg` | 想学的 |
-| 肉夹馍 | `roujiamo.jpg` | 想学的 |
-| 葱油拌面 | `congyoubanmian.jpg` | 做过的 |
-
-> 按左列文件名重命名后拖进来即可生效:卡片缩略图和详情大图都会自动换成你的照片。
-
-## 优先级
-
-1. 本目录下的图片(自动匹配,最高)
-2. 数据里手写的 `cover` 字段(可指向外部 URL)
-3. 都没有 → 文字版式卡片(菜名首字 + 暖色渐变),不会出现破图
+| 菜名 | 状态 | 当前封面 | 放什么文件名 |
+| --- | --- | --- | --- |
+| 红烧肉 | 想学的 | 插画 | `hongshaorou.jpg` |
+| 辣子鸡 | 想学的 | 真实照片 | `laziji.jpg` |
+| 西红柿炒蛋 | 想学的 | 插画 | `xihongshichaodan.jpg` |
+| 醋溜土豆丝 | 想学的 | 插画 | `tudousi.jpg` |
+| 炸小酥肉 | 想学的 | 插画 | `xiaosurou.jpg` |
+| 蒜苔炒肉 | 做过的 | 真实照片 | `suantaichaorou.jpg` |
+| 鱼香肉丝 | 做过的 | 真实照片 | `yuxiangrousi.jpg` |
+| 口水茄子 | 想学的 | 插画 | `koushuiqiezi.jpg` |
+| 红烧排骨 | 想学的 | 插画 | `hongshaopaigu.jpg` |
+| 肉夹馍 | 想学的 | 插画 | `roujiamo.jpg` |
+| 回锅肉 | 想学的 | 真实照片 | `huiguorou.jpg` |
+| 锅包肉 | 想学的 | 真实照片 | `guobaorou.jpg` |
+| 小炒肉 | 想学的 | 真实照片 | `xiaochaorou.jpg` |
+| 排骨炖豆角 | 想学的 | 插画 | `paigudundoujiao.jpg` |
+| 葱油拌面 | 做过的 | 插画 | `congyoubanmian.jpg` |
 
 ## 建议规格
 
-- 宽度 1200–1600px,JPG,单张 < 500KB
+- **宽度 1200–1600px**,JPG/WebP,单张 < 500KB(当前部分图是 310px 的网页缩略图,大图会偏软)
 - 比例不限:卡片裁 4:3,详情大图裁 16:9
 - 「做过的」建议连过程图和糊锅照一起放,比只有成品图更有说服力

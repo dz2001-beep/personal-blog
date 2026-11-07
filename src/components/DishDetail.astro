@@ -3,7 +3,7 @@
  * 菜品详情内容
  * 同时用于:列表页右侧常驻面板(桌面)、移动端抽屉、独立详情页 /kitchen/[slug]/
  */
-import { coverOf, type Dish } from '../data/kitchen';
+import { coverOf, extraPhotosOf, type Dish } from '../data/kitchen';
 
 interface Props {
   dish: Dish;
@@ -13,6 +13,7 @@ interface Props {
 
 const { dish, hero = true } = Astro.props;
 const cover = coverOf(dish);
+const extraPhotos = extraPhotosOf(dish);
 
 const typeLabel = dish.type === 'cooked' ? '做过的' : '想学的';
 
@@ -36,6 +37,16 @@ const facts = [
           <h2>{dish.name}</h2>
           {dish.tagline && <p>{dish.tagline}</p>}
         </div>
+      </div>
+    )
+  }
+
+  {
+    extraPhotos.length > 0 && (
+      <div class="dish-extra">
+        {extraPhotos.map((src) => (
+          <img src={src} alt={`${dish.name} 的另一张`} loading="lazy" decoding="async" />
+        ))}
       </div>
     )
   }
@@ -201,6 +212,23 @@ const facts = [
     margin: 4px 0 0;
     font-size: 0.82rem;
     color: rgba(255, 255, 255, 0.72);
+  }
+
+  /* ---------- 补充照片 ---------- */
+  .dish-extra {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .dish-extra img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    display: block;
   }
 
   /* ---------- 无大图时的标题 ---------- */

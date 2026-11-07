@@ -1,7 +1,7 @@
 {
   "name": "personal-blog",
   "type": "module",
-  "version": "2.6.4",
+  "version": "2.6.5",
   "private": true,
   "description": "个人博客:技术文章 + 作品集 + 个人 Profile",
   "scripts": {

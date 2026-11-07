@@ -3,7 +3,7 @@
 > **给下一个 AI / 新协作者看的项目说明书。** 读完这一份就能上手改代码,不用重新摸一遍。
 >
 > 项目:个人博客「DZ Blog」(DZ-Star),全栈 SSR 站点,内容存在自己的 SQLite 里,自带网页后台。
-> 当前版本 **2.6.4** ｜ 最近更新 2026-11 ｜ 仓库 `dz2001-beep/personal-blog`(public) ｜ 分支 `main`
+> 当前版本 **2.6.5** ｜ 最近更新 2026-11 ｜ 仓库 `dz2001-beep/personal-blog`(public) ｜ 分支 `main`
 
 ---
 
@@ -183,7 +183,7 @@ npm start              # 跑构建产物(node dist/server/entry.mjs,默认 4321)
 
 **数据模型**(`src/data/kitchen.ts`):`slug / type(cooked|wish) / name / tagline / date / attempts / duration / difficulty / rating / tags / ingredients[] / steps[]{text,minutes,tip} / failures[] / verdict / note / reason / source / cover`
 
-**封面优先级**(`coverOf(dish)`):`src/assets/kitchen/<slug>.jpg|png|webp`(真照片)> `<slug>.svg`(自带插画)> `dish.cover` 字段 > 文字版式卡片(菜名首字 + 暖色渐变,不会破图)。
+**封面**:`src/assets/kitchen/<slug>.jpg|jpeg|png|webp` 自动识别(文件名 = slug);`<slug>-2.*`、`<slug>-3.*` 作为详情页补充照片(`extraPhotosOf()`)。**已取消自绘插画**,菜单里的菜必须都有真实照片。
 
 ### 5.5 音乐播放器(网络歌单)
 
@@ -267,13 +267,13 @@ npm start              # 跑构建产物(node dist/server/entry.mjs,默认 4321)
 | 标签 | 15 个 | DeepSeek Harness(3 篇)、架构、AI Agent、学习笔记、面试、Astro、前端、教程、随笔、博客、源码解析、新人向、技术详解、术语、八股 |
 | 作品 | **2** | 个人博客(本站)[Astro/TS/Markdown]、awesome-cli[Node.js/TS/CLI] |
 | 相册 | **8** 张 | Unsplash 免费授权风景图 |
-| 下厨 | **15** 道 | *做过的 3*:蒜苔炒肉、鱼香肉丝(用户自己做的)、葱油拌面(示例数据,含食材/5 步骤/2 条翻车记录)｜*想学的 12*:红烧肉、辣子鸡、西红柿炒蛋、醋溜土豆丝、炸小酥肉、口水茄子、红烧排骨、肉夹馍、排骨炖豆角、回锅肉、锅包肉、小炒肉 |
-| 菜品封面 | **6 张真实照片 + 9 张自绘 SVG** | 照片为 `webp`(由用户提供,约 310×200 的网页缩略图,大图偏软);其余用自绘插画兜底,照片恒优先于插画 |
+| 下厨 | **13** 道 | *做过的 2*:蒜苔炒肉、鱼香肉丝(用户自己做的)｜*想学的 11*:辣子鸡、回锅肉(2 张照片)、小炒肉、锅包肉、红烧肉、红烧排骨、肉末蒜苔、麻婆豆腐、皮蛋豆腐、凉拌豆腐丝、油焖大虾 |
+| 菜品封面 | **14 张真实照片** | 全部实物照片(webp,多为 300px 左右的网页缩略图),无插画;回锅肉有 1 张补充照片 |
 | 一言 | 15 条 | 中英混排金句(`src/data/widgets.ts`) |
 | 友链 | 4 条 | Astro / MDN / GitHub / 掘金 |
 | Profile | — | 经历、教育、技能分组(结构化,`src/data/profile.ts`) |
 
-**内容态真实性提醒**:12 道「想学的」菜的 `reason`/`verdict`/`failures` 仍为空;3 道「做过的」只有葱油拌面填了完整示例(食材/步骤/翻车),蒜苔炒肉与鱼香肉丝只有 `note: 这是我自己做的`,待补真实经历。照片分辨率偏低(310×200),若要清晰大图需用户提供原图。
+**内容态真实性提醒**:13 道菜目前都只有菜名/标签/日期,`reason`(为什么想学)、`verdict`、`failures`、`ingredients`、`steps` 全部为空;仅蒜苔炒肉与鱼香肉丝写了 `note: 这是我自己做的`。照片分辨率偏低(约 300px),详情大图会偏软,想要清晰需用户提供原图。
 
 ---
 
@@ -285,7 +285,7 @@ npm start              # 跑构建产物(node dist/server/entry.mjs,默认 4321)
 4. **Astro scoped `<style>` 不会作用于 JS 动态创建的节点**(它们没有 `data-astro-cid-*`)。这类样式要放 `<style is:global>` 并用 `#容器id` 前缀限定范围(音乐歌单列表就是这么修的)。
 5. 新增内页要给 `BaseLayout` 传 `bgImage` + `bgTint`,并在 `.page-head` 里放 `<Mascot />`。
 6. 新卡片沿用 `--glass-gradient` / `--glass-solid`,不要再写死颜色。
-7. 菜品照片放 `src/assets/kitchen/<slug>.(jpg|png|webp|svg)`;数据改动只改 `src/data/kitchen.ts`。
+7. 菜品照片放 `src/assets/kitchen/<slug>.(jpg|jpeg|png|webp)`(补充照片用 `<slug>-2`);**不使用插画**,数据改动只改 `src/data/kitchen.ts`。
 8. 提交信息格式 `feat|fix|docs|style(scope): 中文描述`,正文写清"为什么改 + 踩了什么坑"。
 9. **版本号三处同步**:`package.json`、`README.md` 更新记录、`src/pages/about-site.astro` 的 `changelog` 数组。
 10. 不要提交:`data/`、`public/uploads/`、`.env*`、`dist/`、`.astro/`、`node_modules/`。
@@ -304,7 +304,7 @@ npm start              # 跑构建产物(node dist/server/entry.mjs,默认 4321)
 | 9.6 | flex 子项被压缩 | 菜品加到 10 道后卡片从 123px 挤成 45px | 列表 `flex` 列 + `max-height`,子项默认可收缩 | 已修:`.dish-card { flex: 0 0 auto }` |
 | 9.7 | `.gitignore` 误伤源码 | `src/data/*.ts` 从未入库,新 clone 构建失败 | 规则写成 `data/`(匹配任意层级) | 已修:改成根目录锚定 `/data/` |
 | 9.8 | 依赖未声明 | `npm ci` 后可能找不到 shiki / js-yaml | 二者被直接 import 但只存在于传递依赖 | **未修**,建议 `npm i shiki js-yaml` |
-| 9.9 | 站外图库不可用 | 无法按菜名找免费图 | Pexels/Pixabay 搜索 403、Openverse 不可达、Wikimedia 超时 | 已绕过:自绘 SVG 插画 |
+| 9.9 | 站外图库不可用 | 无法按菜名自动找免费图 | Pexels/Pixabay 搜索 403、Openverse 不可达、Wikimedia 超时 | 现改为**只用用户提供的真实照片**,菜单与图片一一对应,不再生成插画 |
 | 9.10 | 音乐第三方源不稳 | 偶发播不了/VIP 歌失败 | 依赖公益 Meting 实例 | 已有代理兜底 + 自动跳下一首;可换 `MUSIC.listId` 或自建解析 |
 
 ---
@@ -351,9 +351,9 @@ node -e "console.log('用 CDP 脚本驱动 http://localhost:4321')"
 `/now` 现在页、碎念流 `notes`(短想法)、`/uses` 装备清单、`/reading` 在读与读过、`/links` 收藏夹、文章系列(series)、`/archive` 归档页、「我放弃的方案」清单。
 
 **内容待补**:
-- 其余 9 道菜的照片(已收到 6 张 webp 缩略图;要清晰大图需用户提供原图,文件名按 slug 覆盖即可)
-- 西红柿炒蛋 / 炸小酥肉 / 口水茄子 三张原图带图库水印,需换无水印版
-- 12 道「想学的」菜的 `reason` / `verdict` / `failures` 为空
+- 13 道菜的真实照片原图(当前是网页缩略图,约 300px)
+- 每道菜的 `reason` / `verdict` / `failures` / 步骤与食材(全为空)
+- 用户自己做的菜(目前只标记了蒜苔炒肉、鱼香肉丝)
 
 **功能债**:厨房后台 CRUD(现在只能改代码加菜)、头像上传持久化、`deploy/` 恢复、显式声明 shiki/js-yaml。
 
@@ -370,7 +370,7 @@ node -e "console.log('用 CDP 脚本驱动 http://localhost:4321')"
 | 相册图片与标题 | `src/data/gallery.ts` + `public/gallery/` |
 | 一言、友链、音乐歌单 | `src/data/widgets.ts` |
 | 菜品内容/字段 | `src/data/kitchen.ts` |
-| 菜品封面图 | `src/assets/kitchen/<slug>.svg|jpg` |
+| 菜品封面图 | `src/assets/kitchen/<slug>.webp`(或 jpg/png) |
 | 全站颜色/圆角/卡片质感 | `src/styles/global.css`(`:root` token) |
 | 内页背景图与色调 | 各页面 `<BaseLayout bgImage=… bgTint=…>` |
 | 导航项 | `src/components/Header.astro` 的 `navItems` |

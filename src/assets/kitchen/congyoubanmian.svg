@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" width="640" height="360" role="img" aria-label="葱油拌面">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="12%" r="92%">
+      <stop offset="0%" stop-color="#3d2c22"/>
+      <stop offset="52%" stop-color="#241a16"/>
+      <stop offset="100%" stop-color="#141010"/>
+    </radialGradient>
+    <linearGradient id="plate" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#faf6ef"/>
+      <stop offset="100%" stop-color="#cfc6b8"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="360" fill="url(#bg)"/>
+  <g stroke="#ffffff" stroke-opacity="0.09" stroke-width="3" fill="none" stroke-linecap="round">
+    <path d="M258 74c-11 16 9 24 -2 40"/>
+    <path d="M322 56c-13 18 11 26 -2 44"/>
+    <path d="M388 72c-11 16 9 24 -2 40"/>
+  </g>
+  <ellipse cx="320" cy="222" rx="240" ry="88" fill="#000" opacity="0.34"/>
+  <ellipse cx="320" cy="208" rx="224" ry="78" fill="url(#plate)"/>
+  <ellipse cx="320" cy="208" rx="198" ry="64" fill="#f1eae0"/>
+  <ellipse cx="320" cy="208" rx="224" ry="78" fill="none" stroke="#ffffff" stroke-opacity="0.4" stroke-width="1.5"/>
+  <g transform="translate(-56.7,-183.8) scale(1.55)">
+    <ellipse cx="240" cy="250" rx="62" ry="26.0" fill="none" stroke="#e5c67f" stroke-width="7" opacity="0.95"/>
+    <ellipse cx="246" cy="247" rx="54" ry="22.7" fill="none" stroke="#e5c67f" stroke-width="7" opacity="0.95"/>
+    <ellipse cx="240" cy="244" rx="46" ry="19.3" fill="none" stroke="#e5c67f" stroke-width="7" opacity="0.95"/>
+    <ellipse cx="246" cy="241" rx="38" ry="16.0" fill="none" stroke="#e5c67f" stroke-width="7" opacity="0.95"/>
+    <ellipse cx="240" cy="238" rx="30" ry="12.6" fill="none" stroke="#e5c67f" stroke-width="7" opacity="0.95"/>
+    <ellipse cx="246" cy="235" rx="22" ry="9.2" fill="none" stroke="#e5c67f" stroke-width="7" opacity="0.95"/>
+    <rect x="188.0" y="233.5" width="32" height="9" rx="4" fill="#5f8f45" opacity="1.0" transform="rotate(-12 204 238)"/>
+    <rect x="258.0" y="227.5" width="32" height="9" rx="4" fill="#5f8f45" opacity="1.0" transform="rotate(14 274 232)"/>
+    <rect x="224.0" y="207.5" width="32" height="9" rx="4" fill="#5f8f45" opacity="1.0" transform="rotate(2 240 212)"/>
+    <rect x="274.0" y="253.5" width="32" height="9" rx="4" fill="#5f8f45" opacity="1.0" transform="rotate(20 290 258)"/>
+    <rect x="172.0" y="257.5" width="32" height="9" rx="4" fill="#5f8f45" opacity="1.0" transform="rotate(-18 188 262)"/>
+    <rect x="222.0" y="281.5" width="32" height="9" rx="4" fill="#5f8f45" opacity="1.0" transform="rotate(6 238 286)"/>
+  </g>
+</svg>

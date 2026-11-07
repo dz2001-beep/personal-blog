@@ -65,7 +65,7 @@ export interface Dish {
  * 文件名 = slug 即可自动成为该菜的封面,不需要改代码。
  * 优先级:目录里的图片 > 数据里的 cover 字段 > 文字版式卡片
  */
-const coverModules = import.meta.glob('../assets/kitchen/*.{jpg,jpeg,png,webp}', {
+const coverModules = import.meta.glob('../assets/kitchen/*.{jpg,jpeg,png,webp,svg}', {
   eager: true,
   query: '?url',
   import: 'default',
@@ -75,7 +75,13 @@ const coverBySlug: Record<string, string> = {};
 for (const [filePath, url] of Object.entries(coverModules)) {
   const file = filePath.split('/').pop() ?? '';
   const slug = file.replace(/\.[^.]+$/, '');
-  if (slug) coverBySlug[slug] = url;
+  if (!slug) continue;
+  const isVector = file.endsWith('.svg');
+  const existing = coverBySlug[slug];
+  // 真照片(jpg/png/webp)优先于自带插画;同类型按文件名排序保证结果稳定
+  if (!existing || (existing.endsWith('.svg') && !isVector) || (!existing.endsWith('.svg') && isVector && false)) {
+    coverBySlug[slug] = url;
+  }
 }
 
 /** 取某道菜的封面:目录图片优先,其次数据里写的 cover */
@@ -182,6 +188,16 @@ export const DISHES: Dish[] = [
     tagline: '馍要酥、肉要烂,自己做太难',
     date: '2026-11',
     tags: ['面食', '小吃'],
+    reason: '',
+    verdict: '',
+  },
+  {
+    slug: 'paigudundoujiao',
+    type: 'wish',
+    name: '排骨炖豆角',
+    tagline: '排骨要烂、豆角要吸满汤汁',
+    date: '2026-11',
+    tags: ['家常', '炖菜', '硬菜'],
     reason: '',
     verdict: '',
   },

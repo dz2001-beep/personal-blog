@@ -125,12 +125,28 @@ function renderList(): void {
   setText('mt-count', `${state.songs.length} 首`);
 }
 
+/**
+ * 把当前行滚进歌单容器内部。
+ * 注意:这里绝对不能用 scrollIntoView —— 它会连带滚动所有祖先滚动容器,
+ * 而歌单在首页是位于侧栏(首屏之外)的,于是"恢复上次选曲"会把整个页面拽下去。
+ * 所以只手动调整歌单列表自己的 scrollTop。
+ */
+function scrollListToRow(node: HTMLElement): void {
+  const list = node.closest<HTMLElement>('.music-list');
+  if (!list || list.scrollHeight <= list.clientHeight) return; // 没滚动空间(或面板收起)就别动
+  const listRect = list.getBoundingClientRect();
+  const rowRect = node.getBoundingClientRect();
+  if (!rowRect.height) return; // 面板隐藏时尺寸为 0
+  if (rowRect.top < listRect.top) list.scrollTop += rowRect.top - listRect.top;
+  else if (rowRect.bottom > listRect.bottom) list.scrollTop += rowRect.bottom - listRect.bottom;
+}
+
 /** 高亮当前行 */
 function syncActiveRow(scroll = false): void {
   document.querySelectorAll<HTMLElement>('.music-item').forEach((node) => {
     const active = Number(node.dataset.index) === state.idx;
     node.classList.toggle('is-active', active);
-    if (active && scroll) node.scrollIntoView({ block: 'nearest' });
+    if (active && scroll) scrollListToRow(node);
   });
 }
 

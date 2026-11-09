@@ -16,10 +16,7 @@ const socialLinks = [
 <footer class="footer">
   <div class="container-wide">
     <div class="footer-inner">
-      <p class="copyright">
-        © {year} {site.author} · Powered by{' '}
-        <a href="https://astro.build" target="_blank" rel="noopener">Astro</a>
-      </p>
+      <p class="copyright">© {year} {site.author}</p>
       <div class="links">
         {
           socialLinks.map((item) => (
@@ -57,10 +54,6 @@ const socialLinks = [
     margin: 0;
     color: var(--text-faint);
     font-size: 0.88rem;
-  }
-
-  .copyright a {
-    color: var(--text-dim);
   }
 
   .links {

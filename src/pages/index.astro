@@ -27,6 +27,44 @@ const socialButtons = [
 ---
 
 <BaseLayout>
+  <script is:inline>
+    /*
+     * 【必须内联、且必须排在最前面】
+     * ClientRouter 的模块在初始化时会执行:
+     *     if (history.state) scrollTo({ top: history.state.scrollY })
+     * 而 history.state 在刷新后依然存在(里面存着上次的滚动位置),
+     * 加上全站 scroll-behavior: smooth,刷新首页就会"自己平滑滑到下半屏"。
+     *
+     * 内联脚本是同步执行的,会早于 ClientRouter 的类型模块(defer),
+     * 所以在这里把 state 里的滚动位置清零,ClientRouter 初始化的就是 0。
+     * 浏览器原生滚动恢复也一并关掉(它同样会在刷新后还原位置)。
+     *
+     * 仅对"硬加载 + 非前进后退"生效:浏览器前进/后退时保留原来的滚动记忆。
+     */
+    (function () {
+      try {
+        var nav = performance.getEntriesByType('navigation')[0];
+        var isBackForward = !!nav && nav.type === 'back_forward';
+        if (isBackForward) return;
+
+        if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
+        var state = history.state;
+        if (state && (state.scrollX || state.scrollY)) {
+          history.replaceState(
+            Object.assign({}, state, { scrollX: 0, scrollY: 0 }),
+            ''
+          );
+        }
+
+        // 兜一层:极早期就把位置钉在顶部(此时布局还没算完,浏览器会自己忽略越界值)
+        window.scrollTo(0, 0);
+      } catch (err) {
+        /* 环境不支持就算了,不能因为它把页面打挂 */
+      }
+    })();
+  </script>
+
   <!-- ============ 全屏封面 ============ -->
   <section class="cover" id="cover">
     <div class="cover-bg" style={`background-image:url('${COVER_IMAGE}')`}></div>
@@ -159,6 +197,264 @@ const socialButtons = [
   </section>
 </BaseLayout>
 
+<script>
+  /**
+   * 自己驱动的缓动滚动。
+   * 原生 scrollTo({ behavior: 'smooth' }) 的时长和曲线由浏览器写死(实测约 450ms,
+   * 偏快偏硬),想做到"慢、丝滑"只能自己按帧算位置。
+   * 缓动用 smoothstep(3t²-2t³):两端缓和、中段匀速,起步不迟钝、收尾不顿。
+   * 试过 easeInOutQuint,前 200ms 位移不到 1px,观感像"点了没反应",所以没采用。
+   */
+  const COVER_SCROLL_MS = 1000; // 封面 ↔ 内容区整屏翻页的时长
+  let scrollAnimId = 0;
+  let scrollAnimating = false;
+
+  function easeSmoothstep(t: number): number {
+    return t * t * (3 - 2 * t);
+  }
+
+  function cancelScrollAnim(): void {
+    if (scrollAnimId) cancelAnimationFrame(scrollAnimId);
+    scrollAnimId = 0;
+    scrollAnimating = false;
+  }
+
+  function smoothScrollTo(targetY: number, duration = COVER_SCROLL_MS, onDone?: () => void): void {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const startY = window.scrollY;
+    const delta = targetY - startY;
+
+    cancelScrollAnim();
+
+    if (reduce || Math.abs(delta) < 1) {
+      window.scrollTo({ top: targetY, behavior: 'instant' });
+      onDone?.();
+      return;
+    }
+
+    scrollAnimating = true;
+    const t0 = performance.now();
+
+    const step = (now: number): void => {
+      const p = Math.min(1, (now - t0) / duration);
+      // 每帧都用 instant:全站开了 scroll-behavior: smooth,
+      // 不显式指定的话浏览器会在我们每一帧的基础上再叠一层缓动,又慢又糊
+      window.scrollTo({ top: startY + delta * easeSmoothstep(p), behavior: 'instant' });
+      if (p < 1) {
+        scrollAnimId = requestAnimationFrame(step);
+      } else {
+        scrollAnimId = 0;
+        scrollAnimating = false;
+        onDone?.();
+      }
+    };
+
+    scrollAnimId = requestAnimationFrame(step);
+  }
+
+  /**
+   * 「向下滚动」提示:用 JS 平滑滚动,而不是靠 href="#intro" 锚点。
+   * 锚点跳转会把 #intro 写进 URL,之后任何一次带这个 hash 打开首页,
+   * 浏览器都会自动跳到下半屏、直接越过封面 —— 也就是"首屏自己往下滑"。
+   * href 保留着,纯 JS 不可用时仍然能跳。
+   */
+  function bindScrollHint(): void {
+    const hint = document.querySelector<HTMLAnchorElement>('.scroll-hint');
+    const intro = document.getElementById('intro');
+    if (!hint || !intro || hint.dataset.bound === '1') return;
+    hint.dataset.bound = '1';
+
+    hint.addEventListener('click', (event) => {
+      event.preventDefault();
+      const top = Math.round(intro.getBoundingClientRect().top + window.scrollY);
+      smoothScrollTo(top);
+      // 老 URL 里可能还留着 #intro,顺手清掉,别让它继续传染
+      if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+    });
+  }
+
+  /** 兜底:如果进来时 URL 就带着 #intro(老书签/历史记录),强制停在首屏封面 */
+  function resetIntroHash(): void {
+    if (location.hash !== '#intro') return;
+    history.replaceState(null, '', location.pathname + location.search);
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  /**
+   * 首屏「一步到位」的翻页闸门:
+   * 在封面时向下滚一下 → 直接落到内容区顶端(封面正好完全看不见),
+   * 在内容区顶端向上滚一下 → 直接退回封面。中间不会停在"半屏"的尴尬位置。
+   *
+   * 只拦第一下手势:动画期间的后续滚轮/惯性事件全部吞掉,保证"一步到位";
+   * 惯性静默(150ms)后立刻解锁,不长期占用滚动。
+   * 已经滚到内容区深处时完全不干预,正常自由滚动。
+   */
+  function setupCoverGate(): void {
+    // 注意:这里不能把节点存进闭包。ClientRouter 切页会重建 DOM,
+    // 缓存下来的 .cover/.intro 会变成游离节点(getBoundingClientRect 全是 0),
+    // 闸门就失效了。所以每次实时查,绑定标记也放在 documentElement 上。
+    const root = document.documentElement;
+    if (root.dataset.coverGate === '1') return;
+    if (!document.getElementById('cover') || !document.getElementById('intro')) return;
+    root.dataset.coverGate = '1';
+
+    let locked = false;
+    let lockTarget = 0;
+    let lastInputAt = 0;
+
+    /** 内容区顶端的绝对位置(= 封面底边),实时算,窗口尺寸变了也对 */
+    const introTop = (): number => {
+      const intro = document.getElementById('intro');
+      return intro ? Math.round(intro.getBoundingClientRect().top + window.scrollY) : 0;
+    };
+
+    const hasCover = (): boolean => !!document.getElementById('cover');
+
+    const atCover = (): boolean => window.scrollY <= 2;
+    // 容差小一点:只有真的停在内容区顶端时才允许"一下退回封面"
+    const atContentTop = (): boolean => Math.abs(window.scrollY - introTop()) <= 6;
+
+    /**
+     * 解锁条件用"惯性静默":滑动动画结束 + 连续 150ms 没有新的滚动输入。
+     * 只按固定时间解锁是不够的 —— 触控板/滚轮的惯性事件会在动画结束后继续到达,
+     * 中途解锁就会冲过头(实测会从 901 冲到 1081)。
+     */
+    const watchIdle = (): void => {
+      if (!locked) return;
+      if (scrollAnimating) {
+        requestAnimationFrame(watchIdle);
+        return;
+      }
+      const settled = Math.abs(window.scrollY - lockTarget) <= 2;
+      if (settled && Date.now() - lastInputAt > 150) {
+        locked = false;
+        return;
+      }
+      requestAnimationFrame(watchIdle);
+    };
+
+    const jump = (top: number): void => {
+      locked = true;
+      lockTarget = top;
+      lastInputAt = Date.now();
+      // 慢速缓动,时长由 COVER_SCROLL_MS 控制(见文件顶部的 smoothScrollTo)
+      smoothScrollTo(top, COVER_SCROLL_MS);
+      requestAnimationFrame(watchIdle);
+    };
+
+    window.addEventListener(
+      'wheel',
+      (event) => {
+        if (event.ctrlKey) return; // Ctrl+滚轮是缩放,别管
+        if (!hasCover()) return; // 不在首页就别管
+        if (locked) {
+          // 动画/惯性期间全部吞掉,并刷新静默计时
+          event.preventDefault();
+          lastInputAt = Date.now();
+          // 动画在跑的时候别去抢它的位置,交给 rAF 自己走到终点;
+          // 只有动画结束后被别的滚动带偏才纠正
+          if (!scrollAnimating && Math.abs(window.scrollY - lockTarget) > 4) {
+            window.scrollTo({ top: lockTarget, behavior: 'instant' });
+          }
+          return;
+        }
+        if (event.deltaY > 0 && atCover()) {
+          event.preventDefault();
+          jump(introTop());
+        } else if (event.deltaY < 0 && atContentTop()) {
+          event.preventDefault();
+          jump(0);
+        }
+      },
+      { passive: false }
+    );
+
+    // 键盘:PageDown/↓/空格 从封面一步下去,PageUp/↑/Home 一步回来
+    window.addEventListener('keydown', (event) => {
+      if (event.altKey || event.metaKey || event.ctrlKey) return;
+      if (!hasCover()) return;
+      const key = event.key;
+      const forward = key === 'PageDown' || key === 'ArrowDown' || key === ' ';
+      const back = key === 'PageUp' || key === 'ArrowUp' || key === 'Home';
+
+      if (forward && atCover() && !locked) {
+        event.preventDefault();
+        jump(introTop());
+      } else if (back && atContentTop() && !locked) {
+        event.preventDefault();
+        jump(0);
+      }
+    });
+
+    // 用户主动点击/触摸时立刻中断动画并解锁,不跟用户抢
+    const releaseNow = (): void => {
+      locked = false;
+      cancelScrollAnim();
+    };
+    window.addEventListener('touchstart', releaseNow, { passive: true });
+    window.addEventListener('pointerdown', releaseNow, { passive: true });
+  }
+
+  /**
+   * 硬加载(刷新 / 直接打开)时把首屏钉在封面。
+   * 上面那段内联脚本已经清掉了 history.state 里的滚动位置、也关掉了浏览器原生恢复,
+   * 这里是第二道闸:在极短的时间窗内(约 900ms)如果有任何"非用户操作"的滚动,
+   * 直接拉回顶部。一旦检测到真实用户输入(滚轮/触摸/按键/点击)立刻解除,绝不抢用户的操作。
+   * 浏览器前进/后退(back_forward)完全不干预,保留原来的滚动记忆。
+   */
+  function pinCoverOnHardLoad(): void {
+    const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+    if (nav?.type === 'back_forward') return;
+
+    const toTop = (): void => window.scrollTo({ top: 0, behavior: 'instant' });
+    toTop();
+
+    let pinned = true;
+    let frame = 0;
+
+    const release = (): void => {
+      if (!pinned) return;
+      pinned = false;
+      cancelAnimationFrame(frame);
+      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('wheel', release);
+      window.removeEventListener('touchstart', release);
+      window.removeEventListener('pointerdown', release);
+      window.removeEventListener('keydown', release);
+    };
+
+    const onScroll = (): void => {
+      if (!pinned) return;
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        if (pinned) toTop();
+      });
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('wheel', release, { passive: true });
+    window.addEventListener('touchstart', release, { passive: true });
+    window.addEventListener('pointerdown', release, { passive: true });
+    window.addEventListener('keydown', release);
+
+    // 时间窗结束就自动解除,避免长期占用滚动
+    window.setTimeout(release, 900);
+  }
+
+  // 只在文档的首次载入时补一次;客户端路由的前进/后退不干预(要保留滚动记忆)
+  let coverForced = false;
+
+  document.addEventListener('astro:page-load', () => {
+    resetIntroHash();
+    if (!coverForced) {
+      coverForced = true;
+      pinCoverOnHardLoad();
+    }
+    bindScrollHint();
+    setupCoverGate();
+  });
+</script>
+
 <style>
   /* ============ 全屏封面 ============ */
   .cover {
@@ -205,9 +501,10 @@ const socialButtons = [
     animation: avatarFloat 3.4s ease-in-out infinite alternate;
   }
 
+  /* 头像不再加外框:去掉原来那圈 8px 白色光环,只留一道极淡的边和柔和投影 */
   :global(.cover-avatar .avatar) {
-    border-color: rgba(255, 255, 255, 0.9);
-    box-shadow: 0 0 0 8px rgba(255, 255, 255, 0.16), 0 12px 30px rgba(0, 0, 0, 0.32);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3);
   }
 
   .cover-title {
@@ -348,7 +645,10 @@ const socialButtons = [
   /* ============ 自我介绍区 ============ */
   .intro-section {
     padding: 64px 0 54px;
-    margin-top: -70px;
+    /* 原来这里是 -70px 的上叠设计(内容卡压在封面底部),
+       副作用是从首屏底部露出约 70px 的下一屏内容;
+       改成 0,第一屏只留封面,点击/下滑后才看到下方内容 */
+    margin-top: 0;
     position: relative;
     z-index: 3;
     background-size: cover;

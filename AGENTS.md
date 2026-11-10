@@ -296,13 +296,17 @@ npm start              # 跑构建产物(node dist/server/entry.mjs,默认 4321)
 3. **换框**:卡片加 `inset 0 1px 0` 顶部微光 + 更柔和投影,`backdrop-filter` 12px→8px;悬停边框用 `color-mix()` 泛金
 
 **卡片边角装饰(2026-11)**:全部用伪元素实现,不改组件结构——
-- `.side-card` / `.panel` / `.widget-card`:`::after` 做成右上角一枚 11px **菱形贴纸**(琥珀金 + 白描边 + 投影),
-  悬停旋转 `135deg` 并放大(过渡 **0.6s**,保留轻回弹曲线 —— 原本 0.26s 太快,像"啪一下翻过去");
-  `.side-card::before` 是左下角那颗 5px 小圆点
+- `.side-card` / `.panel` / `.widget-card`:`::after` 是右上角一枚 **L 形细角标**(1px、琥珀金 50%,
+  用 `border-top-right-radius: var(--radius)` 贴合卡片圆角),悬停从 `14px` 长到 `24px` 并转为全亮琥珀金
+- `.side-card::before` / `.widget-card::before` 是**顶部一道发丝线**(琥珀金 → 白 → 透明的极细渐变),
+  悬停时提亮;`.panel::before` 已被白色顶部高光占用,**不要再叠发丝线**
+- 2026-11 早期版本用的是"11px 菱形贴纸 + 左下角小圆点",观感太装饰化(AI 味儿),已撤掉;
+  要恢复看 git 历史里 `style(cards): 卡片边角加菱形贴纸与折角 (v2.8.1)`
 - `.post-card::after` / `.work-card::before` / `.dish-card::after`:右上角**折角(dog-ear)**,
   用三色 `linear-gradient(225deg)` 做出「亮面 → 折痕 → 透明」,悬停时从 22px 长到 30px
 - 注意:`work-card` 的 `::after` 已被柔光占用,折角只好用 `::before`;`dish-card` 的 `::before` 是选中态左条,折角用 `::after`
-- 贴纸用负偏移(`-5px`)探出卡片边,这些卡片**不能有 `overflow: hidden`**,否则会被裁掉
+- 现在的角标 / 发丝线都画在卡片内部,不再依赖负偏移,`overflow: hidden` 也不会裁掉它们
+  (旧菱形贴纸用 `-5px` 探出卡片边,当时要求这些卡片不能有 `overflow: hidden`)
 
 改主题色只需动 `--accent / --accent-2 / --accent-soft` 三个变量(试过:青玉 `#6fbf9b`、珊瑚 `#d9807a` 都能直接换)。
 

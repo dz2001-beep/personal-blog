@@ -3,7 +3,7 @@
 > **给下一个 AI / 新协作者看的项目说明书。** 读完这一份就能上手改代码,不用重新摸一遍。
 >
 > 项目:个人博客「DZ Blog」(DZ-Star),全栈 SSR 站点,内容存在自己的 SQLite 里,自带网页后台。
-> 当前版本 **2.8.1** ｜ 最近更新 2026-11 ｜ 仓库 `dz2001-beep/personal-blog`(public) ｜ 分支 `main`
+> 当前版本 **2.8.2** ｜ 最近更新 2026-11 ｜ 仓库 `dz2001-beep/personal-blog`(public) ｜ 分支 `main`
 
 ---
 
@@ -215,6 +215,37 @@ npm start              # 跑构建产物(node dist/server/entry.mjs,默认 4321)
 
 仪表盘(文章/作品/浏览量统计)、Markdown 编辑器 + 实时预览(POST `/api/admin/preview`)、草稿箱、站点设置、头像上传、修改密码。UI 在 `AdminLayout.astro`,`PostEditor`/`WorkEditor` 为编辑器组件。
 
+**权限模型:没有注册入口**。`users` 表只有首启时自动创建的 `admin` 一个账号(`initApp()` 里 `countUsers()===0` 才建),
+所以"只有我能写、其他人只能看"是靠**不存在第二个能登录的账号**实现的,不是靠角色系统。
+中间件按前缀兜住 `/admin/*` 与 `/api/admin/*`(默认拒绝),新增后台页面自动受保护。
+
+### 5.8 首屏翻页与滚动治理(`pages/index.astro`)——**改这块之前先读完**
+
+**目标:打开/刷新首页必须停在封面;从封面往下滚一次就"一步到位"到内容区顶端(封面刚好完全看不见),反向退回封面。**
+
+四层机制,**顺序和时机都很关键**:
+
+1. **内联脚本清零 `history.state`**(`<script is:inline>`,放在模板最前面)
+   - Astro `ClientRouter` 模块初始化时会执行 `scrollTo({ top: history.state.scrollY })`,而 **`history.state` 刷新后依然存在**
+     → 这是"刷新首页自己往下滑"的真正根因,事后在 `astro:page-load` 里拉回顶部抢不过它
+   - 内联脚本是同步**经典**脚本,一定早于 ClientRouter 的 `type="module"`(defer),在那里把 `scrollX/scrollY` 清零
+   - 同时 `history.scrollRestoration = 'manual'` 关掉浏览器原生恢复
+   - `navigation.type === 'back_forward'` 时**整体跳过**,保留前进/后退的滚动记忆
+2. **900ms 守卫** `pinCoverOnHardLoad()`:窗口内任何"非用户"滚动都拉回顶部;检测到 wheel/touch/pointer/key 立刻解除,不抢用户操作
+3. **翻页闸门** `setupCoverGate()`
+   - 封面(`scrollY <= 2`)向下滚 → `preventDefault` + 滚到 `introTop()`;内容区顶端(±6px)向上滚 → 回到 0;内容深处完全不干预
+   - 动画必须自己按帧驱动:`smoothScrollTo()` + `COVER_SCROLL_MS = 1000` + `smoothstep(3t²-2t³)`
+     (原生 `behavior:'smooth'` 约 450ms 且曲线不可调;试过 `easeInOutQuint`,前 200ms 位移不到 1px,观感像"点了没反应")
+   - 解锁用**惯性静默**(到达目标 + 150ms 无新输入)。固定时长解锁会被触控板惯性事件冲过头(实测 901→1081)
+   - **必须实时 `getElementById`,不能把节点存进闭包**:ClientRouter 切页会重建 DOM,闭包里的旧节点
+     `getBoundingClientRect()` 全是 0,闸门会**静默失效**
+   - 每帧 `scrollTo` 都要显式带 `behavior: 'instant'`,否则会叠加全站的 `scroll-behavior: smooth`(越算越糊)
+4. 「向下滚动」提示走 JS 平滑滚动,**不把 `#intro` 写进 URL**;另有 `resetIntroHash()` 清理老书签里残留的 hash
+
+**另一个隐藏的"自动下滑"来源**:`music.ts` 恢复上次选曲时**绝对不能用 `scrollIntoView`** ——
+它会连带滚动所有祖先滚动容器,而歌单在首页位于首屏之外,于是"恢复上次选曲"就把整个页面拽下去。
+必须只调歌单容器自己的 `scrollTop`(见 `scrollListToRow()`)。
+
 ---
 
 ## 6. 设计系统
@@ -266,7 +297,8 @@ npm start              # 跑构建产物(node dist/server/entry.mjs,默认 4321)
 
 **卡片边角装饰(2026-11)**:全部用伪元素实现,不改组件结构——
 - `.side-card` / `.panel` / `.widget-card`:`::after` 做成右上角一枚 11px **菱形贴纸**(琥珀金 + 白描边 + 投影),
-  悬停旋转 `135deg` 并放大;`.side-card::before` 是左下角那颗 5px 小圆点
+  悬停旋转 `135deg` 并放大(过渡 **0.6s**,保留轻回弹曲线 —— 原本 0.26s 太快,像"啪一下翻过去");
+  `.side-card::before` 是左下角那颗 5px 小圆点
 - `.post-card::after` / `.work-card::before` / `.dish-card::after`:右上角**折角(dog-ear)**,
   用三色 `linear-gradient(225deg)` 做出「亮面 → 折痕 → 透明」,悬停时从 22px 长到 30px
 - 注意:`work-card` 的 `::after` 已被柔光占用,折角只好用 `::before`;`dish-card` 的 `::before` 是选中态左条,折角用 `::after`
@@ -323,6 +355,11 @@ npm start              # 跑构建产物(node dist/server/entry.mjs,默认 4321)
 | 9.8 | 依赖未声明 | `npm ci` 后可能找不到 shiki / js-yaml | 二者被直接 import 但只存在于传递依赖 | **未修**,建议 `npm i shiki js-yaml` |
 | 9.9 | 站外图库不可用 | 无法按菜名自动找免费图 | Pexels/Pixabay 搜索 403、Openverse 不可达、Wikimedia 超时 | 现改为**只用用户提供的真实照片**,菜单与图片一一对应,不再生成插画 |
 | 9.10 | 音乐第三方源不稳 | 偶发播不了/VIP 歌失败 | 依赖公益 Meting 实例 | 已有代理兜底 + 自动跳下一首;可换 `MUSIC.listId` 或自建解析 |
+| 9.11 | **ClientRouter 按 `history.state` 恢复滚动** | 刷新首页 / 带 `#intro` 打开时会自己滑到下半屏 | `history.state` 存了上次滚动位置且刷新后仍在,`astro:page-load` 里补救抢不过它 | 已修:模板最前面加内联脚本清零 state + 关原生恢复;详见 §5.8 |
+| 9.12 | **`scrollIntoView` 会滚动整个页面** | 恢复上次选曲时页面被拽下去 | 它连带滚动所有祖先滚动容器,歌单又在首屏之外 | 已修:`music.ts` 改 `scrollListToRow()` 只滚列表容器 |
+| 9.13 | **改密码不会踢掉旧会话** | 改密后其他设备仍能进后台 30 天 | 会话是无状态 HMAC(`username.expires.sig`),不含密码版本 | **未修**。建议加 `session_version` 参与签名,改密时递增 |
+| 9.14 | **`ADMIN_PASSWORD` 只在首启生效** | 账号已存在后改环境变量完全无效 | `countUsers()===0` 才创建账号 | 改密走后台「设置」或直接改库;详见 `DEPLOY.md` §6 |
+| 9.15 | **`session_secret` 存在数据库里** | 拿到 `data/blog.db` 就能伪造 admin 会话 | 签名密钥存 `settings` 表 | 备份文件按密码级别保管;泄漏则删掉该 key 让所有会话作废 |
 
 ---
 
@@ -342,6 +379,11 @@ done
 node -e "console.log('用 CDP 脚本驱动 http://localhost:4321')"
 
 # 4) 视觉验收:Page.captureScreenshot 截图后人工/模型看图
+
+# 5) 首屏滚动行为自查(改过 §5.8 相关代码必跑)
+#    · 刷新后应停在封面:window.scrollY === 0,且 history.state.scrollY === 0
+#    · 封面滚一格应精确落到 intro 顶部:scrollY === intro.getBoundingClientRect().top + scrollY
+#    · 连发多个 wheel 不应冲过头(惯性静默锁生效)
 ```
 
 ⚠️ 这些 CDP 脚本目前**只在 `/tmp`(未入库)**,重开会话就没了。建议后续把可复用的测试脚本放进 `tools/`(如 `tools/cdp-kitchen.mjs`)并提交。

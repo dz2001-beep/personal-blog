@@ -137,6 +137,59 @@ module.exports = {
   首次创建时 `pm2 logs blog` 会打印一行 `[auth] 已创建默认管理员 admin/***`,看到它就说明账号已生成。
 - **`DB_PATH` 必须写绝对路径**:PM2 的 `cwd` 变化时相对路径会指向别处。
 
+### 6.1 账号已存在后怎么改密码(重要)
+
+`ADMIN_PASSWORD` **只在数据库里一个账号都没有时生效**。一旦 `users` 表已有记录
+(比如你本地带着 `data/blog.db` 一起上传,或者已经启动过一次),改环境变量**完全没有效果**。
+
+三种正确做法:
+
+**① 后台改(推荐)**
+
+登录 `/admin` → 「设置」→ 修改密码。提交后旧的密码哈希立即被覆盖。
+
+> ⚠️ 注意:会话是无状态 HMAC 签名(`username.expires.sig`),**不包含密码信息**,
+> 所以改密码不会让其他设备上的旧 Cookie 失效(仍可用 30 天)。
+> 想让所有设备一起掉线,需要重启服务并让会话密钥失效 —— 见下方 ③。
+
+**② 直接改数据库**
+
+```bash
+cd /var/www/blog
+node -e "
+const { DatabaseSync } = require('node:sqlite');
+const { scryptSync, randomBytes } = require('node:crypto');
+const pw = process.argv[1];
+const salt = randomBytes(16).toString('hex');
+const hash = scryptSync(pw, salt, 64).toString('hex');
+const db = new DatabaseSync('data/blog.db');
+db.prepare('UPDATE users SET password_hash = ? WHERE username = ?').run(salt + ':' + hash, 'admin');
+db.close();
+console.log('admin 密码已重置');
+" '你的新密码'
+```
+
+哈希格式必须是 `盐:哈希`(scrypt,64 字节),与 `src/lib/auth.ts` 的 `hashPassword()` 保持一致。
+注意密码是命令行参数,会留在 shell 历史里 —— 改完记得 `history -c` 或前面加空格。
+
+**③ 踢掉所有已登录设备**
+
+删掉 `settings` 表里的 `session_secret`,签名密钥会重新生成,所有旧 Cookie 立即作废:
+
+```bash
+cd /var/www/blog
+node -e "
+const { DatabaseSync } = require('node:sqlite');
+const db = new DatabaseSync('data/blog.db');
+db.prepare('DELETE FROM settings WHERE key = ?').run('session_secret');
+db.close();
+console.log('会话密钥已清除,所有旧会话作废');
+"
+pm2 restart blog
+```
+
+> 同一招也用于**密钥泄漏**的应急处理:备份文件外泄时立刻执行,再改一次密码。
+
 ## 7. 构建并启动
 
 ```bash

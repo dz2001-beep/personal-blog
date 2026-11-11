@@ -42,7 +42,7 @@ const endpoint = post ? `/api/admin/posts/${post.id}` : '/api/admin/posts';
       <label>正文(Markdown)</label>
       <textarea id="f-content" rows="20" placeholder="支持 Markdown:标题、列表、**加粗**、`代码`、``` 代码块 ```、表格、引用…">{post?.content ?? ''}</textarea>
       <div class="form-actions" style="margin-top:10px">
-        <button type="button" class="mini-btn" id="preview-btn">👁 预览正文</button>
+        <button type="button" class="mini-btn" id="preview-btn">预览正文</button>
         <span class="form-msg" id="preview-hint"></span>
       </div>
       <div class="editor-preview" id="preview" hidden></div>

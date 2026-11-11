@@ -3,7 +3,7 @@
 > **给下一个 AI / 新协作者看的项目说明书。** 读完这一份就能上手改代码,不用重新摸一遍。
 >
 > 项目:个人博客「DZ Blog」(DZ-Star),全栈 SSR 站点,内容存在自己的 SQLite 里,自带网页后台。
-> 当前版本 **2.8.2** ｜ 最近更新 2026-11 ｜ 仓库 `dz2001-beep/personal-blog`(public) ｜ 分支 `main`
+> 当前版本 **2.9.0** ｜ 最近更新 2026-11 ｜ 仓库 `dz2001-beep/personal-blog`(public) ｜ 分支 `main`
 
 ---
 
@@ -309,6 +309,36 @@ npm start              # 跑构建产物(node dist/server/entry.mjs,默认 4321)
   (旧菱形贴纸用 `-5px` 探出卡片边,当时要求这些卡片不能有 `overflow: hidden`)
 
 改主题色只需动 `--accent / --accent-2 / --accent-soft` 三个变量(试过:青玉 `#6fbf9b`、珊瑚 `#d9807a` 都能直接换)。
+
+### 6.4 后台主题:浅色文档风(2026-11,与前台刻意不同)
+
+**前台深色 = 展示区,后台浅色 = 工作区。** 后台不是简单套用前台主题,而是另一套配色。
+
+实现方式是**在 `.admin-body` 上就地覆盖全局 CSS 变量**(`AdminLayout.astro` 的 `<style>`):
+
+| token | 前台(深) | 后台(浅) |
+| --- | --- | --- |
+| `--bg` / `--bg-soft` / `--bg-softer` | `#0f1318` / `#171c24` / `#1f2631` | `#ffffff` / `#faf9f7` / `#f0efea` |
+| `--border` / `--border-strong` | `#262e3a` / `#3a4557` | `#e7e5e0` / `#d4d1c9` |
+| `--text` / `--text-dim` / `--text-faint` | `#e6ebf2` / `#a8b3c2` / `#77839a` | `#1a1a18` / `#5f5e57` / `#96958d` |
+| `--accent` | `#e8b06b` | **`#b45309`**(白底上必须压深,否则对比度不够) |
+| `--glass-gradient` | 暖白高光渐变 | **全透明渐变**(等于关掉玻璃质感) |
+| `--radius` / `--shadow-sm` | 14px / 深阴影 | 10px / `0 1px 2px rgba(28,25,23,.05)` |
+
+**为什么能这么省事**:后台所有页面(`admin/*.astro`)与编辑器(`components/admin/*`)**只用 `var(--*)` 和全局类名**
+(`.panel` / `.admin-table` / `.admin-field` / `.mini-btn` / `.badge`),没有写死颜色,所以改一处 token 就整体换肤。
+**新增后台样式时请继续沿用变量,不要写死深色值**,否则浅色主题会被打破。
+
+配套的几个必要修正(都在 `AdminLayout.astro` 里):
+
+- `.admin-body .panel::after` / `::before` 置为 `display: none` —— 关掉前台的琥珀金角标与顶部发丝线(见 §6.3)
+- `.admin-body .panel` 重设为白卡 + 细边 + 极轻阴影,`backdrop-filter: none`
+- 后台标题强制 `--font-sans`(前台标题是宋体 `--font-display`)
+- 侧边栏图标是**内联 SVG**(不用 emoji),选中态是"白卡 + 左侧 2px 琥珀金竖条"
+- 移动端(≤768px):侧栏收成 60px 图标条、统计卡两列、`.panel` 内部横向滚动 `min-width: 620px` 的表格
+
+**登录页要单独改**:`pages/admin/login.astro` 不走 `AdminLayout`,所以它自己复制了一份浅色 token
+(底纹用 `radial-gradient` 细点阵代替原来的彩色光晕)。
 
 ---
 

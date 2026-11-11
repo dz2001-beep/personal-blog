@@ -35,10 +35,10 @@ const drafts = posts.filter((p) => p.status === 'draft').length;
   <div class="panel">
     <h2>快捷操作</h2>
     <div class="form-actions" style="margin-top:0">
-      <a class="btn btn-primary" href="/admin/posts/new">✍️ 写新文章</a>
-      <a class="btn" href="/admin/works/new">🚀 添加作品</a>
-      <a class="btn" href="/admin/settings">⚙️ 站点设置</a>
-      <a class="btn" href="/" target="_blank" rel="noopener">🌐 查看前台</a>
+      <a class="btn btn-primary" href="/admin/posts/new">写新文章</a>
+      <a class="btn" href="/admin/works/new">添加作品</a>
+      <a class="btn" href="/admin/settings">站点设置</a>
+      <a class="btn" href="/" target="_blank" rel="noopener">查看前台</a>
     </div>
   </div>
 
@@ -75,7 +75,7 @@ const drafts = posts.filter((p) => p.status === 'draft').length;
                     {formatDate(new Date(post.created_at))}
                   </td>
                   <td style="font-family:var(--font-mono);font-size:0.8rem;color:var(--text-dim)">
-                    👁 {post.views}
+                    {post.views}
                   </td>
                   <td style="text-align:right;white-space:nowrap">
                     <a class="mini-btn" href={`/blog/${post.slug}/`} target="_blank" rel="noopener">查看</a>

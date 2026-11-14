@@ -340,6 +340,12 @@ npm start              # 跑构建产物(node dist/server/entry.mjs,默认 4321)
 **登录页要单独改**:`pages/admin/login.astro` 不走 `AdminLayout`,所以它自己复制了一份浅色 token
 (底纹用 `radial-gradient` 细点阵代替原来的彩色光晕)。
 
+**自定义光标(箭头 + 跟手光晕)现在前后台一致**:原来只有后台没有 —— `scripts/cursor.ts` 是自包含的
+(自己 `document.createElement('div#cursor-glow')` 并给 `<html>` 加 `has-custom-cursor`),所以后台
+只需 `import '../scripts/cursor'` 即可(`AdminLayout` 与登录页各加一次)。
+⚠️ 光晕在 `global.css` 里是**白色**半透明,直接搬到白底后台会完全看不见,所以在后台/登录页把它覆盖成
+深墨色 `rgba(26,26,24,.16)`、悬停态换成琥珀金 `rgba(180,83,9,.22)`。箭头沿用同一个 `public/cursor.png`。
+
 ---
 
 ## 7. 当前实际内容清单

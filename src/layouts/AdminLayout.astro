@@ -116,6 +116,10 @@ function isActive(href: string): boolean {
     </main>
 
     <script>
+      // 自定义光标(彩色箭头 + 跟手光晕):脚本会自己创建 #cursor-glow 并给 <html> 加
+      // has-custom-cursor,所以后台只要引入即可,样式复用 global.css 里那套
+      import '../scripts/cursor';
+
       document.getElementById('logout-btn')?.addEventListener('click', async () => {
         await fetch('/api/logout', { method: 'POST' });
         location.href = '/admin/login';
@@ -164,6 +168,29 @@ function isActive(href: string): boolean {
         background: var(--bg);
         color: var(--text);
         -webkit-font-smoothing: antialiased;
+      }
+
+      /*
+       * 自定义光晕在深色前台是白色半透明;后台是白底,照搬会完全看不见。
+       * 这里换成深墨色(悬停变琥珀金),既保留跟手光晕的手感,又不刺眼。
+       * 箭头本身沿用 public/cursor.png / cursor.svg,与前台完全一致。
+       */
+      :global(.admin-body #cursor-glow) {
+        background: radial-gradient(
+          circle,
+          rgba(26, 26, 24, 0.16),
+          rgba(26, 26, 24, 0.05) 60%,
+          transparent 72%
+        );
+      }
+
+      :global(.admin-body #cursor-glow.cursor-hover) {
+        background: radial-gradient(
+          circle,
+          rgba(180, 83, 9, 0.22),
+          rgba(180, 83, 9, 0.07) 60%,
+          transparent 72%
+        );
       }
 
       /* 后台标题不用前台的宋体,回到干净的无衬线 */

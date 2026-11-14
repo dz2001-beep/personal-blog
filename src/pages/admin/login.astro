@@ -44,6 +44,9 @@ const site = getSiteConfig();
     </div>
 
     <script>
+      // 与前台/后台一致的自定义光标(脚本自己建 #cursor-glow + has-custom-cursor)
+      import '../../scripts/cursor';
+
       const form = document.getElementById('login-form') as HTMLFormElement;
       const msg = document.getElementById('msg')!;
       const btn = form.querySelector('button')!;
@@ -216,6 +219,25 @@ const site = getSiteConfig();
 
       .login-foot a:hover {
         color: var(--accent);
+      }
+
+      /* 白底上原本的白色光晕不可见,换成深墨色(悬停琥珀金) */
+      :global(.login-body #cursor-glow) {
+        background: radial-gradient(
+          circle,
+          rgba(26, 26, 24, 0.16),
+          rgba(26, 26, 24, 0.05) 60%,
+          transparent 72%
+        );
+      }
+
+      :global(.login-body #cursor-glow.cursor-hover) {
+        background: radial-gradient(
+          circle,
+          rgba(180, 83, 9, 0.22),
+          rgba(180, 83, 9, 0.07) 60%,
+          transparent 72%
+        );
       }
     </style>
   </body>
